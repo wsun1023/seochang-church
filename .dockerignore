@@ -1,0 +1,15 @@
+.git
+.gitignore
+.dockerignore
+.gradle
+.idea
+.vscode
+build/
+bin/
+out/
+uploads/
+*.iml
+*.iws
+*.ipr
+.env
+application-secret.properties
