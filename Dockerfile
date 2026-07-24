@@ -2,6 +2,7 @@
 FROM amazoncorretto:17 AS builder
 WORKDIR /app
 COPY . .
+RUN yum install -y findutils
 RUN chmod +x ./gradlew
 RUN ./gradlew bootWar --no-daemon
 
