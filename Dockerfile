@@ -2,6 +2,7 @@
 FROM gradle:8.7-jdk17-jammy AS builder
 WORKDIR /app
 COPY . .
+RUN chmod +x ./gradlew
 RUN ./gradlew bootWar --no-daemon
 
 # Stage 2: Run the application
