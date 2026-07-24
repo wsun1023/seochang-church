@@ -1,11 +1,11 @@
 # Stage 1: Build the application
-FROM gradle:8.7-jdk17 AS builder
+FROM gradle:8.7-jdk17-jammy AS builder
 WORKDIR /app
 COPY . .
 RUN ./gradlew bootWar --no-daemon
 
 # Stage 2: Run the application
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.war app.war
 
