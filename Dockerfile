@@ -6,6 +6,7 @@ WORKDIR /app
 RUN dnf install -y java-17-openjdk-devel findutils && dnf clean all
 
 COPY . .
+RUN yum install -y findutils
 RUN chmod +x ./gradlew
 RUN ./gradlew bootWar --no-daemon
 
