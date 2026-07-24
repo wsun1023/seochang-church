@@ -1,12 +1,12 @@
 # Stage 1: Build the application
-FROM gradle:8.7-jdk17-jammy AS builder
+FROM amazoncorretto:17 AS builder
 WORKDIR /app
 COPY . .
 RUN chmod +x ./gradlew
 RUN ./gradlew bootWar --no-daemon
 
 # Stage 2: Run the application
-FROM eclipse-temurin:17-jre-jammy
+FROM amazoncorretto:17-alpine
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.war app.war
 
