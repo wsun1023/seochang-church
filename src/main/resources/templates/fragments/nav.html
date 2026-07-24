@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<!-- Navigation -->
+<nav th:fragment="nav" class="navbar navbar-expand-lg fixed-top custom-navbar navbar-dark">
+    <style>
+        @media (max-width: 991.98px) {
+            .mobile-nav-grid {
+                flex-direction: row !important;
+                flex-wrap: wrap;
+                justify-content: center;
+                padding-top: 1rem;
+            }
+            .mobile-nav-grid .nav-item {
+                width: 50%;
+                text-align: center;
+                margin-bottom: 0.5rem;
+            }
+            .mobile-nav-grid .auth-item {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        /* Dropdown custom styles */
+        .custom-dropdown-menu {
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(16px);
+            border-radius: 12px;
+            margin-top: 10px;
+            min-width: 180px;
+        }
+        .custom-dropdown-menu .dropdown-item {
+            padding: 10px 20px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.85);
+            transition: all 0.2s ease;
+        }
+        .custom-dropdown-menu .dropdown-item:hover, .custom-dropdown-menu .dropdown-item:focus {
+            background-color: rgba(217, 119, 6, 0.25);
+            color: #F59E0B;
+        }
+    </style>
+    <div class="container">
+        <a class="navbar-brand py-0 d-flex align-items-center" href="/">
+            <img src="/images/logo.png" alt="천주교 인천교구 서창동성당" style="height: 50px; margin-right: 10px;">
+            <!--  <span class="cross-symbol" style="color: #F59E0B; font-size: 1.2rem; margin-right: 4px;">†</span> 서창동성당 <span style="font-size: 0.85rem; font-weight: 400; color: #94A3B8; margin-left: 4px;">천주교 인천교구</span> -->
+          </a>
+          <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+              <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav ms-auto align-items-center mobile-nav-grid">
+                  <li class="nav-item"><a class="nav-link" th:classappend="${currentMenu == 'home'} ? 'active' : ''" href="/">홈</a></li>
+
+                  <!-- 성당소개 드롭다운 -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" th:classappend="${currentMenu == 'about'} ? 'active' : ''" href="#" id="aboutDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        성당소개
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark border-0 shadow-lg custom-dropdown-menu" aria-labelledby="aboutDropdown">
+                        <li><a class="dropdown-item" href="/about?tab=overview">본당개요</a></li>
+                        <li><a class="dropdown-item" href="/about?tab=history">본당연혁</a></li>
+                        <li><a class="dropdown-item" href="/about?tab=priest">우리 신부님</a></li>
+                        <li><a class="dropdown-item" href="/about?tab=sector">구역소개</a></li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item"><a class="nav-link" href="/#mass">미사안내</a></li>
+                
+                <!-- 성당소식 드롭다운 -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" th:classappend="${currentMenu == 'notices'} ? 'active' : ''" href="#" id="noticeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        성당소식
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark border-0 shadow-lg custom-dropdown-menu" aria-labelledby="noticeDropdown">
+                        <li><a class="dropdown-item" href="/notices?category=bulletin">주보</a></li>
+                        <li><a class="dropdown-item" href="/notices?category=notice">공지사항</a></li>
+                        <li><a class="dropdown-item" href="/notices?category=status">성당현황공개</a></li>
+                    </ul>
+                </li>
+                
+                <!-- 게시판 드롭다운 (자유게시판에서 명칭 변경) -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" th:classappend="${currentMenu == 'boards'} ? 'active' : ''" href="#" id="boardDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        게시판
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark border-0 shadow-lg custom-dropdown-menu" aria-labelledby="boardDropdown">
+                        <li><a class="dropdown-item" href="/boards?category=free">자유게시판</a></li>
+                        <li><a class="dropdown-item" href="/boards?category=council">사목협의회</a></li>
+                        <li><a class="dropdown-item" href="/boards?category=archive">자료실</a></li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item"><a class="nav-link" href="/#location">오시는길</a></li>
+
+                <!-- 비로그인 상태 -->
+                <li class="nav-item auth-item ms-lg-2 d-flex flex-row justify-content-center gap-2" th:if="${session.loginUser == null}">
+                    <a class="btn btn-outline-light btn-sm rounded-pill px-3" href="/login">로그인</a>
+                    <a class="btn btn-warning btn-sm rounded-pill px-3 text-dark fw-semibold" href="/signup">회원가입</a>
+                </li>
+
+                <!-- 로그인 상태 -->
+                <li class="nav-item auth-item ms-lg-3 d-flex flex-column flex-lg-row align-items-center gap-2" th:if="${session.loginUser != null}">
+                    <span class="text-white small mb-2 mb-lg-0">
+                        <i class="bi bi-person-circle text-warning me-1"></i>
+                        <strong th:text="${session.loginUser.displayName}">홍길동 (바오로)</strong> 님
+                        <span th:if="${session.loginUser.role == 'ADMIN'}" class="badge bg-danger ms-1">관리자</span>
+                    </span>
+                    <a th:if="${session.loginUser.role == 'ADMIN'}" class="btn btn-danger btn-sm rounded-pill px-3" href="/admin">⚙️ 관리자 페이지</a>
+                    <a class="btn btn-outline-light btn-sm rounded-pill px-3" href="/logout">로그아웃</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+</body>
+</html>

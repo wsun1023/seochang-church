@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>천주교 인천교구 서창동성당</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --primary-navy: #0F172A;
+            --accent-gold: #D97706;
+            --accent-gold-light: #F59E0B;
+            --bg-light: #F8FAFC;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Modern Glassmorphic Navbar */
+        .custom-navbar {
+            background: rgba(15, 23, 42, 0.85) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            padding: 0.8rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.35rem;
+            letter-spacing: -0.5px;
+            color: #FFFFFF !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .navbar-brand .cross-symbol {
+            color: var(--accent-gold-light);
+            font-size: 1.2rem;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            margin: 0 6px;
+            padding: 6px 14px !important;
+            border-radius: 20px;
+            transition: all 0.25s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #FFFFFF !important;
+            background: rgba(217, 119, 6, 0.25);
+        }
+
+        /* Hero Section */
+        .hero-wrapper {
+            position: relative;
+            min-height: 60vh;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(30, 41, 59, 0.75)),
+                        url('https://images.unsplash.com/photo-1548625361-185b3069b266?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 80px 20px 40px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 30px;
+            background: rgba(217, 119, 6, 0.2);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #FDE68A;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 24px;
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-title {
+            font-size: clamp(2.3rem, 5vw, 4rem);
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            line-height: 1.25;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.05rem, 2vw, 1.35rem);
+            color: #E2E8F0;
+            font-weight: 300;
+            max-width: 680px;
+            margin: 0 auto 36px;
+            word-break: keep-all;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+            color: #FFFFFF;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 30px;
+            border: none;
+            box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -5px rgba(217, 119, 6, 0.6);
+            color: #FFFFFF;
+        }
+
+        .btn-outline-custom {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #FFFFFF;
+            font-weight: 500;
+            padding: 12px 28px;
+            border-radius: 30px;
+            backdrop-filter: blur(6px);
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-custom:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.6);
+            color: #FFFFFF;
+        }
+
+        /* Section Styling */
+        .section-padding {
+            padding: 90px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 50px;
+        }
+
+        .section-sublabel {
+            color: var(--accent-gold);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            letter-spacing: -0.5px;
+        }
+
+        /* Feature Cards */
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 20px;
+            padding: 36px 28px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+            border-color: rgba(217, 119, 6, 0.3);
+        }
+
+        .feature-icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(217, 119, 6, 0.1), rgba(245, 158, 11, 0.15));
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 22px;
+        }
+
+        /* Mass Schedule Cards */
+        .mass-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            transition: all 0.25s ease;
+        }
+
+        .mass-card:hover {
+            border-color: var(--accent-gold-light);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+        }
+
+        .mass-badge {
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 12px;
+            background: #F1F5F9;
+            color: var(--primary-navy);
+        }
+
+        .mass-time-badge {
+            background: rgba(217, 119, 6, 0.1);
+            color: var(--accent-gold);
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Dynamic Notice Grid Card */
+        .notice-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            padding: 26px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .notice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.07);
+            border-color: rgba(217, 119, 6, 0.3);
+        }
+
+        .notice-date {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .notice-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--primary-navy);
+            margin: 12px 0 10px;
+            line-height: 1.4;
+        }
+
+        .notice-snippet {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        /* Location Card */
+        .info-card {
+            background: linear-gradient(135deg, var(--primary-navy), #1E293B);
+            color: #FFFFFF;
+            border-radius: 24px;
+            padding: 44px 36px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-item i {
+            font-size: 1.3rem;
+            color: var(--accent-gold-light);
+            margin-top: 3px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary-navy);
+            color: #94A3B8;
+            padding: 50px 0 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        footer a {
+            color: #CBD5E1;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        footer a:hover {
+            color: var(--accent-gold-light);
+        }
+
+        .footer-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+            margin: 30px 0 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<!-- Hero Section -->
+<header class="hero-wrapper">
+    <div class="container position-relative">
+        <div class="hero-badge">
+            <i class="bi bi-quote"></i> "너희는 세상의 빛이다" (마태 5,14)
+        </div>
+        <h1 class="hero-title">주님 안에서 환영합니다<br><span style="color: #FDE68A; font-weight: 300;">평화가 여러분과 함께</span></h1>
+        <p class="hero-subtitle">
+            천주교 인천교구 서창동성당은 지역 이웃과 함께 사랑을 나누고,<br class="d-none d-md-block">
+            주님의 복음을 실천하며 은혜로운 신앙 공동체를 이루어가는 터전입니다.
+        </p>
+        <div class="hero-btns">
+            <a href="#mass" class="btn btn-gold">
+                <i class="bi bi-clock-history me-2"></i>미사 시간 보기
+            </a>
+            <a href="#notices" class="btn btn-outline-custom">
+                <i class="bi bi-newspaper me-2"></i>성당 소식 확인
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Mass Schedule Section -->
+<section id="mass" class="section-padding" style="background: #F1F5F9;">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-sublabel">Mass Schedule</span>
+            <h2 class="section-title">미사 시간 안내</h2>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="mass-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <span class="mass-badge mb-2 d-inline-block">Weekend Mass</span>
+                            <h4 class="mb-0 fw-bold text-dark">주일 미사</h4>
+                        </div>
+                        <span class="mass-time-badge"><i class="bi bi-bell-fill me-1"></i> 주일 봉헌</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-semibold text-secondary" style="width: 30%;">토요일</td>
+                                    <td>오후 6:00 (어린이·청소년)</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-semibold text-secondary">주일 미사</td>
+                                    <td>오전 8:00 / <strong>오전 10:00 (교중미사)</strong> / 오후 6:00 </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mass-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <span class="mass-badge mb-2 d-inline-block">Weekday Mass</span>
+                            <h4 class="mb-0 fw-bold text-dark">평일 미사</h4>
+                        </div>
+                        <span class="mass-time-badge"><i class="bi bi-calendar-event me-1"></i> 평일 봉헌</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-semibold text-secondary" style="width: 30%;">화요일</td>
+                                    <td>오후 7:30</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-semibold text-secondary">월 / 수 / 목 / 금요일</td>
+                                    <td>오전 10:00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Notice Dynamic Section -->
+<section id="notices" class="section-padding">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <span class="section-sublabel">Notice & News</span>
+                <h2 class="section-title mb-0">성당 소식</h2>
+            </div>
+            <a href="/notices" class="btn btn-outline-dark rounded-pill px-4 btn-sm">전체보기 <i class="bi bi-arrow-right"></i></a>
+        </div>
+
+        <!-- Dynamic Rendering for Notices -->
+        <div class="row g-4" th:if="${notices != null and not #lists.isEmpty(notices)}">
+            <div class="col-md-4" th:each="notice : ${notices}">
+                <div class="notice-card">
+                    <div>
+                        <div class="notice-date">
+                            <i class="bi bi-calendar3"></i>
+                            <span th:text="${#temporals.format(notice.createdAt, 'yyyy.MM.dd')}">2026.07.23</span>
+                        </div>
+                        <h4 class="notice-title" th:text="${notice.title}">공지사항 제목</h4>
+                        <p class="notice-snippet" th:text="${notice.content}">공지사항 요약 내용입니다.</p>
+                    </div>
+                    <a href="/notices" class="text-decoration-none fw-semibold" style="color: var(--accent-gold);">
+                        자세히 보기 <i class="bi bi-chevron-right fs-7"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="text-center py-5 bg-white rounded-4 border" th:if="${notices == null or #lists.isEmpty(notices)}">
+            <i class="bi bi-inbox text-muted display-5 mb-3 d-block"></i>
+            <p class="text-secondary mb-0">현재 등록된 성당 소식이 없습니다.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Location & Info Section -->
+<section id="location" class="section-padding" style="background: #F8FAFC;">
+    <div class="container">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-6">
+                <div class="info-card">
+                    <span class="section-sublabel text-warning mb-2">Location & Contact</span>
+                    <h3 class="fw-bold mb-4">서창동성당 안내</h3>
+                    
+                    <div class="info-item">
+                        <i class="bi bi-geo-alt"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">성당 위치</h6>
+                            <p class="mb-0 text-white-50">인천광역시 남동구 장아산로199번길 16</p>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <i class="bi bi-telephone"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">사무실 전화번호</h6>
+                            <p class="mb-0 text-white-50">032-472-5332</p>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <i class="bi bi-clock"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">사무실 운영시간</h6>
+                            <p class="mb-0 text-white-50">화~일 09:00 - 18:00 (월,목요일 휴무)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="bg-white p-2 rounded-4 border shadow-sm h-100 d-flex flex-column" style="min-height: 400px; position: relative;">
+                    <!-- Google Maps Iframe -->
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m5!3m3!1m2!1s0x357b7b12fffc25f9%3A0xdf7392f21d4862bb!2z7J247LKc6rSR7Jet7IucIOuCqOuPmeq1rCDsnqXslYTsgrDroZwxOTnrsojquLggMTY!5e0!3m2!1sko!2skr!4v1784866937161!5m2!1sko!2skr" width="100%" height="100%" style="border:0; border-radius: 1rem; min-height: 400px;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                    
+                    <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4" style="z-index: 100;">
+                        <a href="https://naver.me/F4WGV8mP" target="_blank" class="btn btn-primary rounded-pill px-4 shadow">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> 네이버 지도로 열기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row gy-4">
+            <div class="col-lg-6">
+                <div class="mb-3 d-flex align-items-center">
+                    <img src="/images/logo.png" alt="천주교 인천교구 서창동성당" style="height: 50px; margin-right: 13px;">
+                    <h6 class="fw-bold text-white mb-0" style="font-size: 1rem;">천주교 인천교구 서창동성당</h6>
+                </div>
+                <p class="small mb-0">
+                    Copyright © 2026 서창동성당. All Rights Reserved.
+                </p>
+            </div>
+            <div class="col-lg-6 text-lg-end">
+                <ul class="list-inline mb-0">
+                    <li class="list-inline-item"><a href="/" class="small">홈</a></li>
+                    <li class="list-inline-item ms-3"><a href="#mass" class="small">미사안내</a></li>
+                    <li class="list-inline-item ms-3"><a href="/notices" class="small">성당소식</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

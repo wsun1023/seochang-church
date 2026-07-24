@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
+<head><title>회원 관리</title></head>
+<body>
+<div th:fragment="content">
+    <h2 class="mb-4"><i class="bi bi-people"></i> 회원 관리</h2>
+    
+    <!-- 검색 폼 -->
+    <form class="d-flex mb-4" action="/admin/users" method="get" style="max-width: 400px;">
+        <input class="form-control me-2" type="search" name="keyword" placeholder="이름 또는 아이디 검색" aria-label="Search" th:value="${keyword}">
+        <button class="btn btn-outline-secondary" type="submit">검색</button>
+    </form>
+    
+    <div class="table-responsive bg-white rounded shadow-sm p-3">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>아이디</th>
+                    <th>이름(세례명)</th>
+                    <th>가입일</th>
+                    <th>상태</th>
+                    <th>권한</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="user : ${users}" th:classappend="${user.delYn == 'Y'} ? 'table-secondary text-muted' : ''">
+                    <td th:text="${user.id}">1</td>
+                    <td th:text="${user.username}">user1</td>
+                    <td th:text="${user.displayName}">홍길동</td>
+                    <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd')}">2023-01-01</td>
+                    <td>
+                        <span th:if="${user.delYn == 'Y'}" class="badge bg-secondary">탈퇴/삭제됨</span>
+                        <span th:if="${user.delYn == 'N' && user.approved}" class="badge bg-success">승인됨</span>
+                        <span th:if="${user.delYn == 'N' && !user.approved}" class="badge bg-warning text-dark">승인 대기</span>
+                    </td>
+                    <td>
+                        <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" class="d-flex">
+                            <select name="role" class="form-select form-select-sm me-2" style="width: auto;">
+                                <option value="USER" th:selected="${user.role == 'USER'}">일반</option>
+                                <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">관리자</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">변경</button>
+                        </form>
+                        <span th:if="${user.delYn == 'Y'}" th:text="${user.role}"></span>
+                    </td>
+                    <td>
+                        <form th:if="${user.delYn == 'N' && !user.approved}" th:action="@{/admin/users/{id}/approve(id=${user.id})}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-success">승인</button>
+                        </form>
+                        <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" class="d-inline" onsubmit="return confirm('정말로 이 회원을 강제 탈퇴 처리하시겠습니까?');">
+                            <button type="submit" class="btn btn-sm btn-danger">삭제</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(users)}">
+                    <td colspan="7" class="text-center py-4">조회된 회원이 없습니다.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 페이징 -->
+    <nav class="mt-4" th:if="${totalPages > 0}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/users(page=${currentPage - 1}, keyword=${keyword})}">이전</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                th:classappend="${i == currentPage} ? 'active'">
+                <a class="page-link" th:href="@{/admin/users(page=${i}, keyword=${keyword})}" th:text="${i + 1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/users(page=${currentPage + 1}, keyword=${keyword})}">다음</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>알림</title>
+</head>
+<body>
+    <script th:inline="javascript">
+        var message = [[${message}]];
+        var redirectUri = [[${redirectUri}]];
+        
+        if (message) {
+            alert(message);
+        }
+        
+        if (redirectUri) {
+            location.href = redirectUri;
+        } else {
+            history.back();
+        }
+    </script>
+</body>
+</html>

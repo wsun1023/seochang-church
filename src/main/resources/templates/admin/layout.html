@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 페이지 - 서창동성당</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+            color: white;
+            padding-top: 20px;
+        }
+        .sidebar a {
+            color: #adb5bd;
+            text-decoration: none;
+            padding: 10px 20px;
+            display: block;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            color: white;
+            background-color: #495057;
+        }
+        .admin-content {
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar d-flex flex-column">
+                <h4 class="text-center mb-4"><i class="bi bi-gear-fill text-warning"></i> 관리자</h4>
+                <a href="/admin" class="active"><i class="bi bi-speedometer2"></i> 대시보드</a>
+                <a href="/admin/users"><i class="bi bi-people"></i> 회원 관리</a>
+                <a href="/admin/boards"><i class="bi bi-file-earmark-text"></i> 게시글 관리</a>
+                <div class="mt-auto mb-3">
+                    <a href="/"><i class="bi bi-box-arrow-left"></i> 홈으로 돌아가기</a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 admin-content">
+                <div th:replace="${content}"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

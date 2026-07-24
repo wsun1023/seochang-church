@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${notice.id == null ? '성당 소식 작성' : '성당 소식 수정'} + ' - 천주교 서창동성당'">성당 소식 작성</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --primary-navy: #0F172A;
+            --accent-gold: #D97706;
+            --accent-gold-light: #F59E0B;
+            --bg-light: #F8FAFC;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            padding-top: 80px;
+        }
+
+        .custom-navbar {
+            background: rgba(15, 23, 42, 0.92) !important;
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.35rem;
+            color: #FFFFFF !important;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            margin: 0 6px;
+            padding: 6px 14px !important;
+            border-radius: 20px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #FFFFFF !important;
+            background: rgba(217, 119, 6, 0.25);
+        }
+
+        .page-banner {
+            background: linear-gradient(135deg, var(--primary-navy), #1E293B);
+            color: white;
+            padding: 50px 0;
+            margin-bottom: 40px;
+            border-radius: 0 0 24px 24px;
+        }
+
+        .form-container {
+            background: #FFFFFF;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            margin: 0 auto;
+            max-width: 900px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #CBD5E1;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-gold-light);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+        }
+
+        textarea.form-control {
+            min-height: 300px;
+            resize: vertical;
+        }
+
+        .btn-custom {
+            background-color: var(--accent-gold);
+            border-color: var(--accent-gold);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+
+        .btn-custom:hover {
+            background-color: #B45309;
+            border-color: #B45309;
+            color: white;
+        }
+
+        .btn-outline-custom {
+            border-color: #CBD5E1;
+            color: #475569;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        
+        .btn-outline-custom:hover {
+            background-color: #F8FAFC;
+            color: #0F172A;
+            border-color: #94A3B8;
+        }
+
+        footer {
+            background: var(--primary-navy);
+            color: #94A3B8;
+            padding: 40px 0 30px;
+            margin-top: 80px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<!-- Page Banner -->
+<div class="page-banner">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-2"><i class="bi bi-megaphone me-2" style="color: var(--accent-gold-light);"></i><span th:text="${notice.id == null ? '공지사항 작성' : '공지사항 수정'}">공지사항 작성</span></h2>
+        <p class="text-white-50 mb-0">새로운 성당 소식을 알려주세요.</p>
+    </div>
+</div>
+
+<!-- Main Content -->
+<main class="container">
+    <div class="form-container">
+        
+        <form th:action="${notice.id == null ? '/notices/new' : '/notices/' + notice.id + '/edit'}" method="post" enctype="multipart/form-data">
+            
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+            <div class="mb-4">
+                <label for="category" class="form-label">분류 <span class="text-danger">*</span></label>
+                <select class="form-select py-2 border-slate-300" id="category" name="category" style="border-radius: 12px; padding: 12px 16px;">
+                    <option value="notice" th:selected="${notice.category == 'notice' or notice.category == null}">공지사항</option>
+                    <option value="bulletin" th:selected="${notice.category == 'bulletin'}">주보</option>
+                    <option value="status" th:selected="${notice.category == 'status'}">성당현황공개</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="title" name="title" th:value="${notice.title}" placeholder="소식 제목을 입력하세요." required>
+            </div>
+            
+            <div class="mb-4">
+                <label for="content" class="form-label">내용 <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="content" name="content" placeholder="공지사항 내용을 입력하세요." required th:text="${notice.content}"></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label for="imageFiles" class="form-label">이미지 첨부 <span class="text-muted small">(최대 10개)</span></label>
+                <div th:if="${notice.attachments != null and not #lists.isEmpty(notice.attachments.?[image])}" class="mb-3 p-3 bg-light rounded border">
+                    <p class="mb-2 fw-medium text-secondary small"><i class="bi bi-images me-1"></i>기존 이미지 (삭제할 이미지를 체크하세요)</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <div th:each="file : ${notice.attachments}" th:if="${file.image}" class="form-check p-0 position-relative" style="width: 100px;">
+                            <input class="form-check-input position-absolute top-0 end-0 m-1" type="checkbox" name="deleteFileIds" th:value="${file.id}" th:id="'delImg_' + ${file.id}" style="z-index: 10;">
+                            <label class="form-check-label d-block" th:for="'delImg_' + ${file.id}">
+                                <img th:src="${file.filePath}" class="img-thumbnail w-100" style="height: 100px; object-fit: cover;">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <input class="form-control" type="file" id="imageFiles" name="imageFiles" multiple accept="image/*">
+            </div>
+
+            <div class="mb-5">
+                <label for="generalFiles" class="form-label">일반 파일 첨부 <span class="text-muted small">(최대 3개)</span></label>
+                <div th:if="${notice.attachments != null and not #lists.isEmpty(notice.attachments.?[!image])}" class="mb-3 p-3 bg-light rounded border">
+                    <p class="mb-2 fw-medium text-secondary small"><i class="bi bi-folder me-1"></i>기존 파일 (삭제할 파일을 체크하세요)</p>
+                    <div class="d-flex flex-column gap-2">
+                        <div th:each="file : ${notice.attachments}" th:if="${!file.image}" class="form-check">
+                            <input class="form-check-input" type="checkbox" name="deleteFileIds" th:value="${file.id}" th:id="'delFile_' + ${file.id}">
+                            <label class="form-check-label text-truncate d-inline-block align-middle" th:for="'delFile_' + ${file.id}" style="max-width: 90%;">
+                                <span th:text="${file.originalFileName}">파일명</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <input class="form-control" type="file" id="generalFiles" name="generalFiles" multiple>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                <a href="/notices" class="btn btn-outline-custom">
+                    취소
+                </a>
+                <button type="submit" class="btn btn-custom">
+                    <i class="bi bi-check2-circle me-1"></i> <span th:text="${notice.id == null ? '등록하기' : '수정완료'}">등록하기</span>
+                </button>
+            </div>
+            
+        </form>
+
+    </div>
+</main>
+
+<!-- Footer -->
+<footer>
+    <div class="container text-center">
+        <p class="small mb-0">Copyright © 2026 천주교 서창동성당. All Rights Reserved.</p>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
