@@ -59,7 +59,7 @@
             background: linear-gradient(135deg, var(--primary-navy), #1E293B);
             color: white;
             padding: 120px 0 50px;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             border-radius: 0 0 24px 24px;
         }
 
@@ -106,11 +106,10 @@
             margin-bottom: 15px;
         }
         
-        /* Reset styles that might come from GoodNews */
-        .reading-content span, .reading-content div, .reading-content font {
+        /* Force reset inner GoodNews styles */
+        .reading-content span, .reading-content div, .reading-content font, .reading-content p {
             font-family: inherit !important;
             color: inherit !important;
-            font-size: inherit !important;
             background: none !important;
         }
 
@@ -157,7 +156,22 @@
 <main class="container">
     <div class="row justify-content-center">
         <div class="col-lg-9">
-            
+
+            <!-- Font Size Controls -->
+            <div class="d-flex justify-content-end align-items-center my-3">
+                <div class="btn-group btn-group-sm bg-white rounded-pill border p-1 shadow-sm" role="group" aria-label="Font size control">
+                    <button type="button" class="btn btn-light rounded-pill px-3 border-0 text-secondary" onclick="changeFontSize(-1)" title="글자 축소">
+                        <i class="bi bi-dash-circle me-1"></i>축소
+                    </button>
+                    <button type="button" class="btn btn-light rounded-pill px-3 border-0 text-secondary" onclick="resetFontSize()" title="기본 크기">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>기본
+                    </button>
+                    <button type="button" class="btn btn-light rounded-pill px-3 border-0 text-dark fw-semibold" onclick="changeFontSize(1)" title="글자 확대">
+                        <i class="bi bi-plus-circle me-1"></i>확대
+                    </button>
+                </div>
+            </div>
+
             <div class="content-card">
                 <div th:each="reading : ${dailyMass.readings}" class="reading-section">
                     <h3 class="reading-title" th:text="${reading.type}">제1독서</h3>
@@ -186,5 +200,28 @@
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+var currentFontSize = 1.1;
+
+function changeFontSize(delta) {
+    currentFontSize += delta * 0.15;
+    if (currentFontSize < 0.8) currentFontSize = 0.8;
+    if (currentFontSize > 2.5) currentFontSize = 2.5;
+    applyFontSize();
+}
+
+function resetFontSize() {
+    currentFontSize = 1.1;
+    applyFontSize();
+}
+
+function applyFontSize() {
+    var sizeStr = currentFontSize.toFixed(2) + 'rem';
+    var elements = document.querySelectorAll('.reading-content, .reading-content *');
+    elements.forEach(function(el) {
+        el.style.setProperty('font-size', sizeStr, 'important');
+    });
+}
+</script>
 </body>
 </html>
