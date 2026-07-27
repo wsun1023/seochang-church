@@ -18,4 +18,10 @@ public class MainController {
         model.addAttribute("notices", noticeRepository.findAll());
         return "main";
     }
+
+    @GetMapping("/mass")
+    public String mass(Model model) {
+        model.addAttribute("currentMenu", "mass");
+        return "mass";
+    }
 }

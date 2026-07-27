@@ -27,7 +27,6 @@
             font-family: 'Noto Sans KR', sans-serif;
             background-color: var(--bg-light);
             color: var(--text-main);
-            padding-top: 80px;
         }
 
         .custom-navbar {
@@ -59,7 +58,7 @@
         .page-banner {
             background: linear-gradient(135deg, var(--primary-navy), #1E293B);
             color: white;
-            padding: 50px 0;
+            padding: 120px 0 50px;
             margin-bottom: 40px;
             border-radius: 0 0 24px 24px;
         }
@@ -93,6 +92,83 @@
             color: #94A3B8;
             padding: 40px 0 30px;
             margin-top: 80px;
+        }
+
+        /* Mobile Responsive Adjustments */
+        @media (max-width: 768px) {
+            .board-container {
+                padding: 15px;
+            }
+            .search-action-wrap {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .search-action-wrap form {
+                flex-grow: 1;
+                margin-right: 8px;
+            }
+            .search-action-wrap input {
+                width: 100% !important;
+                max-width: none !important;
+            }
+            
+            /* Table to List view for mobile */
+            .table-responsive {
+                border: none;
+            }
+            .table thead {
+                display: none;
+            }
+            .table tbody tr {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                padding: 14px 0;
+                border-bottom: 1px solid #E2E8F0;
+            }
+            .table tbody td {
+                display: block;
+                border: none;
+                padding: 0;
+                text-align: left !important;
+            }
+            .table tbody td:nth-child(1) {
+                display: none; /* Hide number */
+            }
+            .table tbody td:nth-child(2) {
+                width: 100%;
+                font-size: 1.05rem;
+                font-weight: 600;
+                margin-bottom: 8px;
+                padding-left: 0 !important;
+            }
+            .table tbody td:nth-child(3) {
+                font-size: 0.85rem;
+                color: var(--text-muted);
+            }
+            .table tbody td:nth-child(4) {
+                font-size: 0.85rem;
+                color: var(--text-muted);
+            }
+            .table tbody td:nth-child(4)::before {
+                content: "|";
+                margin: 0 6px;
+                color: #CBD5E1;
+            }
+            .table tbody td:nth-child(5) {
+                font-size: 0.85rem;
+                color: var(--text-muted);
+            }
+            .table tbody td:nth-child(5)::before {
+                content: "| 조회수 ";
+                margin: 0 6px 0 6px;
+                color: #CBD5E1;
+            }
+            .table tbody tr.empty-row td {
+                display: block !important;
+                width: 100% !important;
+                text-align: center !important;
+            }
         }
     </style>
 </head>
@@ -132,15 +208,15 @@
                 <span th:if="${currentCategory == 'council'}">사목협의회 게시판</span>
                 <span th:if="${currentCategory == 'archive'}">자료실</span>
             </h5>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 search-action-wrap">
                 <form action="/boards" method="get" class="d-flex">
                     <input type="hidden" name="category" th:value="${currentCategory}">
                     <input type="text" name="keyword" class="form-control rounded-pill rounded-end-0 border-end-0" placeholder="제목/작성자로 검색" th:value="${keyword}" style="width: 200px;">
-                    <button type="submit" class="btn btn-outline-secondary rounded-pill rounded-start-0 bg-white border-start-0 text-dark">
+                    <button type="submit" class="btn btn-outline-secondary rounded-pill rounded-start-0 bg-white border-start-0 text-dark flex-shrink-0">
                         <i class="bi bi-search"></i>
                     </button>
                 </form>
-                <a th:if="${session.loginUser != null}" th:href="@{/boards/new(category=${currentCategory != 'all' and currentCategory != null ? currentCategory : 'free'})}" class="btn btn-primary rounded-pill px-4" style="background-color: var(--accent-gold); border-color: var(--accent-gold);">
+                <a th:if="${session.loginUser != null}" th:href="@{/boards/new(category=${currentCategory != 'all' and currentCategory != null ? currentCategory : 'free'})}" class="btn btn-primary rounded-pill px-4 text-nowrap d-flex align-items-center flex-shrink-0" style="background-color: var(--accent-gold); border-color: var(--accent-gold);">
                     <i class="bi bi-pencil-square me-1"></i> 글쓰기
                 </a>
             </div>
@@ -159,7 +235,7 @@
                 </thead>
                 <tbody>
                     <!-- Empty State -->
-                    <tr th:if="${boards == null or #lists.isEmpty(boards)}">
+                    <tr th:if="${boards == null or #lists.isEmpty(boards)}" class="empty-row">
                         <td colspan="5" class="text-center py-5">
                             <div class="text-muted">
                                 <i class="bi bi-inbox display-4 mb-3 d-block"></i>

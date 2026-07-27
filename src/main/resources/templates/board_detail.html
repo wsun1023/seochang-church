@@ -27,7 +27,6 @@
             font-family: 'Noto Sans KR', sans-serif;
             background-color: var(--bg-light);
             color: var(--text-main);
-            padding-top: 80px;
         }
 
         .custom-navbar {
@@ -59,7 +58,7 @@
         .page-banner {
             background: linear-gradient(135deg, var(--primary-navy), #1E293B);
             color: white;
-            padding: 50px 0;
+            padding: 120px 0 50px;
             margin-bottom: 40px;
             border-radius: 0 0 24px 24px;
         }
@@ -195,17 +194,17 @@
         </div>
         
         <!-- Actions -->
-        <div class="d-flex justify-content-between align-items-center">
-            <a href="/boards" class="btn btn-outline-custom rounded-pill px-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
+            <a href="/boards" class="btn btn-outline-custom rounded-pill px-3 px-md-4 text-nowrap">
                 <i class="bi bi-list me-1"></i> 목록으로
             </a>
             
-            <div th:if="${isOwnerOrAdmin}" class="d-flex gap-2">
-                <a th:href="@{/boards/{id}/edit(id=${board.id})}" class="btn btn-outline-primary rounded-pill px-4">
+            <div th:if="${isOwnerOrAdmin}" class="d-flex flex-wrap gap-2">
+                <a th:href="@{/boards/{id}/edit(id=${board.id})}" class="btn btn-outline-primary rounded-pill px-3 px-md-4 text-nowrap">
                     <i class="bi bi-pencil me-1"></i> 수정
                 </a>
                 <form th:action="@{/boards/{id}/delete(id=${board.id})}" method="post" class="d-inline" onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                    <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                    <button type="submit" class="btn btn-outline-danger rounded-pill px-3 px-md-4 text-nowrap">
                         <i class="bi bi-trash me-1"></i> 삭제
                     </button>
                 </form>
