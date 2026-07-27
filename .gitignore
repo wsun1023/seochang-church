@@ -45,3 +45,7 @@ application-prod.properties
 ### Uploaded Files ###
 uploads/
 /uploads/
+
+### Local Gradle Config ###
+gradle.properties
+
