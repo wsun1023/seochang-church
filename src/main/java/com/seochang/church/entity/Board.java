@@ -38,6 +38,10 @@ public class Board {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<BoardAttachment> attachments = new java.util.ArrayList<>();
 
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    @OrderBy("createdAt ASC")
+    private java.util.List<BoardComment> comments = new java.util.ArrayList<>();
+
     public Board() {
     }
 
@@ -135,5 +139,13 @@ public class Board {
 
     public void setAttachments(java.util.List<BoardAttachment> attachments) {
         this.attachments = attachments;
+    }
+
+    public java.util.List<BoardComment> getComments() {
+        return comments;
+    }
+
+    public void setComments(java.util.List<BoardComment> comments) {
+        this.comments = comments;
     }
 }

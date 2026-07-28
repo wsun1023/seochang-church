@@ -127,7 +127,7 @@ public class BoardController {
         if (files != null) {
             for (org.springframework.web.multipart.MultipartFile file : files) {
                 if (!file.isEmpty()) {
-                    String storedName = fileStorageService.store(file);
+                    String storedName = fileStorageService.store(file, "board");
                     com.seochang.church.entity.BoardAttachment attachment = new com.seochang.church.entity.BoardAttachment();
                     attachment.setOriginalFileName(file.getOriginalFilename());
                     attachment.setStoredFileName(storedName);

@@ -361,6 +361,61 @@
             margin-top: 3px;
         }
 
+        /* Gallery Preview */
+        .gallery-preview-card {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            transition: transform 0.3s ease;
+            height: 100%;
+            background: white;
+            border: 1px solid rgba(226, 232, 240, 0.6);
+        }
+        .gallery-preview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .gallery-preview-img {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .gallery-preview-placeholder {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            font-size: 2rem;
+        }
+
+        @media (max-width: 767.98px) {
+            .horizontal-scroll-mobile {
+                flex-wrap: nowrap !important;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scroll-snap-type: x mandatory;
+                padding-bottom: 20px;
+                margin-left: -12px;
+                margin-right: -12px;
+                padding-left: 12px;
+                padding-right: 12px;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .horizontal-scroll-mobile::-webkit-scrollbar {
+                display: none;
+            }
+            .horizontal-scroll-mobile > .col-md-4 {
+                flex: 0 0 85% !important;
+                width: 85% !important;
+                max-width: 85% !important;
+                scroll-snap-align: start;
+            }
+        }
+
         /* Footer */
         footer {
             background: var(--primary-navy);
@@ -544,6 +599,49 @@
         <div class="text-center py-5 bg-white rounded-4 border" th:if="${notices == null or #lists.isEmpty(notices)}">
             <i class="bi bi-inbox text-muted display-5 mb-3 d-block"></i>
             <p class="text-secondary mb-0">현재 등록된 성당 소식이 없습니다.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Gallery Preview Section -->
+<section id="gallery-preview" class="section-padding" style="background: #FFFFFF; border-top: 1px solid #F1F5F9;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <span class="section-sublabel">Parish Gallery</span>
+                <h2 class="section-title mb-0">본당 갤러리</h2>
+            </div>
+            <a href="/gallery" class="btn btn-outline-dark rounded-pill px-4 btn-sm">전체보기 <i class="bi bi-images"></i></a>
+        </div>
+
+        <div class="row g-4 horizontal-scroll-mobile" th:if="${recentGalleries != null and not #lists.isEmpty(recentGalleries)}">
+            <div class="col-md-4" th:each="gallery : ${recentGalleries}">
+                <a th:href="@{/gallery/{id}(id=${gallery.id})}" class="text-decoration-none">
+                    <div class="gallery-preview-card">
+                        <th:block th:if="${gallery.attachments != null and gallery.attachments.size() > 0}">
+                            <img th:src="${gallery.attachments[0].filePath}" alt="갤러리 썸네일" class="gallery-preview-img">
+                        </th:block>
+                        <th:block th:unless="${gallery.attachments != null and gallery.attachments.size() > 0}">
+                            <div class="gallery-preview-placeholder">
+                                <i class="bi bi-image"></i>
+                            </div>
+                        </th:block>
+                        <div class="p-3">
+                            <h5 class="fw-bold text-dark mb-2 text-truncate" th:text="${gallery.title}">행사 제목</h5>
+                            <div class="d-flex justify-content-between align-items-center small text-muted">
+                                <span><i class="bi bi-calendar3"></i> <span th:text="${#temporals.format(gallery.createdAt, 'yyyy.MM.dd')}">2026.07.28</span></span>
+                                <span th:if="${gallery.attachments != null}"><i class="bi bi-images"></i> <span th:text="${gallery.attachments.size()}"></span></span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="text-center py-5 bg-light rounded-4 border" th:if="${recentGalleries == null or #lists.isEmpty(recentGalleries)}">
+            <i class="bi bi-images text-muted display-5 mb-3 d-block"></i>
+            <p class="text-secondary mb-0">현재 등록된 갤러리가 없습니다.</p>
         </div>
     </div>
 </section>

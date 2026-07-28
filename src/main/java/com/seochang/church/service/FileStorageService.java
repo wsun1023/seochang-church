@@ -28,8 +28,7 @@ public class FileStorageService {
         }
     }
 
-    public String store(MultipartFile file) {
-        init();
+    public String store(MultipartFile file, String module) {
         try {
             if (file.isEmpty()) {
                 throw new RuntimeException("Failed to store empty file.");
@@ -46,28 +45,22 @@ public class FileStorageService {
                 extension = originalFileName.substring(originalFileName.lastIndexOf("."));
             }
             
-            String storedFileName = UUID.randomUUID().toString() + extension;
+            String subDir = module + "/" + (isImage ? "img" : "file");
+            String storedFileName = subDir + "/" + UUID.randomUUID().toString() + extension;
             
             Path destinationFile = Paths.get(uploadDir).resolve(Paths.get(storedFileName))
                     .normalize().toAbsolutePath();
                     
-            if (!destinationFile.getParent().equals(Paths.get(uploadDir).toAbsolutePath())) {
+            if (!destinationFile.getParent().startsWith(Paths.get(uploadDir).normalize().toAbsolutePath())) {
                 throw new RuntimeException("Cannot store file outside current directory.");
             }
             
-            if (isImage) {
-                Thumbnails.of(file.getInputStream())
-                        .size(1280, 1280)
-                        .outputFormat("jpg")
-                        .outputQuality(0.85)
-                        .useExifOrientation(true)
-                        .toFile(destinationFile.toFile());
-            } else {
-                file.transferTo(destinationFile.toFile());
-            }
+            Files.createDirectories(destinationFile.getParent());
+            
+            // 프론트엔드에서 이미 압축 및 최적화를 수행하므로 원본 그대로 저장
+            file.transferTo(destinationFile.toFile());
             
             return storedFileName;
-            
         } catch (IOException e) {
             throw new RuntimeException("Failed to store file.", e);
         }

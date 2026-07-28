@@ -120,7 +120,7 @@ public class NoticeController {
         if (files != null) {
             for (org.springframework.web.multipart.MultipartFile file : files) {
                 if (!file.isEmpty()) {
-                    String storedName = fileStorageService.store(file);
+                    String storedName = fileStorageService.store(file, "notice");
                     com.seochang.church.entity.NoticeAttachment attachment = new com.seochang.church.entity.NoticeAttachment();
                     attachment.setOriginalFileName(file.getOriginalFilename());
                     attachment.setStoredFileName(storedName);

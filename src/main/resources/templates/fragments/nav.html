@@ -8,6 +8,9 @@
 <nav th:fragment="nav" class="navbar navbar-expand-lg fixed-top custom-navbar navbar-dark">
     <style>
         @media (max-width: 991.98px) {
+            .custom-navbar {
+                background: rgba(15, 23, 42, 1) !important;
+            }
             .mobile-nav-grid {
                 flex-direction: row !important;
                 flex-wrap: wrap;
@@ -98,13 +101,14 @@
                 
                 <!-- 성당소식 드롭다운 -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" th:classappend="${currentMenu == 'notices'} ? 'active' : ''" href="#" id="noticeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" th:classappend="${currentMenu == 'notices' or currentMenu == 'gallery'} ? 'active' : ''" href="#" id="noticeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         성당소식
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark border-0 shadow-lg custom-dropdown-menu" aria-labelledby="noticeDropdown">
                         <li><a class="dropdown-item" href="/notices?category=bulletin">주보</a></li>
                         <li><a class="dropdown-item" href="/notices?category=notice">공지사항</a></li>
                         <li><a class="dropdown-item" href="/notices?category=status">성당현황공개</a></li>
+                        <li><a class="dropdown-item" href="/gallery">본당 갤러리</a></li>
                     </ul>
                 </li>
                 
