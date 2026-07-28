@@ -39,6 +39,15 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Board> getAdminBoards(int page, String keyword) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10, org.springframework.data.domain.Sort.by("createdAt").descending());
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return boardRepository.findByKeyword(keyword.trim(), pageable);
+        }
+        return boardRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
     public Board getBoard(Long id) {
         return boardRepository.findById(id).orElse(null);
     }
@@ -66,5 +75,15 @@ public class BoardService {
     @Transactional(readOnly = true)
     public org.springframework.data.domain.Page<Board> getAllBoards(org.springframework.data.domain.Pageable pageable) {
         return boardRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public long getTotalBoardCount() {
+        return boardRepository.countByDelYn("N");
+    }
+
+    @Transactional(readOnly = true)
+    public long getBoardCountByCategory(String category) {
+        return boardRepository.countByDelYnAndCategory("N", category);
     }
 }

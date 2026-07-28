@@ -19,4 +19,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @org.springframework.data.jpa.repository.Query("SELECT u FROM User u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.baptismalName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     org.springframework.data.domain.Page<User> searchUsers(@org.springframework.data.repository.query.Param("keyword") String keyword, org.springframework.data.domain.Pageable pageable);
+
+    long countByDelYn(String delYn);
+
+    long countByApprovedFalseAndDelYn(String delYn);
 }

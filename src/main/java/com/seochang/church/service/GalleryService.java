@@ -48,4 +48,14 @@ public class GalleryService {
             galleryRepository.save(gallery);
         }
     }
+
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Gallery> getAllGalleries(org.springframework.data.domain.Pageable pageable) {
+        return galleryRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public long getTotalGalleryCount() {
+        return galleryRepository.countByDelYn("N");
+    }
 }

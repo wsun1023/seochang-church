@@ -15,4 +15,6 @@ public interface GalleryRepository extends JpaRepository<Gallery, Long> {
     
     @Query("SELECT g FROM Gallery g WHERE g.delYn = 'N' ORDER BY g.createdAt DESC")
     List<Gallery> findTop3ByOrderByCreatedAtDesc(Pageable pageable);
+
+    long countByDelYn(String delYn);
 }

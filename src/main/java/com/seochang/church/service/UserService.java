@@ -83,4 +83,14 @@ public class UserService {
     public User getUserById(Long id) {
         return userRepository.findById(id).orElse(null);
     }
+
+    @Transactional(readOnly = true)
+    public long getTotalUserCount() {
+        return userRepository.countByDelYn("N");
+    }
+
+    @Transactional(readOnly = true)
+    public long getPendingApprovalCount() {
+        return userRepository.countByApprovedFalseAndDelYn("N");
+    }
 }

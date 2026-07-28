@@ -11,21 +11,53 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import com.seochang.church.entity.Banner;
+import com.seochang.church.entity.Gallery;
+import com.seochang.church.entity.Notice;
+import com.seochang.church.repository.NoticeRepository;
+import com.seochang.church.service.GalleryService;
+import com.seochang.church.service.BannerService;
+import com.seochang.church.service.FileStorageService;
+import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
     private final UserService userService;
     private final BoardService boardService;
+    private final NoticeRepository noticeRepository;
+    private final GalleryService galleryService;
+    private final BannerService bannerService;
+    private final FileStorageService fileStorageService;
 
-    public AdminController(UserService userService, BoardService boardService) {
+    public AdminController(UserService userService, BoardService boardService, NoticeRepository noticeRepository, GalleryService galleryService, BannerService bannerService, FileStorageService fileStorageService) {
         this.userService = userService;
         this.boardService = boardService;
+        this.noticeRepository = noticeRepository;
+        this.galleryService = galleryService;
+        this.bannerService = bannerService;
+        this.fileStorageService = fileStorageService;
+    }
+
+    @ModelAttribute
+    public void addAttributes(HttpServletRequest request, Model model) {
+        model.addAttribute("requestURI", request.getRequestURI());
     }
 
     @GetMapping
     public String dashboard(Model model) {
-        // 간단한 통계용
+        model.addAttribute("totalUsers", userService.getTotalUserCount());
+        model.addAttribute("pendingUsers", userService.getPendingApprovalCount());
+        model.addAttribute("totalBoards", boardService.getTotalBoardCount());
+        model.addAttribute("totalNotices", noticeRepository.count());
+        model.addAttribute("totalGalleries", galleryService.getTotalGalleryCount());
+        
+        PageRequest pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
+        model.addAttribute("recentUsers", userService.getAllUsers(pageable).getContent());
+        
         return "admin/dashboard";
     }
 
@@ -70,13 +102,14 @@ public class AdminController {
 
     @GetMapping("/boards")
     public String boards(@RequestParam(value = "page", defaultValue = "0") int page,
+                         @RequestParam(value = "keyword", required = false) String keyword,
                          Model model) {
-        PageRequest pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
-        Page<Board> boardPage = boardService.getAllBoards(pageable);
+        Page<Board> boardPage = boardService.getAdminBoards(page, keyword);
         
         model.addAttribute("boards", boardPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", boardPage.getTotalPages());
+        model.addAttribute("keyword", keyword);
         
         return "admin/boards";
     }
@@ -85,5 +118,80 @@ public class AdminController {
     public String deleteBoard(@PathVariable("id") Long id) {
         boardService.deleteBoard(id);
         return "redirect:/admin/boards";
+    }
+
+    @GetMapping("/notices")
+    public String notices(@RequestParam(value = "page", defaultValue = "0") int page,
+                         @RequestParam(value = "keyword", required = false) String keyword,
+                         Model model) {
+        PageRequest pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+        Page<Notice> noticePage;
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            noticePage = noticeRepository.findByKeyword(keyword.trim(), pageable);
+        } else {
+            noticePage = noticeRepository.findAll(pageable);
+        }
+        
+        model.addAttribute("notices", noticePage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", noticePage.getTotalPages());
+        model.addAttribute("keyword", keyword);
+        
+        return "admin/notices";
+    }
+
+    @PostMapping("/notices/{id}/delete")
+    public String deleteNotice(@PathVariable("id") Long id) {
+        noticeRepository.deleteById(id);
+        return "redirect:/admin/notices";
+    }
+
+    @GetMapping("/galleries")
+    public String galleries(@RequestParam(value = "page", defaultValue = "0") int page,
+                         Model model) {
+        PageRequest pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+        Page<Gallery> galleryPage = galleryService.getAllGalleries(pageable);
+        
+        model.addAttribute("galleries", galleryPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", galleryPage.getTotalPages());
+        
+        return "admin/galleries";
+    }
+
+    @PostMapping("/galleries/{id}/delete")
+    public String deleteGallery(@PathVariable("id") Long id) {
+        galleryService.deleteGallery(id);
+        return "redirect:/admin/galleries";
+    }
+
+    @GetMapping("/banners")
+    public String banners(Model model) {
+        model.addAttribute("banners", bannerService.getAllBanners());
+        return "admin/banners";
+    }
+
+    @PostMapping("/banners/add")
+    public String addBanner(@ModelAttribute Banner banner, @RequestParam("imageFile") MultipartFile imageFile) throws IOException {
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String savedPath = fileStorageService.store(imageFile, "banner");
+            // prepend /uploads/ to the savedPath so it can be accessed from frontend
+            banner.setImageUrl("/uploads/" + savedPath.replace("\\", "/"));
+        }
+        bannerService.saveBanner(banner);
+        return "redirect:/admin/banners";
+    }
+
+    @PostMapping("/banners/{id}/toggle")
+    public String toggleBanner(@PathVariable("id") Long id) {
+        bannerService.toggleActive(id);
+        return "redirect:/admin/banners";
+    }
+
+    @PostMapping("/banners/{id}/delete")
+    public String deleteBanner(@PathVariable("id") Long id) {
+        bannerService.deleteBanner(id);
+        return "redirect:/admin/banners";
     }
 }

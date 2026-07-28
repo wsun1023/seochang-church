@@ -3,76 +3,135 @@
 <head><title>회원 관리</title></head>
 <body>
 <div th:fragment="content">
-    <h2 class="mb-4"><i class="bi bi-people"></i> 회원 관리</h2>
+    <div class="page-header">
+        <h2 class="page-title"><i class="bi bi-people-fill text-warning me-2"></i> 회원 관리</h2>
+        
+        <!-- 검색 폼 -->
+        <form class="d-flex" action="/admin/users" method="get" style="width: 300px;">
+            <div class="input-group">
+                <input class="form-control" type="search" name="keyword" placeholder="이름 또는 아이디 검색" aria-label="Search" th:value="${keyword}">
+                <button class="btn btn-outline-secondary bg-white" type="submit"><i class="bi bi-search"></i></button>
+            </div>
+        </form>
+    </div>
     
-    <!-- 검색 폼 -->
-    <form class="d-flex mb-4" action="/admin/users" method="get" style="max-width: 400px;">
-        <input class="form-control me-2" type="search" name="keyword" placeholder="이름 또는 아이디 검색" aria-label="Search" th:value="${keyword}">
-        <button class="btn btn-outline-secondary" type="submit">검색</button>
-    </form>
-    
-    <div class="table-responsive bg-white rounded shadow-sm p-3">
-        <table class="table table-hover align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>아이디</th>
-                    <th>이름(세례명)</th>
-                    <th>가입일</th>
-                    <th>상태</th>
-                    <th>권한</th>
-                    <th>관리</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="user : ${users}" th:classappend="${user.delYn == 'Y'} ? 'table-secondary text-muted' : ''">
-                    <td th:text="${user.id}">1</td>
-                    <td th:text="${user.username}">user1</td>
-                    <td th:text="${user.displayName}">홍길동</td>
-                    <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd')}">2023-01-01</td>
-                    <td>
-                        <span th:if="${user.delYn == 'Y'}" class="badge bg-secondary">탈퇴/삭제됨</span>
-                        <span th:if="${user.delYn == 'N' && user.approved}" class="badge bg-success">승인됨</span>
-                        <span th:if="${user.delYn == 'N' && !user.approved}" class="badge bg-warning text-dark">승인 대기</span>
-                    </td>
-                    <td>
-                        <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" class="d-flex">
-                            <select name="role" class="form-select form-select-sm me-2" style="width: auto;">
-                                <option value="USER" th:selected="${user.role == 'USER'}">일반</option>
-                                <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">관리자</option>
-                            </select>
-                            <button type="submit" class="btn btn-sm btn-outline-primary">변경</button>
-                        </form>
-                        <span th:if="${user.delYn == 'Y'}" th:text="${user.role}"></span>
-                    </td>
-                    <td>
-                        <form th:if="${user.delYn == 'N' && !user.approved}" th:action="@{/admin/users/{id}/approve(id=${user.id})}" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-success">승인</button>
-                        </form>
-                        <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" class="d-inline" onsubmit="return confirm('정말로 이 회원을 강제 탈퇴 처리하시겠습니까?');">
-                            <button type="submit" class="btn btn-sm btn-danger">삭제</button>
-                        </form>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(users)}">
-                    <td colspan="7" class="text-center py-4">조회된 회원이 없습니다.</td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="admin-card p-md-4 p-2 bg-transparent bg-md-white border-0 border-md shadow-none shadow-md-sm">
+        <div class="table-responsive d-none d-md-block bg-white rounded-3 border overflow-hidden">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="py-3">이름(세례명)</th>
+                        <th class="py-3">아이디</th>
+                        <th class="py-3">가입일</th>
+                        <th class="py-3 text-center">상태</th>
+                        <th class="py-3 text-center">권한 변경</th>
+                        <th class="py-3 text-end">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user : ${users}" th:classappend="${user.delYn == 'Y'} ? 'opacity-50' : ''">
+                        <td>
+                            <span class="fw-bold text-dark" th:text="${user.name}">홍길동</span>
+                            <span class="text-muted ms-1 small" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
+                        </td>
+                        <td th:text="${user.username}">user1</td>
+                        <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}">2026-07-28</td>
+                        <td class="text-center">
+                            <span th:if="${user.delYn == 'Y'}" class="badge bg-secondary">삭제됨</span>
+                            <span th:if="${user.delYn == 'N' && user.approved}" class="badge bg-success">승인됨</span>
+                            <span th:if="${user.delYn == 'N' && !user.approved}" class="badge bg-danger">대기중</span>
+                        </td>
+                        <td class="text-center">
+                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" class="d-inline-flex align-items-center">
+                                <select name="role" class="form-select form-select-sm me-2" style="width: 100px;">
+                                    <option value="USER" th:selected="${user.role == 'USER'}">일반</option>
+                                    <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">관리자</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-2">변경</button>
+                            </form>
+                            <span th:if="${user.delYn == 'Y'}" class="text-muted small" th:text="${user.role}"></span>
+                        </td>
+                        <td class="text-end">
+                            <form th:if="${user.delYn == 'N' && !user.approved}" th:action="@{/admin/users/{id}/approve(id=${user.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check-circle me-1"></i>승인</button>
+                            </form>
+                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" class="d-inline" onsubmit="return confirm('정말로 이 회원을 강제 탈퇴 처리하시겠습니까?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger ms-1"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(users)}">
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-person-x fs-1 d-block mb-3 opacity-50"></i>
+                            조회된 회원이 없습니다.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Mobile Card View -->
+        <div class="d-block d-md-none">
+            <div th:each="user : ${users}" class="card mb-3 border-0 shadow-sm rounded-4" th:classappend="${user.delYn == 'Y'} ? 'opacity-50' : ''">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-0 fw-bold d-inline-block">
+                                <span th:text="${user.name}">홍길동</span>
+                            </h6>
+                            <span class="text-muted small ms-1" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
+                            <div class="text-muted small mt-1"><i class="bi bi-person-badge me-1"></i><span th:text="${user.username}">아이디</span></div>
+                        </div>
+                        <div>
+                            <span th:if="${user.delYn == 'Y'}" class="badge bg-secondary">삭제됨</span>
+                            <span th:if="${user.delYn == 'N' && user.approved}" class="badge bg-success">승인됨</span>
+                            <span th:if="${user.delYn == 'N' && !user.approved}" class="badge bg-danger">대기중</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-end mt-3 border-top pt-2">
+                        <div>
+                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" class="d-flex align-items-center">
+                                <select name="role" class="form-select form-select-sm me-1" style="width: 80px; font-size: 0.8rem; padding: 2px 5px;">
+                                    <option value="USER" th:selected="${user.role == 'USER'}">일반</option>
+                                    <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">관리자</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary" style="font-size: 0.75rem; padding: 2px 8px;">변경</button>
+                            </form>
+                            <span th:if="${user.delYn == 'Y'}" class="text-muted small" th:text="${user.role}"></span>
+                        </div>
+                        
+                        <div class="text-end">
+                            <form th:if="${user.delYn == 'N' && !user.approved}" th:action="@{/admin/users/{id}/approve(id=${user.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-success rounded-pill" style="font-size: 0.8rem; padding: 2px 10px;"><i class="bi bi-check-circle me-1"></i>승인</button>
+                            </form>
+                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" class="d-inline ms-1" onsubmit="return confirm('정말로 이 회원을 강제 탈퇴 처리하시겠습니까?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div th:if="${#lists.isEmpty(users)}" class="text-center py-5 text-muted bg-white rounded-4 shadow-sm border-0">
+                <i class="bi bi-person-x fs-1 d-block mb-3 opacity-50"></i>
+                조회된 회원이 없습니다.
+            </div>
+        </div>
     </div>
 
     <!-- 페이징 -->
     <nav class="mt-4" th:if="${totalPages > 0}">
         <ul class="pagination justify-content-center">
             <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                <a class="page-link" th:href="@{/admin/users(page=${currentPage - 1}, keyword=${keyword})}">이전</a>
+                <a class="page-link border-0 text-dark" th:href="@{/admin/users(page=${currentPage - 1}, keyword=${keyword})}"><i class="bi bi-chevron-left"></i></a>
             </li>
             <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
                 th:classappend="${i == currentPage} ? 'active'">
-                <a class="page-link" th:href="@{/admin/users(page=${i}, keyword=${keyword})}" th:text="${i + 1}">1</a>
+                <a class="page-link border-0 rounded-circle mx-1" th:classappend="${i == currentPage} ? 'bg-primary text-white' : 'text-dark'" th:href="@{/admin/users(page=${i}, keyword=${keyword})}" th:text="${i + 1}">1</a>
             </li>
             <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                <a class="page-link" th:href="@{/admin/users(page=${currentPage + 1}, keyword=${keyword})}">다음</a>
+                <a class="page-link border-0 text-dark" th:href="@{/admin/users(page=${currentPage + 1}, keyword=${keyword})}"><i class="bi bi-chevron-right"></i></a>
             </li>
         </ul>
     </nav>

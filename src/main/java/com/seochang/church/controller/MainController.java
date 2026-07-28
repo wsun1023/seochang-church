@@ -22,6 +22,9 @@ public class MainController {
     @Autowired
     private GalleryRepository galleryRepository;
 
+    @Autowired
+    private com.seochang.church.service.BannerService bannerService;
+
     @GetMapping("/")
     public String index(Model model) {
         model.addAttribute("currentMenu", "home");
@@ -30,6 +33,10 @@ public class MainController {
         // 최신 갤러리 3건 조회
         model.addAttribute("recentGalleries", galleryRepository.findTop3ByOrderByCreatedAtDesc(PageRequest.of(0, 3)));
             
+        // 배너 및 팝업 조회
+        model.addAttribute("activeBanners", bannerService.getActiveBanners());
+        model.addAttribute("activePopups", bannerService.getActivePopups());
+        
         return "main";
     }
 

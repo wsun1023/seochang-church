@@ -21,4 +21,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
 
     @Query("SELECT n FROM Notice n WHERE LOWER(n.title) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Notice> findByTitleKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT n FROM Notice n WHERE LOWER(n.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(n.content) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Notice> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
 }

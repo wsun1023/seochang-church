@@ -442,6 +442,31 @@
 </head>
 <body>
 
+<!-- Dynamic Popups -->
+<div th:if="${activePopups != null and !#lists.isEmpty(activePopups)}">
+    <div th:each="popup, iterStat : ${activePopups}" th:if="${popup.currentlyDisplayable}"
+         class="modal fade popup-modal" th:id="'popupModal' + ${iterStat.index}" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 bg-transparent">
+                <div class="modal-body p-0 position-relative">
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-2 bg-white rounded-circle shadow-sm" data-bs-dismiss="modal" aria-label="Close" style="z-index: 10; opacity: 0.9; padding: 0.5rem;"></button>
+                    <a th:if="${popup.linkUrl != null and !popup.linkUrl.isEmpty()}" th:href="${popup.linkUrl}" target="_blank">
+                        <img th:src="${popup.imageUrl}" class="img-fluid rounded shadow-lg" th:alt="${popup.title}">
+                    </a>
+                    <img th:unless="${popup.linkUrl != null and !popup.linkUrl.isEmpty()}" th:src="${popup.imageUrl}" class="img-fluid rounded shadow-lg" th:alt="${popup.title}">
+                </div>
+                <div class="modal-footer border-0 p-2 bg-dark rounded-bottom d-flex justify-content-between">
+                    <div class="form-check text-white m-0">
+                        <input class="form-check-input" type="checkbox" th:id="'noShowToday' + ${iterStat.index}" th:data-popup-id="'popupModal' + ${iterStat.index}">
+                        <label class="form-check-label small" th:for="'noShowToday' + ${iterStat.index}">오늘 하루 보지 않기</label>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-light border-0" data-bs-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Navigation -->
 <div th:replace="~{fragments/nav :: nav}"></div>
 
@@ -458,24 +483,26 @@
     </div>
 
     <div class="carousel-indicators">
-        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+        <!-- Dynamic Indicators -->
+        <th:block th:if="${activeBanners != null and !#lists.isEmpty(activeBanners)}">
+            <button th:each="banner, iterStat : ${activeBanners}" type="button" data-bs-target="#heroCarousel" th:data-bs-slide-to="${iterStat.index}" th:class="${iterStat.index == 0} ? 'active' : ''" th:aria-current="${iterStat.index == 0} ? 'true' : 'false'" th:aria-label="'Slide ' + ${iterStat.index + 1}"></button>
+        </th:block>
+        <!-- Static Indicators (Fallback) -->
+        <th:block th:unless="${activeBanners != null and !#lists.isEmpty(activeBanners)}">
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        </th:block>
     </div>
     <div class="carousel-inner">
-        <!-- Slide 1: 성당 외관 -->
-        <div class="carousel-item active" style="background-image: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url('/images/slide1.jpg');">
-        </div>
-        <!-- Slide 2: 대성전 내부 -->
-        <div class="carousel-item" style="background-image: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url('/images/slide2.jpg');">
-        </div>
-        <!-- Slide 3: 성당 항공뷰 -->
-        <div class="carousel-item" style="background-image: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url('/images/slide3.jpg');">
-        </div>
-        <!-- Slide 4: 미사 전경 -->
-        <div class="carousel-item" style="background-image: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url('/images/slide4.jpg');">
-        </div>
+        <!-- Dynamic Banners -->
+        <th:block th:if="${activeBanners != null and !#lists.isEmpty(activeBanners)}">
+            <div th:each="banner, iterStat : ${activeBanners}" class="carousel-item" th:classappend="${iterStat.index == 0} ? 'active' : ''" th:style="'background-image: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url(' + ${banner.imageUrl} + '); cursor: pointer;'" th:onclick="${banner.linkUrl != null and !banner.linkUrl.isEmpty()} ? 'window.open(\'' + ${banner.linkUrl} + '\', \'_blank\')' : ''">
+            </div>
+        </th:block>
+        <!-- Static Banners (Fallback) -->
+        <th:block th:unless="${activeBanners != null and !#lists.isEmpty(activeBanners)}">
+            <div class="carousel-item active" style="background-color: #334155;">
+            </div>
+        </th:block>
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -726,5 +753,42 @@
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Handle Popups
+        const popups = document.querySelectorAll('.popup-modal');
+        popups.forEach(function(popup) {
+            const popupId = popup.id;
+            
+            // Check if hidden today
+            const hideUntil = localStorage.getItem('hide_' + popupId);
+            const now = new Date().getTime();
+            
+            if (!hideUntil || now > parseInt(hideUntil)) {
+                // Show modal
+                const modal = new bootstrap.Modal(popup);
+                modal.show();
+            }
+            
+            // Handle 'Do not show today' checkbox
+            const checkbox = popup.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        const tomorrow = new Date();
+                        tomorrow.setHours(24, 0, 0, 0); // Next midnight
+                        localStorage.setItem('hide_' + popupId, tomorrow.getTime());
+                        
+                        // Close modal after checking
+                        const modalInstance = bootstrap.Modal.getInstance(popup);
+                        if (modalInstance) {
+                            setTimeout(() => modalInstance.hide(), 300);
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
 </body>
 </html>

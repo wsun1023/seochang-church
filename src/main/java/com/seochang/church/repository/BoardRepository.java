@@ -23,4 +23,11 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     @Query("SELECT b FROM Board b WHERE b.delYn = 'N' AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.writer) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Board> findActiveByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT b FROM Board b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.writer) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Board> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    long countByDelYn(String delYn);
+
+    long countByDelYnAndCategory(String delYn, String category);
 }

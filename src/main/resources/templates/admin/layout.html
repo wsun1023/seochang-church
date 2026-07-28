@@ -5,74 +5,255 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 페이지 - 서창동성당</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-navy: #0F172A;
+            --sidebar-hover: #1E293B;
+            --accent-gold: #D97706;
+            --accent-gold-light: #F59E0B;
+            --bg-light: #F8FAFC;
+            --text-main: #334155;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+        }
+
         body {
-            background-color: #f8f9fa;
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            overflow-x: hidden;
         }
+
+        /* Sidebar Styling */
         .sidebar {
-            min-height: 100vh;
-            background-color: #343a40;
+            background: linear-gradient(180deg, var(--primary-navy), #0B1120);
             color: white;
-            padding-top: 20px;
+            padding: 0;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.05);
         }
-        .sidebar a {
-            color: #adb5bd;
-            text-decoration: none;
-            padding: 10px 20px;
-            display: block;
-        }
-        .sidebar a:hover, .sidebar a.active {
-            color: white;
-            background-color: #495057;
-        }
-        .admin-content {
-            padding: 30px;
-        }
-        @media (max-width: 767.98px) {
+        
+        @media (min-width: 992px) {
             .sidebar {
-                min-height: auto;
-                padding: 15px;
+                min-height: 100vh;
+                position: sticky;
+                top: 0;
             }
-            .sidebar a {
-                display: inline-block;
-                padding: 6px 12px;
-                margin-right: 4px;
-                margin-bottom: 4px;
-                border-radius: 6px;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }
+        
+        .sidebar-header h4 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #F8FAFC;
+            letter-spacing: -0.5px;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .sidebar-menu a {
+            color: #94A3B8;
+            text-decoration: none;
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-menu a i {
+            font-size: 1.2rem;
+            margin-right: 12px;
+            color: #64748B;
+            transition: color 0.3s ease;
+        }
+
+        .sidebar-menu a:hover {
+            color: white;
+            background-color: var(--sidebar-hover);
+        }
+
+        .sidebar-menu a:hover i {
+            color: var(--accent-gold-light);
+        }
+
+        /* Thymeleaf Active Link Logic will use exact URI */
+        .sidebar-menu a.active {
+            color: white;
+            background-color: var(--sidebar-hover);
+            border-left: 4px solid var(--accent-gold);
+            font-weight: 600;
+        }
+        
+        .sidebar-menu a.active i {
+            color: var(--accent-gold);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-footer a {
+            display: block;
+            text-align: center;
+            background: rgba(255,255,255,0.05);
+            color: #CBD5E1;
+            padding: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .sidebar-footer a:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        /* Main Content */
+        .admin-content {
+            padding: 30px 40px;
+            min-height: 100vh;
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .page-title {
+            font-weight: 700;
+            color: var(--primary-navy);
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        /* Common Card Style */
+        .admin-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                background: var(--primary-navy); /* Solid background for offcanvas */
+                width: 280px;
+                max-width: 80vw;
             }
-            .sidebar .mt-auto {
-                margin-top: 10px !important;
+            .sidebar-menu {
+                padding: 10px;
+            }
+            .sidebar-menu a {
+                padding: 12px 20px;
+                border-radius: 8px;
+                margin-bottom: 5px;
+                border-left: none;
+            }
+            .sidebar-menu a.active {
+                background: var(--sidebar-hover);
+                border-left: 4px solid var(--accent-gold);
+            }
+            .sidebar-footer {
+                margin-top: auto;
+                padding-bottom: 20px;
             }
             .admin-content {
-                padding: 15px 10px;
+                padding: 20px 15px;
+                min-height: calc(100vh - 65px); /* Minus mobile header height */
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-2 sidebar d-flex flex-column">
-                <h4 class="text-center mb-4"><i class="bi bi-gear-fill text-warning"></i> 관리자</h4>
-                <a href="/admin" class="active"><i class="bi bi-speedometer2"></i> 대시보드</a>
-                <a href="/admin/users"><i class="bi bi-people"></i> 회원 관리</a>
-                <a href="/admin/boards"><i class="bi bi-file-earmark-text"></i> 게시글 관리</a>
-                <div class="mt-auto mb-3">
-                    <a href="/"><i class="bi bi-box-arrow-left"></i> 홈으로 돌아가기</a>
+    <!-- Mobile Header (Visible only on < lg screens) -->
+    <div class="d-lg-none bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm">
+        <h5 class="m-0 fw-bold"><i class="bi bi-shield-lock-fill text-warning me-2"></i>관리자 센터</h5>
+        <button class="btn btn-outline-light border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+    </div>
+
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Sidebar (Offcanvas on mobile, static col-lg-2 on desktop) -->
+            <div class="col-lg-2 sidebar d-flex flex-column offcanvas-lg offcanvas-start" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
+                <div class="offcanvas-header d-lg-none border-bottom border-secondary border-opacity-25 pb-3 mb-2 px-4 pt-4">
+                    <h5 class="offcanvas-title fw-bold text-white" id="adminSidebarLabel"><i class="bi bi-shield-lock-fill text-warning me-2"></i>관리자 메뉴</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar" aria-label="Close"></button>
+                </div>
+                
+                <div class="sidebar-header d-none d-lg-block">
+                    <h4><i class="bi bi-shield-lock-fill text-warning me-2"></i>관리자 센터</h4>
+                </div>
+                
+                <div class="sidebar-menu">
+                    <!-- Helper variables to set active class -->
+                    <a href="/admin" th:classappend="${requestURI == '/admin' ? 'active' : ''}">
+                        <i class="bi bi-grid-1x2-fill"></i> 대시보드
+                    </a>
+                    <a href="/admin/users" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/users') ? 'active' : ''}">
+                        <i class="bi bi-people-fill"></i> 회원 관리
+                    </a>
+                    <a href="/admin/boards" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/boards') ? 'active' : ''}">
+                        <i class="bi bi-chat-square-text-fill"></i> 자유게시판 관리
+                    </a>
+                    <a href="/admin/notices" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/notices') ? 'active' : ''}">
+                        <i class="bi bi-megaphone-fill"></i> 성당소식 관리
+                    </a>
+                    <a href="/admin/galleries" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/galleries') ? 'active' : ''}">
+                        <i class="bi bi-images"></i> 갤러리 관리
+                    </a>
+                    <a href="/admin/banners" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/banners') ? 'active' : ''}">
+                        <i class="bi bi-aspect-ratio-fill"></i> 팝업/배너 관리
+                    </a>
+                </div>
+                
+                <div class="sidebar-footer">
+                    <a href="/"><i class="bi bi-house-door-fill me-1"></i> 성당 홈으로 가기</a>
                 </div>
             </div>
             
             <!-- Main Content -->
-            <div class="col-md-10 admin-content">
+            <div class="col-lg-10 admin-content bg-light">
                 <div th:replace="${content}"></div>
             </div>
         </div>
     </div>
     
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
