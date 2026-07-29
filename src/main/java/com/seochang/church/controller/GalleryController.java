@@ -63,14 +63,7 @@ public class GalleryController {
     }
 
     @GetMapping("/new")
-    public String createForm(HttpSession session, Model model) {
-        User loginUser = (User) session.getAttribute("loginUser");
-        if (loginUser == null || !"ADMIN".equals(loginUser.getRole())) {
-            model.addAttribute("message", "관리자만 접근할 수 있습니다.");
-            model.addAttribute("redirectUri", "/gallery");
-            return "alert";
-        }
-        
+    public String createForm(Model model) {
         Gallery gallery = new Gallery();
         model.addAttribute("gallery", gallery);
         model.addAttribute("currentMenu", "gallery");
@@ -82,11 +75,6 @@ public class GalleryController {
                          @RequestParam(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
                          HttpSession session, Model model) {
         User loginUser = (User) session.getAttribute("loginUser");
-        if (loginUser == null || !"ADMIN".equals(loginUser.getRole())) {
-            model.addAttribute("message", "관리자만 작성할 수 있습니다.");
-            model.addAttribute("redirectUri", "/gallery");
-            return "alert";
-        }
         
         long validImages = imageFiles != null ? imageFiles.stream().filter(f -> !f.isEmpty()).count() : 0;
         if (validImages == 0) {
@@ -110,14 +98,7 @@ public class GalleryController {
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, HttpSession session, Model model) {
-        User loginUser = (User) session.getAttribute("loginUser");
-        if (loginUser == null || !"ADMIN".equals(loginUser.getRole())) {
-            model.addAttribute("message", "관리자만 접근할 수 있습니다.");
-            model.addAttribute("redirectUri", "/gallery");
-            return "alert";
-        }
-
+    public String editForm(@PathVariable Long id, Model model) {
         Gallery gallery = galleryService.getGallery(id);
         if (gallery == null || "Y".equals(gallery.getDelYn())) {
             return "redirect:/gallery";
@@ -131,14 +112,7 @@ public class GalleryController {
     @PostMapping("/{id}/edit")
     public String edit(@PathVariable Long id, @ModelAttribute Gallery updatedGallery, 
                        @RequestParam(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
-                       HttpSession session, Model model) {
-        User loginUser = (User) session.getAttribute("loginUser");
-        if (loginUser == null || !"ADMIN".equals(loginUser.getRole())) {
-            model.addAttribute("message", "관리자만 수정할 수 있습니다.");
-            model.addAttribute("redirectUri", "/gallery");
-            return "alert";
-        }
-
+                       Model model) {
         Gallery gallery = galleryService.getGallery(id);
         if (gallery == null || "Y".equals(gallery.getDelYn())) {
             return "redirect:/gallery";
@@ -155,14 +129,7 @@ public class GalleryController {
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id, HttpSession session, Model model) {
-        User loginUser = (User) session.getAttribute("loginUser");
-        if (loginUser == null || !"ADMIN".equals(loginUser.getRole())) {
-            model.addAttribute("message", "관리자만 삭제할 수 있습니다.");
-            model.addAttribute("redirectUri", "/gallery");
-            return "alert";
-        }
-
+    public String delete(@PathVariable Long id) {
         Gallery gallery = galleryService.getGallery(id);
         if (gallery != null) {
             galleryService.deleteGallery(id);

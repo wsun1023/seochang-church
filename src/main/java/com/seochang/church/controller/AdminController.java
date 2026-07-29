@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import com.seochang.church.entity.Banner;
 import com.seochang.church.entity.Gallery;
 import com.seochang.church.entity.Notice;
-import com.seochang.church.repository.NoticeRepository;
+import com.seochang.church.service.NoticeService;
 import com.seochang.church.service.GalleryService;
 import com.seochang.church.service.BannerService;
 import com.seochang.church.service.FileStorageService;
@@ -28,17 +28,19 @@ public class AdminController {
 
     private final UserService userService;
     private final BoardService boardService;
-    private final NoticeRepository noticeRepository;
     private final GalleryService galleryService;
     private final BannerService bannerService;
+    private final NoticeService noticeService;
     private final FileStorageService fileStorageService;
 
-    public AdminController(UserService userService, BoardService boardService, NoticeRepository noticeRepository, GalleryService galleryService, BannerService bannerService, FileStorageService fileStorageService) {
+    public AdminController(UserService userService, BoardService boardService, 
+                          GalleryService galleryService, BannerService bannerService,
+                          NoticeService noticeService, FileStorageService fileStorageService) {
         this.userService = userService;
         this.boardService = boardService;
-        this.noticeRepository = noticeRepository;
         this.galleryService = galleryService;
         this.bannerService = bannerService;
+        this.noticeService = noticeService;
         this.fileStorageService = fileStorageService;
     }
 
@@ -52,7 +54,7 @@ public class AdminController {
         model.addAttribute("totalUsers", userService.getTotalUserCount());
         model.addAttribute("pendingUsers", userService.getPendingApprovalCount());
         model.addAttribute("totalBoards", boardService.getTotalBoardCount());
-        model.addAttribute("totalNotices", noticeRepository.count());
+        model.addAttribute("totalNotices", noticeService.getTotalNoticeCount());
         model.addAttribute("totalGalleries", galleryService.getTotalGalleryCount());
         
         PageRequest pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
@@ -121,17 +123,10 @@ public class AdminController {
     }
 
     @GetMapping("/notices")
-    public String notices(@RequestParam(value = "page", defaultValue = "0") int page,
-                         @RequestParam(value = "keyword", required = false) String keyword,
+    public String notices(@RequestParam(name = "page", defaultValue = "0") int page,
+                         @RequestParam(name = "keyword", required = false) String keyword,
                          Model model) {
-        PageRequest pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
-        Page<Notice> noticePage;
-        
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            noticePage = noticeRepository.findByKeyword(keyword.trim(), pageable);
-        } else {
-            noticePage = noticeRepository.findAll(pageable);
-        }
+        Page<Notice> noticePage = noticeService.getNoticesForAdmin(keyword, page);
         
         model.addAttribute("notices", noticePage.getContent());
         model.addAttribute("currentPage", page);
@@ -143,7 +138,7 @@ public class AdminController {
 
     @PostMapping("/notices/{id}/delete")
     public String deleteNotice(@PathVariable("id") Long id) {
-        noticeRepository.deleteById(id);
+        noticeService.deleteNotice(id);
         return "redirect:/admin/notices";
     }
 

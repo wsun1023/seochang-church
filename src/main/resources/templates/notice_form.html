@@ -201,7 +201,7 @@
 <main class="container">
     <div class="form-container">
         
-        <form th:action="${notice.id == null ? '/notices/new' : '/notices/' + notice.id + '/edit'}" method="post" enctype="multipart/form-data">
+        <form class="upload-form" data-redirect-url="/notices" th:action="${notice.id == null ? '/notices/new' : '/notices/' + notice.id + '/edit'}" method="post" enctype="multipart/form-data">
             
             <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
@@ -237,7 +237,7 @@
                         </div>
                     </div>
                 </div>
-                <input class="form-control" type="file" id="imageFiles" name="imageFiles" multiple accept="image/*">
+                <input class="form-control" type="file" id="imageFiles" name="imageFiles" multiple accept="image/*" onchange="if(this.files.length > 10) { alert('이미지는 최대 10개까지 업로드할 수 있습니다.'); this.value = ''; }">
             </div>
 
             <div class="mb-5">
@@ -253,7 +253,7 @@
                         </div>
                     </div>
                 </div>
-                <input class="form-control" type="file" id="generalFiles" name="generalFiles" multiple>
+                <input class="form-control" type="file" id="generalFiles" name="generalFiles" multiple onchange="if(this.files.length > 3) { alert('파일은 최대 3개까지 업로드할 수 있습니다.'); this.value = ''; }">
             </div>
             
             <div class="d-flex justify-content-between align-items-center pt-3 border-top">
@@ -271,128 +271,6 @@
 </main>
 
 <!-- Upload Progress Overlay -->
-<div id="uploadOverlay">
-    <div class="progress-box">
-        <div class="spinner-border text-primary mb-3" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
-        <h5 class="fw-bold mb-3" id="uploadTitleText">업로드 준비 중...</h5>
-        <div class="progress mb-2" style="height: 16px; border-radius: 8px;">
-            <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%;">0%</div>
-        </div>
-        <p class="text-muted small mb-0 fw-medium" id="uploadStatusText">잠시만 기다려주세요.</p>
-    </div>
-</div>
-
-<!-- Footer -->
-<footer>
-    <div class="container text-center">
-        <p class="small mb-0">Copyright © 2026 천주교 서창동성당. All Rights Reserved.</p>
-    </div>
-</footer>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
-
-<script>
-    // AJAX 폼 전송 및 프로그레스 바 제어
-    const form = document.querySelector('form');
-    if(form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault(); // 기본 폼 제출 방지
-            
-            const formData = new FormData(form);
-            const imgInput = document.getElementById('imageFiles');
-            const genInput = document.getElementById('generalFiles');
-            
-            const imgFiles = imgInput ? imgInput.files : [];
-            const genCount = (genInput && genInput.files) ? genInput.files.length : 0;
-            const imgCount = imgFiles.length;
-            const totalFiles = imgCount + genCount;
-            
-            const titleText = document.getElementById('uploadTitleText');
-            const statusText = document.getElementById('uploadStatusText');
-            const progressBar = document.getElementById('uploadProgressBar');
-            
-            // 파일이 하나라도 있다면 오버레이 표시
-            if (totalFiles > 0) {
-                document.getElementById('uploadOverlay').style.display = 'flex';
-                
-                // 1. 이미지 압축 로직 시작
-                if (imgCount > 0) {
-                    statusText.innerText = "잠시만 기다려주세요.";
-                    
-                    // 기존 원본 이미지는 FormData에서 제거
-                    formData.delete('imageFiles');
-                    
-                    const options = {
-                        maxSizeMB: 5,
-                        maxWidthOrHeight: 1280,
-                        useWebWorker: true,
-                        initialQuality: 0.85
-                    };
-                    
-                    for (let i = 0; i < imgCount; i++) {
-                        const file = imgFiles[i];
-                        try {
-                            // 진행률 업데이트
-                            titleText.innerText = (i + 1) + " / " + totalFiles + "장 업로드 중...";
-                            const percent = Math.floor((i / imgCount) * 100);
-                            if(progressBar) {
-                                progressBar.style.width = percent + '%';
-                                progressBar.innerText = percent + '%';
-                            }
-                            
-                            const compressedFile = await imageCompression(file, options);
-                            formData.append('imageFiles', compressedFile, file.name);
-                        } catch (error) {
-                            console.error('이미지 압축 오류:', error);
-                            formData.append('imageFiles', file, file.name);
-                        }
-                    }
-                    if(progressBar) {
-                        progressBar.style.width = '100%';
-                        progressBar.innerText = '100%';
-                    }
-                }
-            } else {
-                document.getElementById('uploadOverlay').style.display = 'flex';
-                if(titleText) titleText.innerText = "업로드 중...";
-                if(statusText) statusText.innerText = "잠시만 기다려주세요.";
-            }
-            
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', form.action, true);
-            
-            xhr.upload.onprogress = function(e) {
-                if (e.lengthComputable) {
-                    const percentComplete = Math.floor((e.loaded / e.total) * 100);
-                    
-                    if (totalFiles > 0) {
-                        if (percentComplete === 100) {
-                            if(titleText) titleText.innerText = "업로드 완료!";
-                            if(statusText) statusText.innerText = "화면이 이동할 때까지 잠시만 기다려주세요.";
-                        }
-                    }
-                }
-            };
-            
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    window.location.href = '/notices';
-                } else {
-                    alert('저장 중 오류가 발생했습니다. (' + xhr.status + ')');
-                    document.getElementById('uploadOverlay').style.display = 'none';
-                }
-            };
-            
-            xhr.onerror = function() {
-                alert('네트워크 오류가 발생했습니다.');
-                document.getElementById('uploadOverlay').style.display = 'none';
-            };
-            
-            xhr.send(formData);
-        });
-    }
-</script>
+<div th:replace="~{fragments/upload_progress :: upload_overlay}"></div>
 </body>
 </html>

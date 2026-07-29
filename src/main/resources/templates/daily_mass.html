@@ -162,17 +162,17 @@
 <!-- Page Banner -->
 <div class="page-banner position-relative">
     <div class="container text-center">
-        <div class="d-flex justify-content-center align-items-center mb-1">
-            <a th:href="@{/daily-mass(date=${dailyMass.prevDate})}" class="btn btn-outline-light rounded-circle p-2 mx-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+        <div class="d-flex justify-content-center align-items-center mb-1 position-relative">
+            <a th:href="@{/daily-mass(date=${dailyMass.prevDate})}" class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center position-absolute start-0" style="width: 40px; height: 40px; z-index: 10;">
                 <i class="bi bi-chevron-left"></i>
             </a>
-            <div>
+            <div class="px-5 text-center">
                 <h2 class="fw-bold mb-1">
                     <span th:text="${dailyMass.dateText} ?: ${dailyMass.title}">오늘의 매일미사</span>
                 </h2>
                 <p class="text-white-50 mb-0" th:text="${dailyMass.liturgicalDay} ?: '주님의 말씀을 묵상하며 은총의 하루를 보내세요.'">[(녹) 연중 제17주간 월요일]</p>
             </div>
-            <a th:href="@{/daily-mass(date=${dailyMass.nextDate})}" class="btn btn-outline-light rounded-circle p-2 mx-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <a th:href="@{/daily-mass(date=${dailyMass.nextDate})}" class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center position-absolute end-0" style="width: 40px; height: 40px; z-index: 10;">
                 <i class="bi bi-chevron-right"></i>
             </a>
         </div>

@@ -141,8 +141,7 @@
                 
                 <h4 class="fw-bold mb-4" th:text="${gallery.id == null ? '사진첩 올리기' : '사진첩 수정'}">글쓰기</h4>
                 
-                <form th:action="@{${gallery.id == null ? '/gallery/new' : '/gallery/' + gallery.id + '/edit'}}" 
-                      method="post" enctype="multipart/form-data" id="galleryForm">
+                <form class="upload-form" id="galleryForm" data-redirect-url="/gallery" th:action="${gallery.id == null ? '/gallery/new' : '/gallery/' + gallery.id + '/edit'}" method="post" enctype="multipart/form-data">
                     
                     <div class="mb-4">
                         <label for="title" class="form-label fw-medium text-secondary small">제목 <span class="text-danger">*</span></label>
@@ -201,18 +200,8 @@
 </footer>
 
 <!-- Upload Progress Overlay -->
-<div id="uploadOverlay">
-    <div class="progress-box">
-        <div class="spinner-border text-primary mb-3" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
-        <h5 class="fw-bold mb-3" id="uploadTitleText">업로드 준비 중...</h5>
-        <div class="progress mb-2" style="height: 16px; border-radius: 8px;">
-            <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%;">0%</div>
-        </div>
-        <p class="text-muted small mb-0 fw-medium" id="uploadStatusText">잠시만 기다려주세요.</p>
-    </div>
-</div>
+<div th:replace="~{fragments/upload_progress :: upload_overlay}"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
 <script>
     function previewImages() {
         const preview = document.getElementById('imagePreviewContainer');
@@ -240,100 +229,6 @@
             });
         }
     }
-
-    // AJAX 폼 전송 및 프로그레스 바 제어 (클라이언트 사이드 압축 적용)
-    document.getElementById('galleryForm').addEventListener('submit', async function(e) {
-        e.preventDefault(); // 기본 폼 제출 방지
-        
-        const form = e.target;
-        const formData = new FormData(form);
-        const fileInput = document.getElementById('imageFiles');
-        const files = fileInput ? fileInput.files : [];
-        const totalFiles = files.length;
-        
-        if (totalFiles === 0 && !form.action.includes('edit')) {
-            alert('업로드할 사진을 선택해주세요.');
-            return;
-        }
-
-        // 오버레이 표시
-        document.getElementById('uploadOverlay').style.display = 'flex';
-        const titleText = document.getElementById('uploadTitleText');
-        const statusText = document.getElementById('uploadStatusText');
-        const progressBar = document.getElementById('uploadProgressBar');
-        
-        // 원본 파일 폼 데이터에서 제거
-        formData.delete('imageFiles');
-
-        // 순차 압축 진행
-        if (totalFiles > 0) {
-            statusText.innerText = "잠시만 기다려주세요.";
-            
-            const options = {
-                maxSizeMB: 5,
-                maxWidthOrHeight: 1280,
-                useWebWorker: true,
-                initialQuality: 0.85
-            };
-
-            for (let i = 0; i < totalFiles; i++) {
-                const file = files[i];
-                try {
-                    // 진행률 업데이트
-                    titleText.innerText = (i + 1) + " / " + totalFiles + "장 업로드 중...";
-                    const percent = Math.floor((i / totalFiles) * 100);
-                    progressBar.style.width = percent + '%';
-                    progressBar.innerText = percent + '%';
-                    
-                    if (file.type.startsWith('image/')) {
-                        const compressedFile = await imageCompression(file, options);
-                        formData.append('imageFiles', compressedFile, file.name);
-                    } else {
-                        formData.append('imageFiles', file, file.name);
-                    }
-                } catch (error) {
-                    console.error('이미지 압축 오류:', error);
-                    formData.append('imageFiles', file, file.name); // 실패 시 원본 그대로 추가
-                }
-            }
-            // 압축 완료 후 게이지 100%
-            progressBar.style.width = '100%';
-            progressBar.innerText = '100%';
-        } else {
-            titleText.innerText = "업로드 중...";
-            statusText.innerText = "잠시만 기다려주세요.";
-        }
-        
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', form.action, true);
-        
-        xhr.upload.onprogress = function(e) {
-            if (e.lengthComputable) {
-                const percentComplete = Math.floor((e.loaded / e.total) * 100);
-                if (percentComplete === 100) {
-                    titleText.innerText = "업로드 완료!";
-                    statusText.innerText = "화면이 이동할 때까지 잠시만 기다려주세요.";
-                }
-            }
-        };
-        
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                // 업로드 완료 후 갤러리 목록으로 이동
-                window.location.href = '/gallery';
-            } else {
-                alert('업로드 중 오류가 발생했습니다. (' + xhr.status + ')');
-                document.getElementById('uploadOverlay').style.display = 'none';
-            }
-        };
-        
-        xhr.onerror = function() {
-            alert('업로드 중 네트워크 오류가 발생했습니다.');
-            document.getElementById('uploadOverlay').style.display = 'none';
-        };
-        
-        xhr.send(formData);
-    });
 </script>
 
 </body>

@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "board_attachments")
-public class BoardAttachment {
+public class BoardAttachment implements Attachment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

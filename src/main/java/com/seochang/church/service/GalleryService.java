@@ -25,6 +25,11 @@ public class GalleryService {
     }
 
     @Transactional(readOnly = true)
+    public java.util.List<Gallery> getRecentGalleries(int limit) {
+        return galleryRepository.findTop3ByOrderByCreatedAtDesc(org.springframework.data.domain.PageRequest.of(0, limit));
+    }
+
+    @Transactional(readOnly = true)
     public Gallery getGallery(Long id) {
         return galleryRepository.findById(id).orElse(null);
     }

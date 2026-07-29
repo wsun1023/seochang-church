@@ -26,7 +26,14 @@ public class FileDownloadController {
     public ResponseEntity<Resource> downloadFile(@RequestParam("file") String fileName, 
                                                  @RequestParam("originalName") String originalName) {
         try {
-            Path filePath = Paths.get(uploadDir).resolve(fileName).normalize();
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            Path filePath = uploadPath.resolve(fileName).normalize();
+
+            // 보안 취약점 방지: 요청된 파일이 uploadDir 안에 있는지 확인 (Path Traversal 방어)
+            if (!filePath.startsWith(uploadPath)) {
+                return ResponseEntity.status(403).build(); // 권한 없음(Forbidden) 반환
+            }
+
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() || resource.isReadable()) {

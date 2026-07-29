@@ -8,7 +8,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import com.seochang.church.entity.Attachment;
 import net.coobird.thumbnailator.Thumbnails;
 
 @Service
@@ -66,12 +71,32 @@ public class FileStorageService {
         }
     }
 
-    public void deleteFile(String storedFileName) {
+    public void deleteFile(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            return;
+        }
+        
         try {
-            Path file = Paths.get(uploadDir).resolve(Paths.get(storedFileName)).normalize().toAbsolutePath();
+            Path file = Paths.get(uploadDir).resolve(fileName).normalize();
             Files.deleteIfExists(file);
         } catch (IOException e) {
-            System.err.println("Failed to delete file: " + storedFileName);
+            throw new RuntimeException("파일 삭제 실패: " + fileName, e);
+        }
+    }
+
+    /**
+     * Delete files from disk and remove them from the collection based on requested IDs
+     */
+    public void deleteAttachments(List<Long> deleteFileIds, Collection<? extends Attachment> attachments) {
+        if (deleteFileIds == null || deleteFileIds.isEmpty() || attachments == null) return;
+        
+        Iterator<? extends Attachment> iterator = attachments.iterator();
+        while (iterator.hasNext()) {
+            Attachment attachment = iterator.next();
+            if (deleteFileIds.contains(attachment.getId())) {
+                deleteFile(attachment.getStoredFileName());
+                iterator.remove();
+            }
         }
     }
 }

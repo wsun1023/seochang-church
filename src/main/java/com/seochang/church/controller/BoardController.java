@@ -28,12 +28,7 @@ public class BoardController {
     public String list(@RequestParam(name = "category", required = false, defaultValue = "free") String category, 
                        @RequestParam(name = "page", defaultValue = "0") int page,
                        @RequestParam(name = "keyword", required = false) String keyword,
-                       Model model, HttpSession session) {
-        if (session.getAttribute("loginUser") == null) {
-            model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            return "alert";
-        }
-        
+                       Model model) {
         model.addAttribute("currentMenu", "boards");
         model.addAttribute("currentCategory", category);
         
@@ -51,10 +46,6 @@ public class BoardController {
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model, HttpSession session) {
         User loginUser = (User) session.getAttribute("loginUser");
-        if (loginUser == null) {
-            model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            return "alert";
-        }
 
         Board board = boardService.getBoard(id);
         if (board == null || "Y".equals(board.getDelYn())) {
@@ -75,11 +66,7 @@ public class BoardController {
     }
 
     @GetMapping("/new")
-    public String createForm(@RequestParam(name = "category", required = false) String category, HttpSession session, Model model) {
-        if (session.getAttribute("loginUser") == null) {
-            model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            return "alert";
-        }
+    public String createForm(@RequestParam(name = "category", required = false) String category, Model model) {
         Board board = new Board();
         if (category != null && !category.isEmpty()) {
             board.setCategory(category);
@@ -94,10 +81,6 @@ public class BoardController {
                          @RequestParam(value = "generalFiles", required = false) java.util.List<org.springframework.web.multipart.MultipartFile> generalFiles,
                          HttpSession session, Model model) {
         User loginUser = (User) session.getAttribute("loginUser");
-        if (loginUser == null) {
-            model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            return "alert";
-        }
         
         long validImages = imageFiles != null ? imageFiles.stream().filter(f -> !f.isEmpty()).count() : 0;
         long validFiles = generalFiles != null ? generalFiles.stream().filter(f -> !f.isEmpty()).count() : 0;
@@ -144,10 +127,6 @@ public class BoardController {
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, HttpSession session, Model model) {
         User loginUser = (User) session.getAttribute("loginUser");
-        if (loginUser == null) {
-            model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            return "alert";
-        }
 
         Board board = boardService.getBoard(id);
         if (board == null || "Y".equals(board.getDelYn())) {
@@ -173,10 +152,6 @@ public class BoardController {
                        @RequestParam(value = "deleteFileIds", required = false) java.util.List<Long> deleteFileIds,
                        HttpSession session, Model model) {
         User loginUser = (User) session.getAttribute("loginUser");
-        if (loginUser == null) {
-            model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            return "alert";
-        }
 
         Board board = boardService.getBoard(id);
         if (board == null || "Y".equals(board.getDelYn())) {
@@ -199,16 +174,7 @@ public class BoardController {
         board.setUpdatedAt(java.time.LocalDateTime.now());
         
         // Delete requested files
-        if (deleteFileIds != null && !deleteFileIds.isEmpty()) {
-            java.util.Iterator<com.seochang.church.entity.BoardAttachment> iterator = board.getAttachments().iterator();
-            while (iterator.hasNext()) {
-                com.seochang.church.entity.BoardAttachment attachment = iterator.next();
-                if (deleteFileIds.contains(attachment.getId())) {
-                    fileStorageService.deleteFile(attachment.getStoredFileName());
-                    iterator.remove();
-                }
-            }
-        }
+        fileStorageService.deleteAttachments(deleteFileIds, board.getAttachments());
         
         // Add new files
         processAttachments(board, imageFiles, true);
@@ -235,10 +201,6 @@ public class BoardController {
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, HttpSession session, Model model) {
         User loginUser = (User) session.getAttribute("loginUser");
-        if (loginUser == null) {
-            model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            return "alert";
-        }
 
         Board board = boardService.getBoard(id);
         if (board == null || "Y".equals(board.getDelYn())) {

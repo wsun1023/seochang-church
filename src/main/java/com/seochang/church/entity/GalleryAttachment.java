@@ -3,8 +3,8 @@ package com.seochang.church.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "gallery_attachments", schema = "seochang_church_db")
-public class GalleryAttachment {
+@Table(name = "gallery_attachments")
+public class GalleryAttachment implements Attachment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
