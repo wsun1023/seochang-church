@@ -221,20 +221,20 @@
 <div class="page-banner position-relative">
     <div class="container text-center">
         <div class="d-flex justify-content-center align-items-center mb-1 position-relative">
-            <a th:href="@{/daily-mass(date=${dailyMass.prevDate})}" class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center position-absolute start-0" style="width: 40px; height: 40px; z-index: 10;">
+            <a th:href="@{/daily-missa(date=${dailyMissa.prevDate})}" class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center position-absolute start-0" style="width: 40px; height: 40px; z-index: 10;">
                 <i class="bi bi-chevron-left"></i>
             </a>
             <div class="px-5 text-center position-relative">
-                <div id="massDatePickerBtn" style="cursor: pointer;" class="d-inline-flex align-items-center justify-content-center mb-1 text-white">
+                <div id="missaDatePickerBtn" style="cursor: pointer;" class="d-inline-flex align-items-center justify-content-center mb-1 text-white">
                     <h2 class="fw-bold mb-0 me-2">
-                        <span th:text="${dailyMass.dateText} ?: ${dailyMass.title}">오늘의 매일미사</span>
+                        <span th:text="${dailyMissa.dateText} ?: ${dailyMissa.title}">오늘의 매일미사</span>
                     </h2>
                 </div>
                 <!-- Hidden input for Flatpickr to attach to -->
-                <input type="text" id="massDatePicker" style="position: absolute; opacity: 0; width: 1px; height: 1px; bottom: 0; left: 50%; pointer-events: none;" th:value="${dailyMass.date}">
-                <p class="text-white-50 mb-0 mt-1" th:text="${dailyMass.liturgicalDay} ?: '주님의 말씀을 묵상하며 은총의 하루를 보내세요.'">[(녹) 연중 제17주간 월요일]</p>
+                <input type="text" id="missaDatePicker" style="position: absolute; opacity: 0; width: 1px; height: 1px; bottom: 0; left: 50%; pointer-events: none;" th:value="${dailyMissa.date}">
+                <p class="text-white-50 mb-0 mt-1" th:text="${dailyMissa.liturgicalDay} ?: '주님의 말씀을 묵상하며 은총의 하루를 보내세요.'">[(녹) 연중 제17주간 월요일]</p>
             </div>
-            <a th:href="@{/daily-mass(date=${dailyMass.nextDate})}" class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center position-absolute end-0" style="width: 40px; height: 40px; z-index: 10;">
+            <a th:href="@{/daily-missa(date=${dailyMissa.nextDate})}" class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center position-absolute end-0" style="width: 40px; height: 40px; z-index: 10;">
                 <i class="bi bi-chevron-right"></i>
             </a>
         </div>
@@ -261,8 +261,9 @@
                 </div>
             </div>
 
-            <div class="content-card">
-                <div th:each="reading : ${dailyMass.readings}" class="reading-section">
+            <!-- Content Section -->
+            <div class="content-card mb-5">
+                <div th:each="reading : ${dailyMissa.readings}" class="reading-section">
                     <h3 class="reading-title" th:text="${reading.type}">제1독서</h3>
                     <div class="reading-content" th:utext="${reading.content}">
                         독서 내용이 여기에 표시됩니다.
@@ -316,14 +317,15 @@ function applyFontSize() {
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        flatpickr("#massDatePicker", {
+    document.addEventListener("DOMContentLoaded", function() {
+        // Initialize Flatpickr for date navigation
+        flatpickr("#missaDatePicker", {
             locale: "ko",
             disableMobile: "true", // Force custom UI even on mobile for consistency
-            positionElement: document.getElementById('massDatePickerBtn'),
+            positionElement: document.getElementById('missaDatePickerBtn'),
             onChange: function(selectedDates, dateStr, instance) {
                 if(dateStr) {
-                    window.location.href = '/daily-mass?date=' + dateStr;
+                    window.location.href = '/daily-missa?date=' + dateStr;
                 }
             },
             onReady: function(selectedDates, dateStr, instance) {
@@ -363,8 +365,8 @@ function applyFontSize() {
         });
         
         // Trigger flatpickr when clicking the custom text/icon
-        document.getElementById('massDatePickerBtn').addEventListener('click', function() {
-            document.getElementById('massDatePicker')._flatpickr.open();
+        document.getElementById('missaDatePickerBtn').addEventListener('click', function() {
+            document.getElementById('missaDatePicker')._flatpickr.open();
         });
     });
 </script>

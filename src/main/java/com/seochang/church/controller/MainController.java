@@ -34,10 +34,10 @@ public class MainController {
         return "main";
     }
 
-    @GetMapping("/mass")
-    public String mass(Model model) {
-        model.addAttribute("currentMenu", "mass");
-        return "mass";
+    @GetMapping("/missa")
+    public String missa(Model model) {
+        model.addAttribute("currentMenu", "missa");
+        return "missa";
     }
 
     @GetMapping("/bible")

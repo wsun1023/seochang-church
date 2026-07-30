@@ -1,6 +1,6 @@
 package com.seochang.church.service;
 
-import com.seochang.church.dto.DailyMassDto;
+import com.seochang.church.dto.DailyMissaDto;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -18,12 +18,12 @@ import java.time.format.DateTimeFormatter;
 import org.springframework.util.StringUtils;
 
 @Service
-public class DailyMassService {
+public class DailyMissaService {
 
-    private static final String DAILY_MASS_URL = "https://maria.catholic.or.kr/mi_pr/missa/missa.asp";
+    private static final String DAILY_MISSA_URL = "https://maria.catholic.or.kr/mi_pr/missa/missa.asp";
 
-    public DailyMassDto getDailyMass(String dateStr) {
-        DailyMassDto dto = new DailyMassDto();
+    public DailyMissaDto getDailyMissa(String dateStr) {
+        DailyMissaDto dto = new DailyMissaDto();
         
         LocalDate targetDate;
         if (StringUtils.hasText(dateStr)) {
@@ -40,7 +40,7 @@ public class DailyMassService {
         dto.setPrevDate(targetDate.minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         dto.setNextDate(targetDate.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
 
-        String requestUrl = DAILY_MASS_URL + "?goMonth=" + dto.getDate();
+        String requestUrl = DAILY_MISSA_URL + "?goMonth=" + dto.getDate();
 
         try {
             Document doc = Jsoup.connect(requestUrl)

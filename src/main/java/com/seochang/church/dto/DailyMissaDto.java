@@ -3,7 +3,7 @@ package com.seochang.church.dto;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DailyMassDto {
+public class DailyMissaDto {
     private String title;
     private String date; // yyyy-MM-dd
     private String dateText; // e.g., 2026년 7월 27일 월요일
