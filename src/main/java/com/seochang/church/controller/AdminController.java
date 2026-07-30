@@ -189,4 +189,12 @@ public class AdminController {
         bannerService.deleteBanner(id);
         return "redirect:/admin/banners";
     }
+
+    @PostMapping("/banners/{id}/edit")
+    public String editBanner(@PathVariable("id") Long id,
+                             @ModelAttribute Banner banner,
+                             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) throws IOException {
+        bannerService.updateBanner(id, banner, imageFile);
+        return "redirect:/admin/banners";
+    }
 }

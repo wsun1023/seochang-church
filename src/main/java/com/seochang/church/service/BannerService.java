@@ -64,4 +64,31 @@ public class BannerService {
         banner.setActive(!banner.isActive());
         bannerRepository.save(banner);
     }
+
+    @Transactional
+    public void updateBanner(Long id, Banner updatedBanner, org.springframework.web.multipart.MultipartFile imageFile) throws java.io.IOException {
+        Banner banner = getBannerById(id);
+        banner.setTitle(updatedBanner.getTitle());
+        banner.setType(updatedBanner.getType());
+        banner.setLinkUrl(updatedBanner.getLinkUrl());
+        banner.setStartDate(updatedBanner.getStartDate());
+        banner.setEndDate(updatedBanner.getEndDate());
+        banner.setActive(updatedBanner.isActive());
+        banner.setUpdatedAt(java.time.LocalDateTime.now());
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imageUrl = banner.getImageUrl();
+            if (imageUrl != null) {
+                if (imageUrl.startsWith("/uploads/")) {
+                    fileStorageService.deleteFile(imageUrl.substring("/uploads/".length()));
+                } else if (imageUrl.startsWith("uploads/")) {
+                    fileStorageService.deleteFile(imageUrl.substring("uploads/".length()));
+                }
+            }
+            String savedPath = fileStorageService.store(imageFile, "banner");
+            banner.setImageUrl("/uploads/" + savedPath.replace("\\", "/"));
+        }
+
+        bannerRepository.save(banner);
+    }
 }

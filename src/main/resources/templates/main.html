@@ -444,8 +444,8 @@
 
 <!-- Dynamic Popups -->
 <div th:if="${activePopups != null and !#lists.isEmpty(activePopups)}">
-    <div th:each="popup, iterStat : ${activePopups}" th:if="${popup.currentlyDisplayable}"
-         class="modal fade popup-modal" th:id="'popupModal' + ${iterStat.index}" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div th:each="popup : ${activePopups}" th:if="${popup.currentlyDisplayable}"
+         class="modal fade popup-modal" th:id="'popupModal_' + ${popup.id}" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 bg-transparent">
                 <div class="modal-body p-0 position-relative">
@@ -457,8 +457,8 @@
                 </div>
                 <div class="modal-footer border-0 p-2 bg-dark rounded-bottom d-flex justify-content-between">
                     <div class="form-check text-white m-0">
-                        <input class="form-check-input" type="checkbox" th:id="'noShowToday' + ${iterStat.index}" th:data-popup-id="'popupModal' + ${iterStat.index}">
-                        <label class="form-check-label small" th:for="'noShowToday' + ${iterStat.index}">오늘 하루 보지 않기</label>
+                        <input class="form-check-input" type="checkbox" th:id="'noShowToday_' + ${popup.id}">
+                        <label class="form-check-label small" th:for="'noShowToday_' + ${popup.id}">오늘 하루 보지 않기</label>
                     </div>
                     <button type="button" class="btn btn-sm btn-outline-light border-0" data-bs-dismiss="modal">닫기</button>
                 </div>
@@ -759,7 +759,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         // Handle Popups
         const popups = document.querySelectorAll('.popup-modal');
-        popups.forEach(function(popup) {
+        popups.forEach(function(popup, index) {
             const popupId = popup.id;
             
             // Check if hidden today
@@ -767,9 +767,11 @@
             const now = new Date().getTime();
             
             if (!hideUntil || now > parseInt(hideUntil)) {
-                // Show modal
-                const modal = new bootstrap.Modal(popup);
-                modal.show();
+                // Show modal with slight delay to prevent backdrop overlap
+                setTimeout(function() {
+                    const modal = new bootstrap.Modal(popup);
+                    modal.show();
+                }, index * 300 + 200);
             }
             
             // Handle 'Do not show today' checkbox
@@ -789,6 +791,7 @@
                     }
                 });
             }
+        });
     });
 </script>
 </body>

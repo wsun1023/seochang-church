@@ -19,7 +19,7 @@
                         <th class="py-3">제목 및 링크</th>
                         <th class="py-3 text-center" style="width: 200px;">게시 기간</th>
                         <th class="py-3 text-center" style="width: 100px;">On/Off</th>
-                        <th class="py-3 text-center" style="width: 80px;">삭제</th>
+                        <th class="py-3 text-center" style="width: 110px;">관리</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,9 +62,24 @@
                             </form>
                         </td>
                         <td class="text-center">
-                            <form th:action="@{/admin/banners/{id}/delete(id=${banner.id})}" method="post" onsubmit="return confirm('이 배너를 정말 삭제하시겠습니까?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2"><i class="bi bi-trash"></i></button>
-                            </form>
+                            <div class="d-flex justify-content-center gap-1">
+                                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2"
+                                        th:data-id="${banner.id}"
+                                        th:data-title="${banner.title}"
+                                        th:data-type="${banner.type}"
+                                        th:data-linkurl="${banner.linkUrl}"
+                                        th:data-startdate="${banner.startDate}"
+                                        th:data-enddate="${banner.endDate}"
+                                        th:data-active="${banner.active}"
+                                        th:data-imageurl="${banner.imageUrl}"
+                                        onclick="openEditBannerModal(this)"
+                                        title="수정">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form th:action="@{/admin/banners/{id}/delete(id=${banner.id})}" method="post" onsubmit="return confirm('이 배너를 정말 삭제하시겠습니까?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="삭제"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(banners)}">
@@ -120,9 +135,23 @@
                                 ~ <span th:text="${banner.endDate != null ? #temporals.format(banner.endDate, 'yy.MM.dd') : '제한없음'}"></span>
                             </div>
                         </div>
-                        <form th:action="@{/admin/banners/{id}/delete(id=${banner.id})}" method="post" onsubmit="return confirm('이 배너를 정말 삭제하시겠습니까?');">
-                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1" style="font-size: 0.8rem;"><i class="bi bi-trash"></i> 삭제</button>
-                        </form>
+                        <div class="d-flex gap-1">
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" style="font-size: 0.8rem;"
+                                    th:data-id="${banner.id}"
+                                    th:data-title="${banner.title}"
+                                    th:data-type="${banner.type}"
+                                    th:data-linkurl="${banner.linkUrl}"
+                                    th:data-startdate="${banner.startDate}"
+                                    th:data-enddate="${banner.endDate}"
+                                    th:data-active="${banner.active}"
+                                    th:data-imageurl="${banner.imageUrl}"
+                                    onclick="openEditBannerModal(this)">
+                                <i class="bi bi-pencil"></i> 수정
+                            </button>
+                            <form th:action="@{/admin/banners/{id}/delete(id=${banner.id})}" method="post" onsubmit="return confirm('이 배너를 정말 삭제하시겠습니까?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1" style="font-size: 0.8rem;"><i class="bi bi-trash"></i> 삭제</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -186,6 +215,91 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal for Editing Banner -->
+    <div class="modal fade" id="editBannerModal" tabindex="-1" aria-labelledby="editBannerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom bg-light">
+                    <h5 class="modal-title fw-bold" id="editBannerModalLabel">팝업/배너 수정</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editBannerForm" method="post" enctype="multipart/form-data">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">구분</label>
+                            <select class="form-select" name="type" id="editType" required>
+                                <option value="BANNER">메인 배너 (슬라이드형)</option>
+                                <option value="POPUP">메인 팝업 (모달창)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">제목 (관리용)</label>
+                            <input type="text" class="form-control" name="title" id="editTitle" required placeholder="배너 제목을 입력하세요">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">이미지 파일 (변경 시만 첨부)</label>
+                            <input type="file" class="form-control" name="imageFile" accept="image/*">
+                            <div class="form-text small text-muted mt-1" id="currentImageText"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">링크 주소 (선택)</label>
+                            <input type="text" class="form-control" name="linkUrl" id="editLinkUrl" placeholder="클릭 시 이동할 URL (https://...)">
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold text-muted small">게시 시작일 (선택)</label>
+                                <input type="date" class="form-control form-control-sm" name="startDate" id="editStartDate">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold text-muted small">게시 종료일 (선택)</label>
+                                <input type="date" class="form-control form-control-sm" name="endDate" id="editEndDate">
+                            </div>
+                        </div>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" name="active" id="editActiveCheck" value="true">
+                            <label class="form-check-label fw-bold text-primary" for="editActiveCheck">활성화하기</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0 pt-0 px-4 pb-4">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">취소</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">수정 저장</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openEditBannerModal(btn) {
+            const id = btn.getAttribute('data-id');
+            const title = btn.getAttribute('data-title');
+            const type = btn.getAttribute('data-type');
+            const linkUrl = btn.getAttribute('data-linkurl');
+            const startDate = btn.getAttribute('data-startdate');
+            const endDate = btn.getAttribute('data-enddate');
+            const active = btn.getAttribute('data-active') === 'true';
+            const imageUrl = btn.getAttribute('data-imageurl');
+
+            document.getElementById('editBannerForm').action = '/admin/banners/' + id + '/edit';
+            document.getElementById('editTitle').value = title || '';
+            document.getElementById('editType').value = type || 'BANNER';
+            document.getElementById('editLinkUrl').value = linkUrl || '';
+            document.getElementById('editStartDate').value = startDate || '';
+            document.getElementById('editEndDate').value = endDate || '';
+            document.getElementById('editActiveCheck').checked = active;
+
+            const imageText = document.getElementById('currentImageText');
+            if (imageUrl) {
+                imageText.innerText = '현재 등록된 이미지: ' + imageUrl;
+            } else {
+                imageText.innerText = '';
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('editBannerModal'));
+            modal.show();
+        }
+    </script>
 </div>
 </body>
 </html>
