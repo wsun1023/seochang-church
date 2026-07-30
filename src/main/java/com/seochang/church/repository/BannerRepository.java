@@ -12,13 +12,13 @@ import java.util.List;
 public interface BannerRepository extends JpaRepository<Banner, Long> {
 
     // Find all active banners/popups that are within their valid date range
-    @Query("SELECT b FROM Banner b WHERE b.isActive = true AND (b.startDate IS NULL OR b.startDate <= :today) AND (b.endDate IS NULL OR b.endDate >= :today) ORDER BY b.createdAt DESC")
+    @Query("SELECT b FROM Banner b WHERE b.isActive = true AND (b.startDate IS NULL OR b.startDate <= :today) AND (b.endDate IS NULL OR b.endDate >= :today) ORDER BY b.priority ASC, b.createdAt ASC")
     List<Banner> findActiveBanners(LocalDate today);
     
     // Specifically find by type (POPUP or BANNER)
-    @Query("SELECT b FROM Banner b WHERE b.isActive = true AND b.type = :type AND (b.startDate IS NULL OR b.startDate <= :today) AND (b.endDate IS NULL OR b.endDate >= :today) ORDER BY b.createdAt DESC")
+    @Query("SELECT b FROM Banner b WHERE b.isActive = true AND b.type = :type AND (b.startDate IS NULL OR b.startDate <= :today) AND (b.endDate IS NULL OR b.endDate >= :today) ORDER BY b.priority ASC, b.createdAt ASC")
     List<Banner> findActiveBannersByType(String type, LocalDate today);
     
     // Admin list sorted by creation
-    List<Banner> findAllByOrderByCreatedAtDesc();
+    List<Banner> findAllByOrderByPriorityAscCreatedAtAsc();
 }

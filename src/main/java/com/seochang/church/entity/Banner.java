@@ -39,6 +39,9 @@ public class Banner {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    @Column(name = "priority")
+    private Integer priority = 0; // Default priority 0 (higher number = lower priority, or vice versa, but we'll sort ASC so lower number comes first)
+
     public Banner() {
     }
 
@@ -130,5 +133,13 @@ public class Banner {
         if (startDate != null && now.isBefore(startDate)) return false;
         if (endDate != null && now.isAfter(endDate)) return false;
         return true;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
     }
 }

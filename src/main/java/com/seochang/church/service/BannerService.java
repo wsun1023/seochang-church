@@ -20,7 +20,7 @@ public class BannerService {
     }
 
     public List<Banner> getAllBanners() {
-        return bannerRepository.findAllByOrderByCreatedAtDesc();
+        return bannerRepository.findAllByOrderByPriorityAscCreatedAtAsc();
     }
 
     public List<Banner> getActivePopups() {
@@ -74,6 +74,7 @@ public class BannerService {
         banner.setStartDate(updatedBanner.getStartDate());
         banner.setEndDate(updatedBanner.getEndDate());
         banner.setActive(updatedBanner.isActive());
+        banner.setPriority(updatedBanner.getPriority());
         banner.setUpdatedAt(java.time.LocalDateTime.now());
 
         if (imageFile != null && !imageFile.isEmpty()) {

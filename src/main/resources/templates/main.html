@@ -495,7 +495,7 @@
     <div class="carousel-inner">
         <!-- Dynamic Banners -->
         <th:block th:if="${activeBanners != null and !#lists.isEmpty(activeBanners)}">
-            <div th:each="banner, iterStat : ${activeBanners}" class="carousel-item" th:classappend="${iterStat.index == 0} ? 'active' : ''" th:style="'background-image: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url(' + ${banner.imageUrl} + '); cursor: pointer;'" th:onclick="${banner.linkUrl != null and !banner.linkUrl.isEmpty()} ? 'window.open(\'' + ${banner.linkUrl} + '\', \'_blank\')' : ''">
+            <div th:each="banner, iterStat : ${activeBanners}" class="carousel-item" th:classappend="${iterStat.index == 0} ? 'active' : ''" th:style="'background-image: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)), url(' + ${banner.imageUrl} + '); cursor: pointer;'" th:data-url="${banner.linkUrl}" onclick="if(this.getAttribute('data-url')) window.open(this.getAttribute('data-url'), '_blank')">
             </div>
         </th:block>
         <!-- Static Banners (Fallback) -->

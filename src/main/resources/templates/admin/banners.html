@@ -39,7 +39,10 @@
                             </div>
                         </td>
                         <td>
-                            <div class="fw-bold text-dark" th:text="${banner.title}">배너 제목</div>
+                            <div class="fw-bold text-dark">
+                                <span class="badge bg-secondary bg-opacity-75 me-1 fw-normal" th:text="${'우선순위: ' + (banner.priority != null ? banner.priority : 0)}">우선순위: 0</span>
+                                <span th:text="${banner.title}">배너 제목</span>
+                            </div>
                             <div class="small text-muted text-truncate" style="max-width: 250px;">
                                 <a th:if="${banner.linkUrl != null and !banner.linkUrl.isEmpty()}" th:href="${banner.linkUrl}" target="_blank" class="text-decoration-none">
                                     <i class="bi bi-link-45deg"></i> <span th:text="${banner.linkUrl}"></span>
@@ -70,6 +73,7 @@
                                         th:data-linkurl="${banner.linkUrl}"
                                         th:data-startdate="${banner.startDate}"
                                         th:data-enddate="${banner.endDate}"
+                                        th:data-priority="${banner.priority}"
                                         th:data-active="${banner.active}"
                                         th:data-imageurl="${banner.imageUrl}"
                                         onclick="openEditBannerModal(this)"
@@ -116,7 +120,10 @@
                             <img th:src="${banner.imageUrl}" style="width: 100%; height: 100%; object-fit: contain;">
                         </div>
                         <div class="flex-grow-1 overflow-hidden">
-                            <h6 class="fw-bold mb-1 text-truncate" th:text="${banner.title}">배너 제목</h6>
+                            <h6 class="fw-bold mb-1 text-truncate">
+                                <span class="badge bg-secondary bg-opacity-75 me-1 fw-normal" th:text="${'우선순위: ' + (banner.priority != null ? banner.priority : 0)}">우선순위: 0</span>
+                                <span th:text="${banner.title}">배너 제목</span>
+                            </h6>
                             <div class="small text-muted text-truncate">
                                 <a th:if="${banner.linkUrl != null and !banner.linkUrl.isEmpty()}" th:href="${banner.linkUrl}" target="_blank" class="text-decoration-none">
                                     <i class="bi bi-link-45deg"></i> <span th:text="${banner.linkUrl}"></span>
@@ -143,6 +150,7 @@
                                     th:data-linkurl="${banner.linkUrl}"
                                     th:data-startdate="${banner.startDate}"
                                     th:data-enddate="${banner.endDate}"
+                                    th:data-priority="${banner.priority}"
                                     th:data-active="${banner.active}"
                                     th:data-imageurl="${banner.imageUrl}"
                                     onclick="openEditBannerModal(this)">
@@ -183,6 +191,10 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">제목 (관리용)</label>
                             <input type="text" class="form-control" name="title" required placeholder="배너 제목을 입력하세요">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">우선순위 <span class="small text-muted fw-normal">(숫자가 작을수록 먼저 표시됩니다. 기본값: 0)</span></label>
+                            <input type="number" class="form-control" name="priority" value="0" required placeholder="예: 1, 2, 3...">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">이미지 파일 (필수)</label>
@@ -238,6 +250,10 @@
                             <input type="text" class="form-control" name="title" id="editTitle" required placeholder="배너 제목을 입력하세요">
                         </div>
                         <div class="mb-3">
+                            <label class="form-label fw-bold">우선순위 <span class="small text-muted fw-normal">(숫자가 작을수록 먼저 표시됩니다. 기본값: 0)</span></label>
+                            <input type="number" class="form-control" name="priority" id="editPriority" value="0" required placeholder="예: 1, 2, 3...">
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label fw-bold">이미지 파일 (변경 시만 첨부)</label>
                             <input type="file" class="form-control" name="imageFile" accept="image/*">
                             <div class="form-text small text-muted mt-1" id="currentImageText"></div>
@@ -278,11 +294,13 @@
             const linkUrl = btn.getAttribute('data-linkurl');
             const startDate = btn.getAttribute('data-startdate');
             const endDate = btn.getAttribute('data-enddate');
+            const priority = btn.getAttribute('data-priority');
             const active = btn.getAttribute('data-active') === 'true';
             const imageUrl = btn.getAttribute('data-imageurl');
 
             document.getElementById('editBannerForm').action = '/admin/banners/' + id + '/edit';
             document.getElementById('editTitle').value = title || '';
+            document.getElementById('editPriority').value = priority || 0;
             document.getElementById('editType').value = type || 'BANNER';
             document.getElementById('editLinkUrl').value = linkUrl || '';
             document.getElementById('editStartDate').value = startDate || '';
