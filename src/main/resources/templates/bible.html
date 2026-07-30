@@ -145,7 +145,9 @@
                             </div>
                             <div class="col-12 col-md-5 d-flex align-items-center justify-content-md-end mt-3 mt-md-0">
                                 <button class="btn btn-white bg-white shadow-sm rounded-circle me-2" onclick="changeChapter(-1)" title="이전 장"><i class="bi bi-chevron-left"></i></button>
-                                <span class="fw-bold mx-2" id="chapterDisplay" style="min-width: 60px; text-align: center;">1장</span>
+                                <select id="chapterSelect" class="form-select form-select-sm border-0 bg-light fw-bold text-center mx-1 shadow-sm" style="width: 80px; cursor: pointer; font-size: 1rem;" onchange="onChapterSelectChange(this.value)">
+                                    <option value="1">1장</option>
+                                </select>
                                 <button class="btn btn-white bg-white shadow-sm rounded-circle ms-2" onclick="changeChapter(1)" title="다음 장"><i class="bi bi-chevron-right"></i></button>
                             </div>
                         </div>
@@ -175,6 +177,18 @@
                         <p class="small text-secondary mb-0">상단의 구약/신약 및 성경 권을 선택하시면 말씀이 표시됩니다.</p>
                     </div>
                 </div>
+                </div>
+
+                <!-- Bottom Navigation (Hidden by default) -->
+                <div id="bibleBottomNav" class="d-flex justify-content-center align-items-center mt-4 pt-4 border-top" style="display: none !important;">
+                    <button class="btn btn-outline-primary rounded-pill px-4 me-2 shadow-sm" onclick="changeChapter(-1)">
+                        <i class="bi bi-chevron-left me-1"></i> 이전 장
+                    </button>
+                    <span class="fw-bold mx-2 text-primary" id="bottomChapterDisplay" style="min-width: 60px; text-align: center;">1장</span>
+                    <button class="btn btn-outline-primary rounded-pill px-4 ms-2 shadow-sm" onclick="changeChapter(1)">
+                        다음 장 <i class="bi bi-chevron-right ms-1"></i>
+                    </button>
+                </div>
 
             </div>
         </div>
@@ -193,7 +207,9 @@
 
 <script>
     const oldTestament = ["창세기", "탈출기", "레위기", "민수기", "신명기", "여호수아기", "판관기", "룻기", "사무엘기 상권", "사무엘기 하권", "열왕기 상권", "열왕기 하권", "역대기 상권", "역대기 하권", "에즈라기", "느헤미야기", "토빗기", "유딧기", "에스테르기", "마카베오기 상권", "마카베오기 하권", "욥기", "시편", "잠언", "코헬렛", "아가", "지혜서", "집회서", "이사야서", "예레미야서", "애가", "바룩서", "에제키엘서", "다니엘서", "호세아서", "요엘서", "아모스서", "오바드야서", "요나서", "미카서", "나훔서", "하바쿡서", "스바니야서", "하까이서", "즈카르야서", "말라키서"];
+    const oldTestamentChapters = [50, 40, 27, 36, 34, 24, 21, 4, 31, 24, 22, 25, 29, 36, 10, 13, 14, 16, 10, 16, 15, 42, 150, 31, 12, 8, 19, 51, 66, 52, 5, 6, 48, 14, 14, 4, 9, 1, 4, 7, 3, 3, 3, 2, 14, 3];
     const newTestament = ["마태오 복음서", "마르코 복음서", "루카 복음서", "요한 복음서", "사도행전", "로마 신자들에게 보낸 서간", "코린토 신자들에게 보낸 첫째 서간", "코린토 신자들에게 보낸 둘째 서간", "갈라티아 신자들에게 보낸 서간", "에페소 신자들에게 보낸 서간", "필리피 신자들에게 보낸 서간", "콜로새 신자들에게 보낸 서간", "테살로니카 신자들에게 보낸 첫째 서간", "테살로니카 신자들에게 보낸 둘째 서간", "티모테오에게 보낸 첫째 서간", "티모테오에게 보낸 둘째 서간", "티토에게 보낸 서간", "필레몬에게 보낸 서간", "히브리인들에게 보낸 서간", "야고보 서간", "베드로 첫째 서간", "베드로 둘째 서간", "요한 첫째 서간", "요한 둘째 서간", "요한 셋째 서간", "유다 서간", "요한 묵시록"];
+    const newTestamentChapters = [28, 16, 24, 21, 28, 16, 16, 13, 6, 6, 4, 4, 5, 3, 6, 4, 3, 1, 13, 5, 5, 3, 5, 1, 1, 1, 22];
     
     let currentChapter = 1;
     let currentFontSize = parseFloat(localStorage.getItem('bible_font_size')) || 1.1;
@@ -241,6 +257,31 @@
             bookSelect.appendChild(option);
         });
     }
+    
+    function populateChapters() {
+        const testament = document.getElementById('testamentSelect').value;
+        const book = document.getElementById('bookSelect').value;
+        const chapterSelect = document.getElementById('chapterSelect');
+        
+        chapterSelect.innerHTML = '';
+        
+        if (!testament || !book) {
+            chapterSelect.innerHTML = '<option value="1">1장</option>';
+            return;
+        }
+
+        const chaptersArray = testament === '1' ? oldTestamentChapters : newTestamentChapters;
+        const maxChapter = chaptersArray[parseInt(book) - 1];
+        
+        for (let i = 1; i <= maxChapter; i++) {
+            const optionTop = document.createElement('option');
+            optionTop.value = i;
+            optionTop.text = i + '장';
+            chapterSelect.appendChild(optionTop);
+        }
+        
+        chapterSelect.value = currentChapter;
+    }
 
     function onTestamentChange() {
         populateBooks();
@@ -251,6 +292,12 @@
 
     function onBookChange() {
         currentChapter = 1;
+        populateChapters();
+        loadBible();
+    }
+    
+    function onChapterSelectChange(value) {
+        currentChapter = parseInt(value);
         loadBible();
     }
 
@@ -263,17 +310,27 @@
                 <p class="small text-secondary mb-0">상단의 구약/신약 및 성경 권을 선택하시면 말씀이 표시됩니다.</p>
             </div>
         `;
+        document.getElementById('bibleBottomNav').style.setProperty('display', 'none', 'important');
     }
     
     function changeChapter(delta) {
+        const testament = document.getElementById('testamentSelect').value;
         const bookSelect = document.getElementById('bookSelect');
         if (!bookSelect.value) {
             alert('성경 목록을 먼저 선택해 주세요.');
             return;
         }
-        if (currentChapter + delta >= 1) {
+        
+        const chaptersArray = testament === '1' ? oldTestamentChapters : newTestamentChapters;
+        const maxChapter = chaptersArray[parseInt(bookSelect.value) - 1];
+        
+        if (currentChapter + delta >= 1 && currentChapter + delta <= maxChapter) {
             currentChapter += delta;
             loadBible();
+        } else if (currentChapter + delta > maxChapter) {
+            alert('마지막 장입니다.');
+        } else if (currentChapter + delta < 1) {
+            alert('첫 번째 장입니다.');
         }
     }
     
@@ -284,7 +341,10 @@
 
         const contentDiv = document.getElementById('bibleContent');
         
-        document.getElementById('chapterDisplay').innerText = currentChapter + '장';
+        document.getElementById('chapterSelect').value = currentChapter;
+        document.getElementById('bottomChapterDisplay').innerText = currentChapter + '장';
+        
+        document.getElementById('bibleBottomNav').style.setProperty('display', 'none', 'important');
         contentDiv.innerHTML = '<div class="text-center text-muted py-5"><div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div><div>말씀을 불러오는 중입니다...</div></div>';
         
         fetch(`/api/bible?testament=${testament}&book=${book}&chapter=${currentChapter}`)
@@ -292,8 +352,11 @@
             .then(data => {
                 if (data.length === 0) {
                     contentDiv.innerHTML = '<div class="text-center text-muted py-5"><i class="bi bi-info-circle fs-2 mb-2 d-block"></i>해당 장의 말씀이 없거나 마지막 장입니다.</div>';
-                    if(currentChapter > 1) currentChapter--;
-                    document.getElementById('chapterDisplay').innerText = currentChapter + '장';
+                    if(currentChapter > 1) {
+                        currentChapter--;
+                        document.getElementById('chapterSelect').value = currentChapter;
+                        document.getElementById('bottomChapterDisplay').innerText = currentChapter + '장';
+                    }
                     return;
                 }
                 
@@ -303,6 +366,15 @@
                     html += `<p class="mb-2" style="text-indent: 5px;">${verseNum}${verseInfo.text}</p>`;
                 });
                 contentDiv.innerHTML = html;
+                
+                // Show bottom navigation
+                document.getElementById('bibleBottomNav').style.setProperty('display', 'flex', 'important');
+                
+                // Scroll to top of the content so user doesn't have to manually scroll up
+                window.scrollTo({
+                    top: contentDiv.parentElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
             })
             .catch(error => {
                 console.error('Error fetching bible:', error);
