@@ -39,4 +39,10 @@ public class MainController {
         model.addAttribute("currentMenu", "mass");
         return "mass";
     }
+
+    @GetMapping("/bible")
+    public String bible(Model model) {
+        model.addAttribute("currentMenu", "bible");
+        return "bible";
+    }
 }

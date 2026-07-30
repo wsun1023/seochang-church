@@ -97,7 +97,7 @@
                     </ul>
                 </li>
                 
-                <li class="nav-item"><a class="nav-link" th:classappend="${currentMenu == 'mass'} ? 'active' : ''" href="/mass">미사안내</a></li>
+                 <li class="nav-item"><a class="nav-link" th:classappend="${currentMenu == 'mass'} ? 'active' : ''" href="/mass">미사안내</a></li>
                 
                 <!-- 성당소식 드롭다운 -->
                 <li class="nav-item dropdown">
@@ -124,7 +124,7 @@
                     </ul>
                 </li>
                 
-                <li class="nav-item"><a class="nav-link" href="/#location">오시는길</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${currentMenu == 'bible'} ? 'active' : ''" href="/bible">성경읽기</a></li>
 
                 <!-- 비로그인 상태 -->
                 <li class="nav-item auth-item ms-lg-2 d-flex flex-row justify-content-center gap-2" th:if="${session.loginUser == null}">
