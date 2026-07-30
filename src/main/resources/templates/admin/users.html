@@ -20,7 +20,7 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th class="py-3">이름(세례명)</th>
+                        <th class="py-3">이름(세례명) / 구역</th>
                         <th class="py-3">아이디</th>
                         <th class="py-3">가입일</th>
                         <th class="py-3 text-center">상태</th>
@@ -33,6 +33,9 @@
                         <td>
                             <span class="fw-bold text-dark" th:text="${user.name}">홍길동</span>
                             <span class="text-muted ms-1 small" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
+                            <div th:if="${user.district != null and !user.district.isEmpty()}" class="mt-1">
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25" th:text="${user.district}">1구역</span>
+                            </div>
                         </td>
                         <td th:text="${user.username}">user1</td>
                         <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}">2026-07-28</td>
@@ -80,6 +83,9 @@
                                 <span th:text="${user.name}">홍길동</span>
                             </h6>
                             <span class="text-muted small ms-1" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
+                            <div th:if="${user.district != null and !user.district.isEmpty()}" class="mt-1 d-inline-block ms-1">
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25" th:text="${user.district}">1구역</span>
+                            </div>
                             <div class="text-muted small mt-1"><i class="bi bi-person-badge me-1"></i><span th:text="${user.username}">아이디</span></div>
                         </div>
                         <div>

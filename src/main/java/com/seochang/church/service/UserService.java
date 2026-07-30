@@ -22,13 +22,14 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User registerUser(String username, String rawPassword, String name, String baptismalName, String email) {
+    public User registerUser(String username, String rawPassword, String name, String baptismalName, String email, String district) {
         if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("이미 존재하거나 사용 중인 아이디입니다.");
         }
 
         String encodedPassword = passwordEncoder.encode(rawPassword);
         User newUser = new User(username, encodedPassword, name, baptismalName, email);
+        newUser.setDistrict(district);
         return userRepository.save(newUser);
     }
 

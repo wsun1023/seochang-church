@@ -25,6 +25,9 @@ public class User {
 
     private String email;
 
+    @Column(nullable = true)
+    private String district; // 구역 (예: 1구역, 2구역 등)
+
     @Column(nullable = false)
     private String role = "USER"; // 기본값: USER, 관리자는 ADMIN
 
@@ -116,6 +119,14 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
     }
 
     public String getRole() {

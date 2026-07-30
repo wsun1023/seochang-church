@@ -52,9 +52,10 @@ public class AuthController {
                          @RequestParam("name") String name,
                          @RequestParam(value = "baptismalName", required = false) String baptismalName,
                          @RequestParam(value = "email", required = false) String email,
+                         @RequestParam(value = "district", required = false) String district,
                          RedirectAttributes redirectAttributes) {
         try {
-            userService.registerUser(username, password, name, baptismalName, email);
+            userService.registerUser(username, password, name, baptismalName, email, district);
             redirectAttributes.addFlashAttribute("successMessage", "회원가입이 성공적으로 완료되었습니다! 로그인해 주세요.");
             return "redirect:/login";
         } catch (IllegalArgumentException e) {
