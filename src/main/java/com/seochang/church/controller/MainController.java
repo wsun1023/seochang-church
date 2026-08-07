@@ -22,7 +22,7 @@ public class MainController {
     @GetMapping("/")
     public String index(Model model) {
         model.addAttribute("currentMenu", "home");
-        model.addAttribute("notices", noticeService.getAllNotices());
+        model.addAttribute("notices", noticeService.getRecentNotices(3));
         
         // 최신 갤러리 3건 조회
         model.addAttribute("recentGalleries", galleryService.getRecentGalleries(3));

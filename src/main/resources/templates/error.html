@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>페이지를 찾을 수 없습니다 - 서창동성당</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F8FAFC;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 50px 40px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        .error-icon {
+            font-size: 5rem;
+            color: #D97706;
+            margin-bottom: 20px;
+        }
+        .error-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 15px;
+        }
+        .error-desc {
+            color: #64748B;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .btn-home {
+            background: linear-gradient(135deg, #0F172A, #1E293B);
+            color: #FFFFFF;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 30px;
+            border: none;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2);
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+<div class="error-card">
+    <i class="bi bi-exclamation-circle error-icon"></i>
+    
+    <div th:if="${status == 404}">
+        <h2 class="error-title">페이지를 찾을 수 없습니다</h2>
+        <p class="error-desc">
+            요청하신 페이지가 존재하지 않거나, 주소가 잘못 입력되었습니다.<br>
+            입력하신 주소를 다시 한번 확인해 주세요.
+        </p>
+    </div>
+    
+    <div th:unless="${status == 404}">
+        <h2 class="error-title">오류가 발생했습니다</h2>
+        <p class="error-desc">
+            서비스 이용에 불편을 드려 죄송합니다.<br>
+            일시적인 시스템 오류일 수 있으니 잠시 후 다시 시도해 주세요.
+        </p>
+    </div>
+
+    <a href="/" class="btn-home"><i class="bi bi-house-door-fill me-2"></i>메인으로 돌아가기</a>
+</div>
+
+</body>
+</html>

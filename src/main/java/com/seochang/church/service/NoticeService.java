@@ -46,7 +46,12 @@ public class NoticeService {
     }
 
     public java.util.List<Notice> getAllNotices() {
-        return noticeRepository.findAll();
+        return noticeRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+    }
+
+    public java.util.List<Notice> getRecentNotices(int count) {
+        Pageable pageable = PageRequest.of(0, count, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return noticeRepository.findAll(pageable).getContent();
     }
 
     public long getTotalNoticeCount() {
