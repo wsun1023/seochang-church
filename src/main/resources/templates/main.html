@@ -514,6 +514,93 @@
     </button>
 </header>
 
+<!-- Notice Dynamic Section -->
+<section id="notices" class="section-padding">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <span class="section-sublabel">Notice & News</span>
+                <h2 class="section-title mb-0">성당 소식</h2>
+            </div>
+            <a href="/notices" class="btn btn-outline-dark rounded-pill px-4 btn-sm">전체보기 <i class="bi bi-arrow-right"></i></a>
+        </div>
+
+        <!-- Dynamic Rendering for Notices -->
+        <div class="row g-4 horizontal-scroll-mobile" th:if="${notices != null and not #lists.isEmpty(notices)}">
+            <div class="col-md-4" th:each="notice : ${notices}">
+                <a th:href="@{/notices/{id}(id=${notice.id})}" class="text-decoration-none">
+                    <div class="gallery-preview-card">
+                        <th:block th:if="${notice.attachments != null and notice.attachments.size() > 0}">
+                            <img th:src="${notice.attachments[0].filePath}" alt="공지사항 썸네일" class="gallery-preview-img">
+                        </th:block>
+                        <th:block th:unless="${notice.attachments != null and notice.attachments.size() > 0}">
+                            <div class="gallery-preview-placeholder p-4 text-start align-items-start" style="font-size: 0.95rem; color: #475569; background-color: #f8fafc; line-height: 1.6;">
+                                <p class="m-0 w-100" th:text="${notice.content}" style="display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden;">공지사항 요약 내용입니다.</p>
+                            </div>
+                        </th:block>
+                        <div class="p-3">
+                            <h5 class="fw-bold text-dark mb-2 text-truncate" th:text="${notice.title}">공지사항 제목</h5>
+                            <div class="d-flex justify-content-between align-items-center small text-muted">
+                                <span><i class="bi bi-calendar3"></i> <span th:text="${#temporals.format(notice.createdAt, 'yyyy.MM.dd')}">2026.07.23</span></span>
+                                <span th:if="${notice.attachments != null and notice.attachments.size() > 0}"><i class="bi bi-paperclip"></i> <span th:text="${notice.attachments.size()}"></span></span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="text-center py-5 bg-white rounded-4 border" th:if="${notices == null or #lists.isEmpty(notices)}">
+            <i class="bi bi-inbox text-muted display-5 mb-3 d-block"></i>
+            <p class="text-secondary mb-0">현재 등록된 성당 소식이 없습니다.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Gallery Preview Section -->
+<section id="gallery-preview" class="section-padding" style="background: #FFFFFF; border-top: 1px solid #F1F5F9;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <span class="section-sublabel">Gallery</span>
+                <h2 class="section-title mb-0">본당 갤러리</h2>
+            </div>
+            <a href="/gallery" class="btn btn-outline-dark rounded-pill px-4 btn-sm">전체보기 <i class="bi bi-images"></i></a>
+        </div>
+
+        <div class="row g-4 horizontal-scroll-mobile" th:if="${recentGalleries != null and not #lists.isEmpty(recentGalleries)}">
+            <div class="col-md-4" th:each="gallery : ${recentGalleries}">
+                <a th:href="@{/gallery/{id}(id=${gallery.id})}" class="text-decoration-none">
+                    <div class="gallery-preview-card">
+                        <th:block th:if="${gallery.attachments != null and gallery.attachments.size() > 0}">
+                            <img th:src="${gallery.attachments[0].filePath}" alt="갤러리 썸네일" class="gallery-preview-img">
+                        </th:block>
+                        <th:block th:unless="${gallery.attachments != null and gallery.attachments.size() > 0}">
+                            <div class="gallery-preview-placeholder">
+                                <i class="bi bi-image"></i>
+                            </div>
+                        </th:block>
+                        <div class="p-3">
+                            <h5 class="fw-bold text-dark mb-2 text-truncate" th:text="${gallery.title}">행사 제목</h5>
+                            <div class="d-flex justify-content-between align-items-center small text-muted">
+                                <span><i class="bi bi-calendar3"></i> <span th:text="${#temporals.format(gallery.createdAt, 'yyyy.MM.dd')}">2026.07.28</span></span>
+                                <span th:if="${gallery.attachments != null}"><i class="bi bi-images"></i> <span th:text="${gallery.attachments.size()}"></span></span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="text-center py-5 bg-light rounded-4 border" th:if="${recentGalleries == null or #lists.isEmpty(recentGalleries)}">
+            <i class="bi bi-images text-muted display-5 mb-3 d-block"></i>
+            <p class="text-secondary mb-0">현재 등록된 갤러리가 없습니다.</p>
+        </div>
+    </div>
+</section>
+
 <!-- Missa Schedule Section -->
 <section id="missa" class="section-padding" style="background: #F1F5F9;">
     <div class="container">
@@ -586,87 +673,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
-
-<!-- Notice Dynamic Section -->
-<section id="notices" class="section-padding">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-end mb-4">
-            <div>
-                <span class="section-sublabel">Notice & News</span>
-                <h2 class="section-title mb-0">성당 소식</h2>
-            </div>
-            <a href="/notices" class="btn btn-outline-dark rounded-pill px-4 btn-sm">전체보기 <i class="bi bi-arrow-right"></i></a>
-        </div>
-
-        <!-- Dynamic Rendering for Notices -->
-        <div class="row g-4" th:if="${notices != null and not #lists.isEmpty(notices)}">
-            <div class="col-md-4" th:each="notice : ${notices}">
-                <div class="notice-card">
-                    <div>
-                        <div class="notice-date">
-                            <i class="bi bi-calendar3"></i>
-                            <span th:text="${#temporals.format(notice.createdAt, 'yyyy.MM.dd')}">2026.07.23</span>
-                        </div>
-                        <h4 class="notice-title" th:text="${notice.title}">공지사항 제목</h4>
-                        <p class="notice-snippet" th:text="${notice.content}">공지사항 요약 내용입니다.</p>
-                    </div>
-                    <a href="/notices" class="text-decoration-none fw-semibold" style="color: var(--accent-gold);">
-                        자세히 보기 <i class="bi bi-chevron-right fs-7"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Empty State -->
-        <div class="text-center py-5 bg-white rounded-4 border" th:if="${notices == null or #lists.isEmpty(notices)}">
-            <i class="bi bi-inbox text-muted display-5 mb-3 d-block"></i>
-            <p class="text-secondary mb-0">현재 등록된 성당 소식이 없습니다.</p>
-        </div>
-    </div>
-</section>
-
-<!-- Gallery Preview Section -->
-<section id="gallery-preview" class="section-padding" style="background: #FFFFFF; border-top: 1px solid #F1F5F9;">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-end mb-4">
-            <div>
-                <span class="section-sublabel">Gallery</span>
-                <h2 class="section-title mb-0">본당 갤러리</h2>
-            </div>
-            <a href="/gallery" class="btn btn-outline-dark rounded-pill px-4 btn-sm">전체보기 <i class="bi bi-images"></i></a>
-        </div>
-
-        <div class="row g-4 horizontal-scroll-mobile" th:if="${recentGalleries != null and not #lists.isEmpty(recentGalleries)}">
-            <div class="col-md-4" th:each="gallery : ${recentGalleries}">
-                <a th:href="@{/gallery/{id}(id=${gallery.id})}" class="text-decoration-none">
-                    <div class="gallery-preview-card">
-                        <th:block th:if="${gallery.attachments != null and gallery.attachments.size() > 0}">
-                            <img th:src="${gallery.attachments[0].filePath}" alt="갤러리 썸네일" class="gallery-preview-img">
-                        </th:block>
-                        <th:block th:unless="${gallery.attachments != null and gallery.attachments.size() > 0}">
-                            <div class="gallery-preview-placeholder">
-                                <i class="bi bi-image"></i>
-                            </div>
-                        </th:block>
-                        <div class="p-3">
-                            <h5 class="fw-bold text-dark mb-2 text-truncate" th:text="${gallery.title}">행사 제목</h5>
-                            <div class="d-flex justify-content-between align-items-center small text-muted">
-                                <span><i class="bi bi-calendar3"></i> <span th:text="${#temporals.format(gallery.createdAt, 'yyyy.MM.dd')}">2026.07.28</span></span>
-                                <span th:if="${gallery.attachments != null}"><i class="bi bi-images"></i> <span th:text="${gallery.attachments.size()}"></span></span>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- Empty State -->
-        <div class="text-center py-5 bg-light rounded-4 border" th:if="${recentGalleries == null or #lists.isEmpty(recentGalleries)}">
-            <i class="bi bi-images text-muted display-5 mb-3 d-block"></i>
-            <p class="text-secondary mb-0">현재 등록된 갤러리가 없습니다.</p>
         </div>
     </div>
 </section>
