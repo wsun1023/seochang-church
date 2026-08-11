@@ -18,6 +18,8 @@ import com.seochang.church.service.NoticeService;
 import com.seochang.church.service.GalleryService;
 import com.seochang.church.service.BannerService;
 import com.seochang.church.service.FileStorageService;
+import com.seochang.church.service.CalendarEventService;
+import com.seochang.church.entity.CalendarEvent;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -32,16 +34,19 @@ public class AdminController {
     private final BannerService bannerService;
     private final NoticeService noticeService;
     private final FileStorageService fileStorageService;
+    private final CalendarEventService calendarEventService;
 
     public AdminController(UserService userService, BoardService boardService, 
                           GalleryService galleryService, BannerService bannerService,
-                          NoticeService noticeService, FileStorageService fileStorageService) {
+                          NoticeService noticeService, FileStorageService fileStorageService,
+                          CalendarEventService calendarEventService) {
         this.userService = userService;
         this.boardService = boardService;
         this.galleryService = galleryService;
         this.bannerService = bannerService;
         this.noticeService = noticeService;
         this.fileStorageService = fileStorageService;
+        this.calendarEventService = calendarEventService;
     }
 
     @ModelAttribute
@@ -196,5 +201,11 @@ public class AdminController {
                              @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) throws IOException {
         bannerService.updateBanner(id, banner, imageFile);
         return "redirect:/admin/banners";
+    }
+
+    @GetMapping("/calendar")
+    public String calendar(Model model) {
+        model.addAttribute("events", calendarEventService.getAllEvents());
+        return "admin/calendar";
     }
 }

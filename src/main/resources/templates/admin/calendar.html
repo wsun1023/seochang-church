@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
+<head><title>일정 관리</title></head>
+<body>
+<div th:fragment="content">
+    <style>
+        /* Mobile Calendar Optimization */
+        @media (max-width: 767.98px) {
+            .fc-toolbar-title {
+                font-size: 1.15rem !important;
+            }
+            .fc-dayGridMonth-button, .fc-timeGridWeek-button, .fc-listMonth-button {
+                display: none !important;
+            }
+            .fc .fc-toolbar.fc-header-toolbar {
+                margin-bottom: 1em !important;
+            }
+        }
+    </style>
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <h2 class="page-title mb-0"><i class="bi bi-calendar-event-fill me-2 text-primary"></i>성당 일정 관리</h2>
+        <button class="btn btn-primary rounded-pill px-4" onclick="openNewEventModal()">
+            <i class="bi bi-plus-lg me-1"></i>새 일정 추가
+        </button>
+    </div>
+
+    <div class="admin-card">
+        <div id="admin-calendar"></div>
+    </div>
+
+    <!-- Concise Event List View -->
+    <div class="admin-card mt-4 p-md-4 p-2 bg-transparent bg-md-white border-0 border-md shadow-none shadow-md-sm">
+        <h5 class="fw-bold mb-3">전체 일정 목록</h5>
+        <div class="table-responsive bg-white rounded-3 border overflow-hidden">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th class="py-3" style="width: 150px;">시작일</th>
+                        <th class="py-3" style="width: 150px;">종료일</th>
+                        <th class="py-3">제목</th>
+                        <th class="py-3" style="width: 120px;">분류</th>
+                        <th class="py-3" style="width: 80px;">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="evt : ${events}">
+                        <td th:text="${evt.allDay ? #temporals.format(evt.startDate, 'yyyy-MM-dd') : #temporals.format(evt.startDate, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${evt.allDay ? #temporals.format(evt.endDate, 'yyyy-MM-dd') : #temporals.format(evt.endDate, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td class="text-start fw-bold" th:text="${evt.title}"></td>
+                        <td>
+                            <span class="badge" th:style="'background-color:' + ${evt.color}" th:text="${evt.color == '#3788d8' ? '미사/전례' : (evt.color == '#28a745' ? '행사/모임' : '기타/공지')}">분류</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-secondary" 
+                                    th:data-id="${evt.id}"
+                                    th:data-title="${evt.title}"
+                                    th:data-allday="${evt.allDay}"
+                                    th:data-start="${#temporals.format(evt.startDate, 'yyyy-MM-dd''T''HH:mm')}"
+                                    th:data-end="${#temporals.format(evt.endDate, 'yyyy-MM-dd''T''HH:mm')}"
+                                    th:data-color="${evt.color}"
+                                    th:data-desc="${evt.description}"
+                                    onclick="editEventFromList(this)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(events)}">
+                        <td colspan="5" class="py-4 text-muted">등록된 일정이 없습니다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Event Add/Edit Modal -->
+    <div class="modal fade" id="adminEventModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="eventForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold" id="adminEventModalLabel">일정 추가/수정</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="eventId">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">일정 제목 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="eventTitle" required>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="eventAllDay" checked>
+                            <label class="form-check-label" for="eventAllDay">하루 종일</label>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label">시작 일시 <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" id="eventStart" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">종료 일시 <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" id="eventEnd" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">일정 색상 (종류)</label>
+                            <select class="form-select" id="eventColor">
+                                <option value="#3788d8">미사 / 전례 (파란색)</option>
+                                <option value="#28a745">행사 / 모임 (초록색)</option>
+                                <option value="#dc3545">기타 / 공지 (빨간색)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">상세 내용</label>
+                            <textarea class="form-control" id="eventDescription" rows="4"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-danger d-none" id="btnDeleteEvent">삭제</button>
+                        <div>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                            <button type="submit" class="btn btn-primary">저장</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('admin-calendar');
+            const eventModal = new bootstrap.Modal(document.getElementById('adminEventModal'));
+            const eventForm = document.getElementById('eventForm');
+            const btnDelete = document.getElementById('btnDeleteEvent');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                contentHeight: 'auto',
+                locale: 'ko',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listMonth'
+                },
+                buttonText: {
+                    today: '오늘',
+                    month: '월',
+                    week: '주',
+                    list: '목록'
+                },
+                selectable: true,
+                editable: true,
+                events: '/api/calendar/events',
+                
+                // 날짜 드래그 선택 (새 일정 추가)
+                select: function(info) {
+                    eventForm.reset();
+                    document.getElementById('eventId').value = '';
+                    
+                    // Format for datetime-local
+                    const formatDt = (dateStr) => {
+                        return dateStr.substring(0,16); // yyyy-MM-ddThh:mm
+                    };
+                    
+                    document.getElementById('eventAllDay').checked = info.allDay;
+                    
+                    document.getElementById('eventStart').value = formatDt(info.startStr + (info.allDay ? 'T09:00' : ''));
+                    if(info.endStr) {
+                        let end = info.end;
+                        if(info.allDay) {
+                            end = new Date(info.end.getTime() - 1); // subtract 1ms because FullCalendar makes end date exclusive
+                        }
+                        const endIso = end.toISOString(); // this will be UTC, we need local timezone format.
+                        
+                        // Local offset adjustment for correct datetime-local string
+                        const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                        const localEnd = (new Date(end - tzoffset)).toISOString().slice(0, 16);
+                        const localStart = (new Date(info.start - tzoffset)).toISOString().slice(0, 16);
+                        
+                        document.getElementById('eventStart').value = localStart;
+                        document.getElementById('eventEnd').value = localEnd;
+                    }
+                    
+                    document.getElementById('adminEventModalLabel').textContent = '새 일정 추가';
+                    btnDelete.classList.add('d-none');
+                    eventModal.show();
+                },
+                
+                // 일정 클릭 (수정/삭제)
+                eventClick: function(info) {
+                    eventForm.reset();
+                    const e = info.event;
+                    document.getElementById('eventId').value = e.id;
+                    document.getElementById('eventTitle').value = e.title;
+                    document.getElementById('eventAllDay').checked = e.allDay;
+                    document.getElementById('eventColor').value = e.backgroundColor || '#3788d8';
+                    document.getElementById('eventDescription').value = e.extendedProps.description || '';
+                    
+                    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                    document.getElementById('eventStart').value = (new Date(e.start - tzoffset)).toISOString().slice(0, 16);
+                    if(e.end) {
+                        let end = e.end;
+                        if(e.allDay) {
+                            end = new Date(e.end.getTime() - 1);
+                        }
+                        document.getElementById('eventEnd').value = (new Date(end - tzoffset)).toISOString().slice(0, 16);
+                    } else {
+                        document.getElementById('eventEnd').value = document.getElementById('eventStart').value;
+                    }
+
+                    document.getElementById('adminEventModalLabel').textContent = '일정 수정';
+                    btnDelete.classList.remove('d-none');
+                    eventModal.show();
+                },
+
+                // 드래그앤드롭 이벤트 수정
+                eventDrop: function(info) {
+                    updateEvent(info.event);
+                },
+                eventResize: function(info) {
+                    updateEvent(info.event);
+                }
+            });
+
+            calendar.render();
+
+            // 저장 버튼 클릭
+            eventForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const id = document.getElementById('eventId').value;
+                const data = {
+                    title: document.getElementById('eventTitle').value,
+                    allDay: document.getElementById('eventAllDay').checked,
+                    startDate: document.getElementById('eventStart').value + (document.getElementById('eventStart').value.length === 16 ? ':00' : ''),
+                    endDate: document.getElementById('eventEnd').value + (document.getElementById('eventEnd').value.length === 16 ? ':00' : ''),
+                    color: document.getElementById('eventColor').value,
+                    description: document.getElementById('eventDescription').value
+                };
+
+                const url = id ? `/admin/api/calendar/events/${id}` : '/admin/api/calendar/events';
+                const method = id ? 'PUT' : 'POST';
+
+                fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                }).then(res => {
+                    if(res.ok) {
+                        location.reload(); // Reload to update both calendar and list
+                    } else {
+                        alert('저장 실패!');
+                    }
+                });
+            });
+
+            // 삭제 버튼 클릭
+            btnDelete.addEventListener('click', function() {
+                if(!confirm('정말로 삭제하시겠습니까?')) return;
+                const id = document.getElementById('eventId').value;
+                fetch(`/admin/api/calendar/events/${id}`, { method: 'DELETE' })
+                .then(res => {
+                    if(res.ok) {
+                        location.reload(); // Reload to update both calendar and list
+                    } else {
+                        alert('삭제 실패!');
+                    }
+                });
+            });
+
+            function updateEvent(e) {
+                const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                const localStart = (new Date(e.start - tzoffset)).toISOString().slice(0, 16);
+                let localEnd = localStart;
+                if(e.end) {
+                    let end = e.end;
+                    if(e.allDay) end = new Date(e.end.getTime() - 1);
+                    localEnd = (new Date(end - tzoffset)).toISOString().slice(0, 16);
+                }
+
+                const data = {
+                    title: e.title,
+                    allDay: e.allDay,
+                    startDate: localStart + (localStart.length === 16 ? ':00' : ''),
+                    endDate: localEnd + (localEnd.length === 16 ? ':00' : ''),
+                    color: e.backgroundColor,
+                    description: e.extendedProps.description
+                };
+
+                fetch(`/admin/api/calendar/events/${e.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                }).then(res => {
+                    if(!res.ok) {
+                        alert('수정 실패!');
+                        info.revert();
+                    }
+                });
+            }
+            window.openNewEventModal = function() {
+                eventForm.reset();
+                document.getElementById('eventId').value = '';
+                const now = new Date();
+                const tzoffset = now.getTimezoneOffset() * 60000;
+                const localNow = new Date(now - tzoffset).toISOString().slice(0, 16);
+                
+                document.getElementById('eventStart').value = localNow;
+                document.getElementById('eventEnd').value = localNow;
+                document.getElementById('eventAllDay').checked = false;
+                
+                document.getElementById('adminEventModalLabel').textContent = '새 일정 추가';
+                btnDelete.classList.add('d-none');
+                eventModal.show();
+            };
+
+            window.editEventFromList = function(btn) {
+                eventForm.reset();
+                document.getElementById('eventId').value = btn.getAttribute('data-id');
+                document.getElementById('eventTitle').value = btn.getAttribute('data-title');
+                document.getElementById('eventAllDay').checked = btn.getAttribute('data-allday') === 'true';
+                document.getElementById('eventStart').value = btn.getAttribute('data-start');
+                document.getElementById('eventEnd').value = btn.getAttribute('data-end');
+                document.getElementById('eventColor').value = btn.getAttribute('data-color') || '#3788d8';
+                document.getElementById('eventDescription').value = btn.getAttribute('data-desc') || '';
+                
+                document.getElementById('adminEventModalLabel').textContent = '일정 수정';
+                btnDelete.classList.remove('d-none');
+                eventModal.show();
+            };
+        });
+    </script>
+</div>
+</body>
+</html>

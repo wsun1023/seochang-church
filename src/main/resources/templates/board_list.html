@@ -184,6 +184,24 @@
             .page-banner p {
                 font-size: 0.85rem;
             }
+            .nav-pills {
+                flex-wrap: nowrap !important;
+                overflow-x: auto !important;
+                justify-content: flex-start !important;
+                padding-bottom: 8px !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            .nav-pills::-webkit-scrollbar {
+                display: none;
+            }
+            .nav-pills .nav-item {
+                flex-shrink: 0;
+            }
+            .nav-pills .nav-link {
+                white-space: nowrap;
+                font-size: 0.85rem;
+                padding: 6px 16px !important;
+            }
             .board-container {
                 padding: 16px 14px;
                 border-radius: 12px;
