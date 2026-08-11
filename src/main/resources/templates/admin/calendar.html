@@ -31,7 +31,7 @@
     <!-- Concise Event List View -->
     <div class="admin-card mt-4 p-md-4 p-2 bg-transparent bg-md-white border-0 border-md shadow-none shadow-md-sm">
         <h5 class="fw-bold mb-3">전체 일정 목록</h5>
-        <div class="table-responsive bg-white rounded-3 border overflow-hidden">
+        <div class="table-responsive d-none d-md-block bg-white rounded-3 border overflow-hidden">
             <table class="table table-hover align-middle mb-0 text-center">
                 <thead class="table-light">
                     <tr>
@@ -71,6 +71,39 @@
             </table>
         </div>
     </div>
+    
+    <!-- Mobile Card View -->
+    <div class="d-block d-md-none mt-3">
+        <div th:each="evt : ${events}" class="card mb-3 border-0 shadow-sm rounded-4">
+            <div class="card-body p-3 d-flex flex-column gap-2">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="badge" th:style="'background-color:' + ${evt.color}" th:text="${evt.color == '#3788d8' ? '미사/전례' : (evt.color == '#28a745' ? '행사/모임' : '기타/공지')}">분류</span>
+                    <button class="btn btn-sm btn-outline-secondary py-1 px-2" 
+                            th:data-id="${evt.id}"
+                            th:data-title="${evt.title}"
+                            th:data-allday="${evt.allDay}"
+                            th:data-start="${#temporals.format(evt.startDate, 'yyyy-MM-dd''T''HH:mm')}"
+                            th:data-end="${#temporals.format(evt.endDate, 'yyyy-MM-dd''T''HH:mm')}"
+                            th:data-color="${evt.color}"
+                            th:data-desc="${evt.description}"
+                            onclick="editEventFromList(this)">
+                        <i class="bi bi-pencil"></i> 수정
+                    </button>
+                </div>
+                <h6 class="fw-bold mb-0 text-dark" th:text="${evt.title}"></h6>
+                <div class="small text-muted">
+                    <i class="bi bi-clock me-1"></i>
+                    <span th:text="${evt.allDay ? #temporals.format(evt.startDate, 'yyyy-MM-dd') : #temporals.format(evt.startDate, 'yyyy-MM-dd HH:mm')}"></span>
+                    ~ 
+                    <span th:text="${evt.allDay ? #temporals.format(evt.endDate, 'yyyy-MM-dd') : #temporals.format(evt.endDate, 'yyyy-MM-dd HH:mm')}"></span>
+                </div>
+            </div>
+        </div>
+        <div th:if="${#lists.isEmpty(events)}" class="text-center py-5 text-muted bg-white rounded-4 shadow-sm border-0">
+            <i class="bi bi-calendar-x fs-1 d-block mb-3 opacity-50"></i>
+            등록된 일정이 없습니다.
+        </div>
+    </div>
 
     <!-- Event Add/Edit Modal -->
     <div class="modal fade" id="adminEventModal" tabindex="-1">
@@ -95,11 +128,11 @@
                         </div>
                         
                         <div class="row mb-3">
-                            <div class="col-6">
+                            <div class="col-12 col-md-6 mb-3 mb-md-0">
                                 <label class="form-label">시작 일시 <span class="text-danger">*</span></label>
                                 <input type="datetime-local" class="form-control" id="eventStart" required>
                             </div>
-                            <div class="col-6">
+                            <div class="col-12 col-md-6">
                                 <label class="form-label">종료 일시 <span class="text-danger">*</span></label>
                                 <input type="datetime-local" class="form-control" id="eventEnd" required>
                             </div>
