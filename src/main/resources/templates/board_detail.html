@@ -12,6 +12,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Toast UI Editor CSS -->
+    <link rel="stylesheet" href="/toastui/dist/toastui-editor.css" />
     
     <style>
         :root {
@@ -141,6 +143,11 @@
             margin-bottom: 5px;
         }
         
+        /* 뷰어 본문 내 이미지 커서 스타일 */
+        #viewer img {
+            cursor: pointer;
+        }
+        
         .comment-content {
             font-size: 0.95rem;
             color: #334155;
@@ -239,8 +246,9 @@
         </div>
         
         <!-- Content -->
-        <div class="board-content" th:text="${board.content}">
-            게시글 내용입니다.
+        <div class="board-content">
+            <div id="viewer"></div>
+            <textarea id="hiddenContent" style="display:none;" th:text="${board.content}"></textarea>
         </div>
         
         <!-- Images -->
@@ -261,6 +269,15 @@
                     </a>
                 </div>
             </th:block>
+        </div>
+        
+        <!-- Like Section -->
+        <div class="text-center my-5">
+            <button id="likeButton" class="btn btn-outline-danger rounded-pill px-4 py-2" th:classappend="${isLiked != null and isLiked} ? 'active' : ''" th:onclick="'toggleLike(' + ${board.id} + ')'" th:style="${isLiked != null and isLiked} ? 'background-color: #dc3545; color: white;' : ''">
+                <i id="likeIcon" class="bi" th:classappend="${isLiked != null and isLiked} ? 'bi-heart-fill' : 'bi-heart'"></i> 
+                <span class="ms-1 fw-bold">좋아요</span> 
+                <span id="likeCount" class="badge rounded-pill ms-2" th:classappend="${isLiked != null and isLiked} ? 'bg-white text-danger' : 'bg-danger'" th:text="${board.likeCount}">0</span>
+            </button>
         </div>
         
         <!-- Actions -->
@@ -291,7 +308,7 @@
                     등록된 댓글이 없습니다. 첫 댓글을 남겨보세요!
                 </div>
                 
-                <th:block th:each="comment : ${board.comments}">
+                <th:block th:each="comment : ${board.comments}" th:if="${comment.parentId == null}">
                     <div class="comment-item" th:if="${comment.delYn == 'N'}">
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="comment-meta">
@@ -323,6 +340,67 @@
                                 <div class="comment-text" th:text="${comment.content}">댓글 내용</div>
                             </th:block>
                         </div>
+                        
+                        <!-- Reply Button -->
+                        <div class="mt-2 text-end">
+                            <button th:if="${session.loginUser != null}" type="button" class="btn btn-sm btn-link text-secondary p-0 text-decoration-none" style="font-size: 0.85rem;" th:onclick="'toggleReplyForm(' + ${comment.id} + ')'"><i class="bi bi-reply"></i> 답글 달기</button>
+                        </div>
+                        
+                        <!-- Reply Form (Hidden by default) -->
+                        <div th:if="${session.loginUser != null}" th:id="'replyForm_' + ${comment.id}" class="card bg-light border-0 mt-2 d-none" style="margin-left: 2.5rem; border-left: 3px solid #e2e8f0 !important;">
+                            <div class="card-body p-2 p-md-3">
+                                <form th:onsubmit="'submitReply(event, ' + ${comment.id} + ')'">
+                                    <div class="mb-2">
+                                        <textarea th:id="'replyContent_' + ${comment.id}" class="form-control border-0 bg-white" rows="2" placeholder="답글을 남겨보세요..." required></textarea>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="form-check form-check-inline mb-0">
+                                            <input class="form-check-input" type="checkbox" th:id="'replySecret_' + ${comment.id}">
+                                            <label class="form-check-label small text-muted" th:for="'replySecret_' + ${comment.id}"><i class="bi bi-lock"></i> 비밀답글</label>
+                                        </div>
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary me-1" th:onclick="'toggleReplyForm(' + ${comment.id} + ')'">취소</button>
+                                            <button type="submit" class="btn btn-sm btn-primary">등록</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Child Comments (Replies) -->
+                        <th:block th:each="reply : ${board.comments}" th:if="${reply.parentId == comment.id}">
+                            <div class="comment-item mt-3 p-3 bg-light rounded" style="margin-left: 2.5rem; border-left: 3px solid #cbd5e1;" th:if="${reply.delYn == 'N'}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="comment-meta">
+                                        <i class="bi bi-arrow-return-right text-muted me-1"></i>
+                                        <span class="fw-bold text-dark" th:text="${reply.writer}">홍길동</span>
+                                        <span class="ms-2 text-muted" th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}">2026-07-28</span>
+                                    </div>
+                                    <div th:if="${session.loginUser != null and (session.loginUser.id == reply.writerId or session.loginUser.role == 'ADMIN')}">
+                                        <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none" th:onclick="'deleteComment(' + ${board.id} + ',' + ${reply.id} + ')'">
+                                            <i class="bi bi-x-circle"></i> 삭제
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="comment-content mt-1">
+                                    <th:block th:if="${reply.secretYn == 'Y'}">
+                                        <th:block th:if="${session.loginUser != null and (session.loginUser.id == reply.writerId or session.loginUser.id == board.writerId or session.loginUser.role == 'ADMIN')}">
+                                            <div class="d-flex align-items-start">
+                                                <span class="badge bg-secondary opacity-75 fw-normal me-2 mt-1" style="font-size: 0.7rem;"><i class="bi bi-lock-fill"></i> 비밀답글</span>
+                                                <div class="comment-text" th:text="${reply.content}">비밀 답글 내용</div>
+                                            </div>
+                                        </th:block>
+                                        <th:block th:unless="${session.loginUser != null and (session.loginUser.id == reply.writerId or session.loginUser.id == board.writerId or session.loginUser.role == 'ADMIN')}">
+                                            <span class="comment-secret"><i class="bi bi-lock-fill"></i> 비밀 답글입니다.</span>
+                                        </th:block>
+                                    </th:block>
+                                    <th:block th:if="${reply.secretYn == 'N'}">
+                                        <div class="comment-text" th:text="${reply.content}">답글 내용</div>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </th:block>
+                        
                     </div>
                 </th:block>
             </div>
@@ -438,6 +516,110 @@ function deleteComment(boardId, commentId) {
         alert('댓글 삭제 중 오류가 발생했습니다.');
     });
 }
+
+function toggleReplyForm(commentId) {
+    const form = document.getElementById('replyForm_' + commentId);
+    if (form) {
+        if (form.classList.contains('d-none')) {
+            form.classList.remove('d-none');
+        } else {
+            form.classList.add('d-none');
+        }
+    }
+}
+
+function submitReply(event, parentId) {
+    event.preventDefault();
+    const boardId = /*[[${board.id}]]*/ 0;
+    const content = document.getElementById('replyContent_' + parentId).value.trim();
+    const secret = document.getElementById('replySecret_' + parentId).checked;
+    
+    if (!content) {
+        alert('답글 내용을 입력해주세요.');
+        return;
+    }
+    
+    fetch('/api/boards/' + boardId + '/comments', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            content: content,
+            secret: secret,
+            parentId: parentId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || '답글 작성 중 오류가 발생했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('답글 작성 중 오류가 발생했습니다.');
+    });
+}
+
+function toggleLike(boardId) {
+    fetch('/api/boards/' + boardId + '/like', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const btn = document.getElementById('likeButton');
+            const icon = document.getElementById('likeIcon');
+            const count = document.getElementById('likeCount');
+            
+            count.textContent = data.likeCount;
+            
+            if (data.isLiked) {
+                btn.classList.add('active');
+                btn.style.backgroundColor = '#dc3545';
+                btn.style.color = 'white';
+                icon.classList.remove('bi-heart');
+                icon.classList.add('bi-heart-fill');
+                count.classList.remove('bg-danger');
+                count.classList.add('bg-white', 'text-danger');
+            } else {
+                btn.classList.remove('active');
+                btn.style.backgroundColor = '';
+                btn.style.color = '';
+                icon.classList.remove('bi-heart-fill');
+                icon.classList.add('bi-heart');
+                count.classList.remove('bg-white', 'text-danger');
+                count.classList.add('bg-danger');
+            }
+        } else {
+            alert(data.message || '로그인이 필요합니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('오류가 발생했습니다.');
+    });
+}
+</script>
+<!-- Toast UI Editor JS -->
+<script src="/toastui/dist/toastui-editor-viewer.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const viewer = new toastui.Editor({
+            el: document.querySelector('#viewer'),
+            initialValue: document.getElementById('hiddenContent').value
+        });
+        
+        // 에디터 본문 내 이미지 클릭 시 모달창 표시
+        document.querySelector('#viewer').addEventListener('click', function(e) {
+            if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'img') {
+                showImageModal(e.target.src);
+            }
+        });
+    });
 </script>
 </body>
 </html>

@@ -25,6 +25,9 @@ public class Board {
 
     @Column(name = "view_count", nullable = false)
     private int viewCount = 0;
+    
+    @Column(name = "like_count", nullable = false, columnDefinition = "integer default 0")
+    private int likeCount = 0;
 
     @Column(name = "del_yn", nullable = false)
     private String delYn = "N";
@@ -99,6 +102,14 @@ public class Board {
 
     public void setViewCount(int viewCount) {
         this.viewCount = viewCount;
+    }
+
+    public int getLikeCount() {
+        return likeCount;
+    }
+
+    public void setLikeCount(int likeCount) {
+        this.likeCount = likeCount;
     }
 
     public String getDelYn() {

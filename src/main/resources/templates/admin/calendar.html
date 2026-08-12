@@ -190,6 +190,11 @@
                 selectable: true,
                 editable: true,
                 events: '/api/calendar/events',
+                eventDisplay: 'block',
+                displayEventTime: false,
+                eventContent: function(arg) {
+                    return { html: '<div class="px-1 text-truncate w-100"><div class="fc-event-title fw-bold">' + arg.event.title + '</div></div>' };
+                },
                 
                 // 날짜 드래그 선택 (새 일정 추가)
                 select: function(info) {

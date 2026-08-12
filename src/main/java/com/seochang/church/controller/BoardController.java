@@ -4,6 +4,7 @@ import com.seochang.church.entity.Board;
 import com.seochang.church.entity.User;
 import com.seochang.church.service.BoardService;
 import com.seochang.church.service.UserService;
+import com.seochang.church.repository.BoardLikeRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,10 +19,12 @@ public class BoardController {
 
     private final BoardService boardService;
     private final com.seochang.church.service.FileStorageService fileStorageService;
+    private final BoardLikeRepository boardLikeRepository;
 
-    public BoardController(BoardService boardService, com.seochang.church.service.FileStorageService fileStorageService) {
+    public BoardController(BoardService boardService, com.seochang.church.service.FileStorageService fileStorageService, BoardLikeRepository boardLikeRepository) {
         this.boardService = boardService;
         this.fileStorageService = fileStorageService;
+        this.boardLikeRepository = boardLikeRepository;
     }
 
     @GetMapping
@@ -54,13 +57,16 @@ public class BoardController {
         boardService.increaseViewCount(id);
         
         boolean isOwnerOrAdmin = false;
+        boolean isLiked = false;
         
         if (loginUser != null) {
             isOwnerOrAdmin = board.getWriterId().equals(loginUser.getId()) || "ADMIN".equals(loginUser.getRole());
+            isLiked = boardLikeRepository.existsByBoardAndUser(board, loginUser);
         }
         
         model.addAttribute("board", board);
         model.addAttribute("isOwnerOrAdmin", isOwnerOrAdmin);
+        model.addAttribute("isLiked", isLiked);
         
         return "board_detail";
     }

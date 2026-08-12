@@ -55,6 +55,9 @@ public class BoardCommentController {
                 : loginUser.getName();
 
         BoardComment comment = new BoardComment(board, request.getContent(), writerName, loginUser.getId(), secretYn);
+        if (request.getParentId() != null) {
+            comment.setParentId(request.getParentId());
+        }
         boardCommentRepository.save(comment);
 
         response.put("success", true);

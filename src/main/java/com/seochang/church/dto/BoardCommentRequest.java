@@ -3,6 +3,7 @@ package com.seochang.church.dto;
 public class BoardCommentRequest {
     private String content;
     private boolean secret;
+    private Long parentId;
 
     public BoardCommentRequest() {
     }
@@ -21,5 +22,13 @@ public class BoardCommentRequest {
 
     public void setSecret(boolean secret) {
         this.secret = secret;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
     }
 }

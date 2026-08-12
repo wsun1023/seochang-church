@@ -900,6 +900,11 @@
                     list: '목록'
                 },
                 events: '/api/calendar/events',
+                eventDisplay: 'block',
+                displayEventTime: false,
+                eventContent: function(arg) {
+                    return { html: '<div class="px-1 text-truncate w-100"><div class="fc-event-title fw-bold">' + arg.event.title + '</div></div>' };
+                },
                 eventClick: function(info) {
                     document.getElementById('eventTitle').textContent = info.event.title;
                     

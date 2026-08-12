@@ -24,6 +24,9 @@ public class BoardComment {
     @Column(name = "writer_id", nullable = false)
     private Long writerId;
 
+    @Column(name = "parent_id")
+    private Long parentId;
+
     @Column(name = "secret_yn", nullable = false, length = 1)
     private String secretYn = "N";
 
@@ -117,5 +120,13 @@ public class BoardComment {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
     }
 }
