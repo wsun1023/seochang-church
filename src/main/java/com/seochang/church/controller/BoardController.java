@@ -81,26 +81,15 @@ public class BoardController {
         return "board_form";
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/new")
-    public String create(@ModelAttribute Board board, 
+    public String create(@ModelAttribute com.seochang.church.dto.PostForm form,
                          @RequestParam(value = "imageFiles", required = false) java.util.List<org.springframework.web.multipart.MultipartFile> imageFiles,
                          @RequestParam(value = "generalFiles", required = false) java.util.List<org.springframework.web.multipart.MultipartFile> generalFiles,
                          HttpSession session, Model model) {
+        Board board = form.toBoard();
+        fileStorageService.validatePlan(java.util.List.of(), null, imageFiles, generalFiles, 10, 3);
         User loginUser = (User) session.getAttribute("loginUser");
-        
-        long validImages = imageFiles != null ? imageFiles.stream().filter(f -> !f.isEmpty()).count() : 0;
-        long validFiles = generalFiles != null ? generalFiles.stream().filter(f -> !f.isEmpty()).count() : 0;
-        
-        if (validImages > 10) {
-            model.addAttribute("message", "이미지는 최대 10개까지 업로드할 수 있습니다.");
-            model.addAttribute("redirectUri", "/boards/new");
-            return "alert";
-        }
-        if (validFiles > 3) {
-            model.addAttribute("message", "파일은 최대 3개까지 업로드할 수 있습니다.");
-            model.addAttribute("redirectUri", "/boards/new");
-            return "alert";
-        }
         
         board.setWriter(loginUser.getDisplayName());
         board.setWriterId(loginUser.getId());
@@ -151,8 +140,9 @@ public class BoardController {
         return "board_form";
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/edit")
-    public String edit(@PathVariable Long id, @ModelAttribute Board updatedBoard, 
+    public String edit(@PathVariable Long id, @ModelAttribute com.seochang.church.dto.PostForm updatedBoard,
                        @RequestParam(value = "imageFiles", required = false) java.util.List<org.springframework.web.multipart.MultipartFile> imageFiles,
                        @RequestParam(value = "generalFiles", required = false) java.util.List<org.springframework.web.multipart.MultipartFile> generalFiles,
                        @RequestParam(value = "deleteFileIds", required = false) java.util.List<Long> deleteFileIds,
@@ -172,6 +162,8 @@ public class BoardController {
             return "alert";
         }
 
+        updatedBoard.validate();
+        fileStorageService.validatePlan(board.getAttachments(), deleteFileIds, imageFiles, generalFiles, 10, 3);
         board.setTitle(updatedBoard.getTitle());
         board.setContent(updatedBoard.getContent());
         if (updatedBoard.getCategory() != null) {
@@ -186,24 +178,11 @@ public class BoardController {
         processAttachments(board, imageFiles, true);
         processAttachments(board, generalFiles, false);
         
-        long validImages = board.getAttachments().stream().filter(a -> a.isImage()).count();
-        long validFiles = board.getAttachments().stream().filter(a -> !a.isImage()).count();
-        
-        if (validImages > 10) {
-            model.addAttribute("message", "이미지는 최대 10개까지 업로드할 수 있습니다.");
-            model.addAttribute("redirectUri", "/boards/" + id + "/edit");
-            return "alert";
-        }
-        if (validFiles > 3) {
-            model.addAttribute("message", "파일은 최대 3개까지 업로드할 수 있습니다.");
-            model.addAttribute("redirectUri", "/boards/" + id + "/edit");
-            return "alert";
-        }
-
         boardService.saveBoard(board);
         return "redirect:/boards/" + id;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, HttpSession session, Model model) {
         User loginUser = (User) session.getAttribute("loginUser");

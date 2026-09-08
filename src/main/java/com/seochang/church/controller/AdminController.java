@@ -172,6 +172,7 @@ public class AdminController {
         return "admin/banners";
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/banners/add")
     public String addBanner(@ModelAttribute Banner banner, @RequestParam("imageFile") MultipartFile imageFile) throws IOException {
         if (imageFile != null && !imageFile.isEmpty()) {

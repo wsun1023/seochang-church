@@ -106,6 +106,8 @@
             }
         }
     </style>
+<meta name="csrf-token" th:content="${csrfToken}">
+<script src="/js/csrf.js"></script>
 </head>
 <body>
 
@@ -129,7 +131,14 @@
 
                     <div class="card-body p-3 p-md-4">
                         <div class="row g-2 align-items-center">
-                            <div class="col-6 col-md-3">
+                            <div class="col-12 col-md-4 col-lg-3">
+                                <label for="versionSelect" class="form-label small text-muted mb-1 fw-bold">번역본</label>
+                                <select id="versionSelect" class="form-select border-0 bg-white shadow-sm fw-bold" onchange="onVersionChange()">
+                                    <option value="catholic" selected>한국 천주교회 공용 번역본</option>
+                                    <option value="joint">공동번역 성서</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-3 col-lg-2">
                                 <label for="testamentSelect" class="form-label small text-muted mb-1 fw-bold">구분</label>
                                 <select id="testamentSelect" class="form-select border-0 bg-white shadow-sm fw-bold" onchange="onTestamentChange()">
                                     <option value="" disabled selected>구분 선택</option>
@@ -137,13 +146,13 @@
                                     <option value="2">신약성경</option>
                                 </select>
                             </div>
-                            <div class="col-6 col-md-4">
+                            <div class="col-6 col-md-5 col-lg-3">
                                 <label for="bookSelect" class="form-label small text-muted mb-1 fw-bold">성경 목록</label>
                                 <select id="bookSelect" class="form-select border-0 bg-white shadow-sm fw-bold" onchange="onBookChange()">
                                     <option value="" disabled selected>성경 목록 선택</option>
                                 </select>
                             </div>
-                            <div class="col-12 col-md-5 d-flex align-items-center justify-content-md-end mt-3 mt-md-0">
+                            <div class="col-12 col-md-12 col-lg-4 d-flex align-items-center justify-content-lg-end justify-content-center mt-3 mt-lg-0">
                                 <button class="btn btn-white bg-white shadow-sm rounded-circle me-2" onclick="changeChapter(-1)" title="이전 장"><i class="bi bi-chevron-left"></i></button>
                                 <select id="chapterSelect" class="form-select form-select-sm border-0 bg-light fw-bold text-center mx-1 shadow-sm" style="width: 80px; cursor: pointer; font-size: 1rem;" onchange="onChapterSelectChange(this.value)">
                                     <option value="1">1장</option>
@@ -176,7 +185,6 @@
                         <h5 class="fw-bold text-dark mb-2">읽으실 성경 권과 장을 선택해 주세요.</h5>
                         <p class="small text-secondary mb-0">상단의 구약/신약 및 성경 권을 선택하시면 말씀이 표시됩니다.</p>
                     </div>
-                </div>
                 </div>
 
                 <!-- Bottom Navigation (Hidden by default) -->
@@ -283,10 +291,19 @@
         chapterSelect.value = currentChapter;
     }
 
+    function onVersionChange() {
+        const testament = document.getElementById('testamentSelect').value;
+        const book = document.getElementById('bookSelect').value;
+        if (testament && book) {
+            loadBible();
+        }
+    }
+
     function onTestamentChange() {
         populateBooks();
         currentChapter = 1;
-        document.getElementById('chapterDisplay').innerText = '1장';
+        const bottomDisplay = document.getElementById('bottomChapterDisplay');
+        if (bottomDisplay) bottomDisplay.innerText = '1장';
         showPlaceholder();
     }
 
@@ -307,7 +324,7 @@
             <div class="text-center text-muted py-5" id="biblePlaceholder">
                 <i class="bi bi-book fs-1 mb-3 d-block text-warning"></i>
                 <h5 class="fw-bold text-dark mb-2">읽으실 성경 권과 장을 선택해 주세요.</h5>
-                <p class="small text-secondary mb-0">상단의 구약/신약 및 성경 권을 선택하시면 말씀이 표시됩니다.</p>
+                <p class="small text-secondary mb-0">상단의 구분 및 성경 권을 선택하시면 말씀이 표시됩니다.</p>
             </div>
         `;
         document.getElementById('bibleBottomNav').style.setProperty('display', 'none', 'important');
@@ -335,6 +352,8 @@
     }
     
     function loadBible() {
+        const versionSelect = document.getElementById('versionSelect');
+        const version = versionSelect ? versionSelect.value : 'catholic';
         const testament = document.getElementById('testamentSelect').value;
         const book = document.getElementById('bookSelect').value;
         if (!testament || !book) return;
@@ -347,7 +366,7 @@
         document.getElementById('bibleBottomNav').style.setProperty('display', 'none', 'important');
         contentDiv.innerHTML = '<div class="text-center text-muted py-5"><div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div><div>말씀을 불러오는 중입니다...</div></div>';
         
-        fetch(`/api/bible?testament=${testament}&book=${book}&chapter=${currentChapter}`)
+        fetch(`/api/bible?version=${encodeURIComponent(version)}&testament=${testament}&book=${book}&chapter=${currentChapter}`)
             .then(response => response.json())
             .then(data => {
                 if (data.length === 0) {
@@ -362,8 +381,12 @@
                 
                 let html = '';
                 data.forEach(verseInfo => {
-                    let verseNum = verseInfo.verse ? `<sup class="text-primary fw-bold me-1">${verseInfo.verse}</sup>` : '';
-                    html += `<p class="mb-2" style="text-indent: 5px;">${verseNum}${verseInfo.text}</p>`;
+                    if (!verseInfo.verse) {
+                        html += `<h6 class="fw-bold text-primary mt-4 mb-2 pt-2 border-top border-light" style="text-indent: 0;">${verseInfo.text}</h6>`;
+                    } else {
+                        let verseNum = `<sup class="text-primary fw-bold me-1">${verseInfo.verse}</sup>`;
+                        html += `<p class="mb-2" style="text-indent: 5px;">${verseNum}${verseInfo.text}</p>`;
+                    }
                 });
                 contentDiv.innerHTML = html;
                 

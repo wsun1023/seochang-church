@@ -59,6 +59,7 @@ public class UserService {
     }
 
     public void changeUserRole(Long id, String role) {
+        if (!java.util.Set.of("USER", "ADMIN").contains(role)) throw new IllegalArgumentException("잘못된 권한입니다.");
         User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
         user.setRole(role);
         userRepository.save(user);

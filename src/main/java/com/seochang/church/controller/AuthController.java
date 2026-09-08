@@ -29,10 +29,11 @@ public class AuthController {
     @PostMapping("/login")
     public String login(@RequestParam("username") String username,
                         @RequestParam("password") String password,
-                        HttpSession session,
+                        HttpSession session, jakarta.servlet.http.HttpServletRequest request,
                         RedirectAttributes redirectAttributes) {
         try {
             User user = userService.login(username, password);
+            request.changeSessionId();
             session.setAttribute("loginUser", user);
             return "redirect:/";
         } catch (IllegalArgumentException e) {
@@ -64,7 +65,7 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";

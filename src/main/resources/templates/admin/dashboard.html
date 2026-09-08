@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
-<head><title>대시보드</title></head>
+<head><title>대시보드</title><meta name="csrf-token" th:content="${csrfToken}">
+<script src="/js/csrf.js"></script>
+</head>
 <body>
 <div th:fragment="content">
     <div class="page-header">

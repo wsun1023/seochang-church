@@ -53,11 +53,7 @@ public class BoardService {
     }
 
     public void increaseViewCount(Long id) {
-        Board board = getBoard(id);
-        if (board != null) {
-            board.setViewCount(board.getViewCount() + 1);
-            boardRepository.save(board);
-        }
+        boardRepository.incrementViewCount(id);
     }
 
     public Board saveBoard(Board board) {

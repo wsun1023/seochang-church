@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
-<head><title>갤러리 관리</title></head>
+<head><title>갤러리 관리</title><meta name="csrf-token" th:content="${csrfToken}">
+<script src="/js/csrf.js"></script>
+</head>
 <body>
 <div th:fragment="content">
     <div class="page-header">
@@ -46,7 +48,7 @@
                             <span th:if="${gallery.delYn == 'Y'}" class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2">삭제됨</span>
                         </td>
                         <td class="text-center">
-                            <form th:if="${gallery.delYn == 'N'}" th:action="@{/admin/galleries/{id}/delete(id=${gallery.id})}" method="post" onsubmit="return confirm('이 갤러리 게시글을 정말 삭제하시겠습니까?');">
+                            <form th:if="${gallery.delYn == 'N'}" th:action="@{/admin/galleries/{id}/delete(id=${gallery.id})}" method="post" onsubmit="return confirm('이 갤러리 게시글을 정말 삭제하시겠습니까?');"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2"><i class="bi bi-trash"></i> 삭제</button>
                             </form>
                         </td>
@@ -86,7 +88,7 @@
                         <p class="text-muted small mb-2 text-truncate" style="max-width: 180px;"><i class="bi bi-person me-1"></i><span th:text="${gallery.writer}">작성자</span></p>
                         
                         <div class="text-end mt-auto">
-                            <form th:if="${gallery.delYn == 'N'}" th:action="@{/admin/galleries/{id}/delete(id=${gallery.id})}" method="post" onsubmit="return confirm('이 갤러리 게시글을 정말 삭제하시겠습니까?');">
+                            <form th:if="${gallery.delYn == 'N'}" th:action="@{/admin/galleries/{id}/delete(id=${gallery.id})}" method="post" onsubmit="return confirm('이 갤러리 게시글을 정말 삭제하시겠습니까?');"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-3 rounded-pill" style="font-size: 0.8rem;"><i class="bi bi-trash"></i> 삭제</button>
                             </form>
                         </div>

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
-<head><title>성당소식 관리</title></head>
+<head><title>성당소식 관리</title><meta name="csrf-token" th:content="${csrfToken}">
+<script src="/js/csrf.js"></script>
+</head>
 <body>
 <div th:fragment="content">
     <div class="page-header">
@@ -44,7 +46,7 @@
                             <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2">정상</span>
                         </td>
                         <td class="text-center">
-                            <form th:action="@{/admin/notices/{id}/delete(id=${notice.id})}" method="post" onsubmit="return confirm('이 성당소식을 정말 삭제하시겠습니까?');">
+                            <form th:action="@{/admin/notices/{id}/delete(id=${notice.id})}" method="post" onsubmit="return confirm('이 성당소식을 정말 삭제하시겠습니까?');"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2"><i class="bi bi-trash"></i> 삭제</button>
                             </form>
                         </td>
@@ -80,7 +82,7 @@
                         </div>
                         
                         <div class="text-end">
-                            <form th:action="@{/admin/notices/{id}/delete(id=${notice.id})}" method="post" onsubmit="return confirm('이 성당소식을 정말 삭제하시겠습니까?');">
+                            <form th:action="@{/admin/notices/{id}/delete(id=${notice.id})}" method="post" onsubmit="return confirm('이 성당소식을 정말 삭제하시겠습니까?');"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-3 rounded-pill" style="font-size: 0.8rem;"><i class="bi bi-trash"></i> 삭제</button>
                             </form>
                         </div>

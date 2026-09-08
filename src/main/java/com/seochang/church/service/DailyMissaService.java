@@ -7,18 +7,19 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
-import java.security.cert.X509Certificate;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import org.springframework.util.StringUtils;
 
 @Service
 public class DailyMissaService {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DailyMissaService.class);
+    private final CatholicHttpClient httpClient;
+
+    public DailyMissaService(CatholicHttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
 
     private static final String DAILY_MISSA_URL = "https://maria.catholic.or.kr/mi_pr/missa/missa.asp";
 
@@ -43,10 +44,7 @@ public class DailyMissaService {
         String requestUrl = DAILY_MISSA_URL + "?goMonth=" + dto.getDate();
 
         try {
-            Document doc = Jsoup.connect(requestUrl)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                    .timeout(10000)
-                    .sslSocketFactory(socketFactory())
+            Document doc = httpClient.connect(requestUrl, 10000)
                     .get();
 
             // Extract date text
@@ -95,7 +93,7 @@ public class DailyMissaService {
                 }
                 
                 if (contentBuilder.length() > 0) {
-                    dto.addReading(secName, contentBuilder.toString());
+                    dto.addReading(secName, Jsoup.clean(contentBuilder.toString(), org.jsoup.safety.Safelist.relaxed()));
                 }
             }
 
@@ -104,7 +102,7 @@ public class DailyMissaService {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.warn("Daily Mass request failed for {}: {}", dto.getDate(), e.toString());
             dto.setTitle("매일미사 정보를 가져올 수 없습니다.");
             dto.addReading("오류", "<p class='text-danger'>가톨릭 굿뉴스 서버와 연결할 수 없습니다. 나중에 다시 시도해 주세요.</p>");
         }
@@ -112,19 +110,4 @@ public class DailyMissaService {
         return dto;
     }
 
-    private SSLSocketFactory socketFactory() {
-        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
-            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-            public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-            public void checkServerTrusted(X509Certificate[] certs, String authType) {}
-        }};
-
-        try {
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-            return sslContext.getSocketFactory();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create a SSL socket factory", e);
-        }
-    }
 }

@@ -15,70 +15,76 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class BibleService {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BibleService.class);
+    private final CatholicHttpClient httpClient;
 
-    // Simple memory cache: Key is "m_n_p", Value is list of verses
+    public BibleService(CatholicHttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
+
+    // Simple memory cache: Key is "version_testament_book_chapter", Value is list of verses
     private final Map<String, List<Map<String, String>>> cache = new ConcurrentHashMap<>();
 
     public List<Map<String, String>> getBibleChapter(int testament, int book, int chapter) {
-        String cacheKey = testament + "_" + book + "_" + chapter;
+        return getBibleChapter(testament, book, chapter, "catholic");
+    }
+
+    public List<Map<String, String>> getBibleChapter(int testament, int book, int chapter, String version) {
+        String normalizedVersion = (version != null && version.equalsIgnoreCase("joint")) ? "joint" : "catholic";
+        String cacheKey = normalizedVersion + "_" + testament + "_" + book + "_" + chapter;
         if (cache.containsKey(cacheKey)) {
             return cache.get(cacheKey);
         }
 
+        String url = buildBibleUrl(testament, book, chapter, normalizedVersion);
         List<Map<String, String>> verses = new ArrayList<>();
 
-        int mappedBook = testament == 2 ? book + 46 : book;
-        // m=1 is 가톨릭 성경 (Standard Catholic Bible). n is book index 1~73. p is chapter.
-        String url = String.format("https://maria.catholic.or.kr/bible/read/bible_read.asp?m=%d&n=%d&p=%d", testament, mappedBook, chapter);
-
         try {
-            Document doc = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0")
-                    .timeout(5000)
-                    .sslSocketFactory(socketFactory())
+            Document doc = httpClient.connect(url, 5000)
                     .get();
-
-            // Usually, verses in GoodNews are in <ul class="b_list"> <li>...
-            Elements rows = doc.select("tbody tr");
-            for (Element row : rows) {
-                Elements numCols = row.select("td.num_color");
-                Elements textCols = row.select("td.al, td.tt");
-                if (!textCols.isEmpty()) {
-                    String num = numCols.isEmpty() ? "" : numCols.text().trim();
-                    String text = textCols.first().text().trim();
-                    if (!text.isEmpty()) {
-                        Map<String, String> verseInfo = new HashMap<>();
-                        verseInfo.put("verse", num);
-                        verseInfo.put("text", text);
-                        verses.add(verseInfo);
-                    }
-                }
-            }
+            verses = parseVerses(doc);
 
             if (!verses.isEmpty()) {
                 cache.put(cacheKey, verses);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.warn("Bible request failed for chapter {}: {}", cacheKey, e.toString());
         }
 
         return verses;
     }
 
-    private javax.net.ssl.SSLSocketFactory socketFactory() {
-        try {
-            javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[]{
-                new javax.net.ssl.X509TrustManager() {
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
-                }
-            };
-            javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("TLS");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            return sc.getSocketFactory();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create SSL socket factory", e);
+    public String buildBibleUrl(int testament, int book, int chapter, String version) {
+        String normalizedVersion = (version != null && version.equalsIgnoreCase("joint")) ? "joint" : "catholic";
+        int m = testament;
+        int n;
+        if ("joint".equals(normalizedVersion)) {
+            // 공동번역 성서: 구약 1~46, 신약 47~73
+            n = testament == 2 ? book + 46 : book;
+        } else {
+            // 한국 천주교회 공용 번역본 (주교회의 성경): 구약 101~146, 신약 147~173
+            n = testament == 2 ? book + 146 : book + 100;
         }
+        return String.format("https://maria.catholic.or.kr/bible/read/bible_read.asp?m=%d&n=%d&p=%d", m, n, chapter);
+    }
+
+    List<Map<String, String>> parseVerses(Document doc) {
+        List<Map<String, String>> verses = new ArrayList<>();
+        Elements rows = doc.select("tbody tr");
+        for (Element row : rows) {
+            Elements numCols = row.select("td.num_color");
+            Elements textCols = row.select("td.al, td.tt");
+            if (!textCols.isEmpty()) {
+                String num = numCols.isEmpty() ? "" : numCols.text().trim();
+                String text = textCols.first().text().trim();
+                if (!text.isEmpty()) {
+                    Map<String, String> verseInfo = new HashMap<>();
+                    verseInfo.put("verse", num);
+                    verseInfo.put("text", text);
+                    verses.add(verseInfo);
+                }
+            }
+        }
+        return verses;
     }
 }

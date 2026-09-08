@@ -185,6 +185,8 @@
             }
         }
     </style>
+<meta name="csrf-token" th:content="${csrfToken}">
+<script src="/js/csrf.js"></script>
 </head>
 <body>
 
@@ -203,7 +205,7 @@
 <main class="container">
     <div class="form-container">
         
-        <form class="upload-form" data-redirect-url="/boards" th:action="${board.id == null ? '/boards/new' : '/boards/' + board.id + '/edit'}" method="post" enctype="multipart/form-data">
+        <form class="upload-form" data-redirect-url="/boards" th:action="${board.id == null ? '/boards/new' : '/boards/' + board.id + '/edit'}" method="post" enctype="multipart/form-data"><input type="hidden" name="_csrf" th:value="${csrfToken}">
             
             <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 

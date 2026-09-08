@@ -61,23 +61,14 @@ public class NoticeController {
         return "notice_form";
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/new")
-    public String create(@ModelAttribute Notice notice, 
+    public String create(@ModelAttribute com.seochang.church.dto.PostForm form,
                          @RequestParam(value = "imageFiles", required = false) java.util.List<org.springframework.web.multipart.MultipartFile> imageFiles,
                          @RequestParam(value = "generalFiles", required = false) java.util.List<org.springframework.web.multipart.MultipartFile> generalFiles,
                          RedirectAttributes redirectAttributes) {
-        
-        long validImages = imageFiles != null ? imageFiles.stream().filter(f -> !f.isEmpty()).count() : 0;
-        long validFiles = generalFiles != null ? generalFiles.stream().filter(f -> !f.isEmpty()).count() : 0;
-        
-        if (validImages > 10) {
-            redirectAttributes.addFlashAttribute("error", "이미지는 최대 10개까지 업로드할 수 있습니다.");
-            return "redirect:/notices/new";
-        }
-        if (validFiles > 3) {
-            redirectAttributes.addFlashAttribute("error", "파일은 최대 3개까지 업로드할 수 있습니다.");
-            return "redirect:/notices/new";
-        }
+        Notice notice = form.toNotice();
+        fileStorageService.validatePlan(java.util.List.of(), null, imageFiles, generalFiles, 10, 3);
         
         processAttachments(notice, imageFiles, true);
         processAttachments(notice, generalFiles, false);
@@ -114,14 +105,17 @@ public class NoticeController {
         return "notice_form";
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/edit")
-    public String edit(@PathVariable Long id, @ModelAttribute Notice updatedNotice, 
+    public String edit(@PathVariable Long id, @ModelAttribute com.seochang.church.dto.PostForm updatedNotice,
                        @RequestParam(value = "imageFiles", required = false) java.util.List<org.springframework.web.multipart.MultipartFile> imageFiles,
                        @RequestParam(value = "generalFiles", required = false) java.util.List<org.springframework.web.multipart.MultipartFile> generalFiles,
                        @RequestParam(value = "deleteFileIds", required = false) java.util.List<Long> deleteFileIds,
                        RedirectAttributes redirectAttributes) {
         Notice notice = noticeService.getNotice(id);
         if (notice != null) {
+            updatedNotice.validate();
+            fileStorageService.validatePlan(notice.getAttachments(), deleteFileIds, imageFiles, generalFiles, 10, 3);
             notice.setTitle(updatedNotice.getTitle());
             notice.setContent(updatedNotice.getContent());
             if (updatedNotice.getCategory() != null) {
@@ -136,23 +130,12 @@ public class NoticeController {
             processAttachments(notice, imageFiles, true);
             processAttachments(notice, generalFiles, false);
             
-            long validImages = notice.getAttachments().stream().filter(a -> a.isImage()).count();
-            long validFiles = notice.getAttachments().stream().filter(a -> !a.isImage()).count();
-            
-            if (validImages > 10) {
-                redirectAttributes.addFlashAttribute("error", "이미지는 최대 10개까지 업로드할 수 있습니다.");
-                return "redirect:/notices/" + id + "/edit";
-            }
-            if (validFiles > 3) {
-                redirectAttributes.addFlashAttribute("error", "파일은 최대 3개까지 업로드할 수 있습니다.");
-                return "redirect:/notices/" + id + "/edit";
-            }
-
             noticeService.saveNotice(notice);
         }
         return "redirect:/notices";
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
         Notice notice = noticeService.getNotice(id);

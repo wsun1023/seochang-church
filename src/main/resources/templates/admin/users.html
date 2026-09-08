@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::content})}">
-<head><title>회원 관리</title></head>
+<head><title>회원 관리</title><meta name="csrf-token" th:content="${csrfToken}">
+<script src="/js/csrf.js"></script>
+</head>
 <body>
 <div th:fragment="content">
     <div class="page-header">
@@ -45,7 +47,7 @@
                             <span th:if="${user.delYn == 'N' && !user.approved}" class="badge bg-danger">대기중</span>
                         </td>
                         <td class="text-center">
-                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" class="d-inline-flex align-items-center">
+                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" class="d-inline-flex align-items-center"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                                 <select name="role" class="form-select form-select-sm me-2" style="width: 100px;">
                                     <option value="USER" th:selected="${user.role == 'USER'}">일반</option>
                                     <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">관리자</option>
@@ -55,10 +57,10 @@
                             <span th:if="${user.delYn == 'Y'}" class="text-muted small" th:text="${user.role}"></span>
                         </td>
                         <td class="text-end">
-                            <form th:if="${user.delYn == 'N' && !user.approved}" th:action="@{/admin/users/{id}/approve(id=${user.id})}" method="post" class="d-inline">
+                            <form th:if="${user.delYn == 'N' && !user.approved}" th:action="@{/admin/users/{id}/approve(id=${user.id})}" method="post" class="d-inline"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                                 <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check-circle me-1"></i>승인</button>
                             </form>
-                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" class="d-inline" onsubmit="return confirm('정말로 이 회원을 강제 탈퇴 처리하시겠습니까?');">
+                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" class="d-inline" onsubmit="return confirm('정말로 이 회원을 강제 탈퇴 처리하시겠습니까?');"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                                 <button type="submit" class="btn btn-sm btn-outline-danger ms-1"><i class="bi bi-trash"></i></button>
                             </form>
                         </td>
@@ -97,7 +99,7 @@
                     
                     <div class="d-flex justify-content-between align-items-end mt-3 border-top pt-2">
                         <div>
-                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" class="d-flex align-items-center">
+                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" class="d-flex align-items-center"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                                 <select name="role" class="form-select form-select-sm me-1" style="width: 80px; font-size: 0.8rem; padding: 2px 5px;">
                                     <option value="USER" th:selected="${user.role == 'USER'}">일반</option>
                                     <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">관리자</option>
@@ -108,10 +110,10 @@
                         </div>
                         
                         <div class="text-end">
-                            <form th:if="${user.delYn == 'N' && !user.approved}" th:action="@{/admin/users/{id}/approve(id=${user.id})}" method="post" class="d-inline">
+                            <form th:if="${user.delYn == 'N' && !user.approved}" th:action="@{/admin/users/{id}/approve(id=${user.id})}" method="post" class="d-inline"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                                 <button type="submit" class="btn btn-sm btn-success rounded-pill" style="font-size: 0.8rem; padding: 2px 10px;"><i class="bi bi-check-circle me-1"></i>승인</button>
                             </form>
-                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" class="d-inline ms-1" onsubmit="return confirm('정말로 이 회원을 강제 탈퇴 처리하시겠습니까?');">
+                            <form th:if="${user.delYn == 'N'}" th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" class="d-inline ms-1" onsubmit="return confirm('정말로 이 회원을 강제 탈퇴 처리하시겠습니까?');"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                                 <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1"><i class="bi bi-trash"></i></button>
                             </form>
                         </div>

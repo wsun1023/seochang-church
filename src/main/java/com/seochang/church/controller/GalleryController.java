@@ -70,10 +70,13 @@ public class GalleryController {
         return "gallery_form";
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/new")
-    public String create(@ModelAttribute Gallery gallery, 
+    public String create(@ModelAttribute com.seochang.church.dto.PostForm form,
                          @RequestParam(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
                          HttpSession session, Model model) {
+        Gallery gallery = form.toGallery();
+        fileStorageService.validatePlan(java.util.List.of(), null, imageFiles, null, 50, 3);
         User loginUser = (User) session.getAttribute("loginUser");
         
         long validImages = imageFiles != null ? imageFiles.stream().filter(f -> !f.isEmpty()).count() : 0;
@@ -82,11 +85,7 @@ public class GalleryController {
             model.addAttribute("redirectUri", "/gallery/new");
             return "alert";
         }
-        if (validImages > 50) {
-            model.addAttribute("message", "사진은 최대 50개까지 업로드할 수 있습니다.");
-            model.addAttribute("redirectUri", "/gallery/new");
-            return "alert";
-        }
+
         
         gallery.setWriter(loginUser.getDisplayName());
         gallery.setWriterId(loginUser.getId());
@@ -109,8 +108,9 @@ public class GalleryController {
         return "gallery_form";
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/edit")
-    public String edit(@PathVariable Long id, @ModelAttribute Gallery updatedGallery, 
+    public String edit(@PathVariable Long id, @ModelAttribute com.seochang.church.dto.PostForm updatedGallery,
                        @RequestParam(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
                        Model model) {
         Gallery gallery = galleryService.getGallery(id);
@@ -118,6 +118,8 @@ public class GalleryController {
             return "redirect:/gallery";
         }
 
+        updatedGallery.validate();
+        fileStorageService.validatePlan(gallery.getAttachments(), null, imageFiles, null, 50, 3);
         gallery.setTitle(updatedGallery.getTitle());
         gallery.setContent(updatedGallery.getContent());
         gallery.setUpdatedAt(LocalDateTime.now());
@@ -128,6 +130,7 @@ public class GalleryController {
         return "redirect:/gallery/" + id;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
         Gallery gallery = galleryService.getGallery(id);

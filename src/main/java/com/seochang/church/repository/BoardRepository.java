@@ -12,6 +12,12 @@ import java.util.List;
 
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT b FROM Board b WHERE b.id = :id")
+    java.util.Optional<Board> findLockedById(@Param("id") Long id);
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Board b SET b.viewCount = b.viewCount + 1 WHERE b.id = :id AND b.delYn = 'N'")
+    int incrementViewCount(@Param("id") Long id);
     List<Board> findByDelYnOrderByCreatedAtDesc(String delYn);
     List<Board> findByDelYnAndCategoryOrderByCreatedAtDesc(String delYn, String category);
 

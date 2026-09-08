@@ -2,6 +2,8 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+<meta name="csrf-token" th:content="${csrfToken}">
+<script src="/js/csrf.js"></script>
 </head>
 <body>
 <!-- Navigation -->
@@ -167,7 +169,7 @@
                         <span th:if="${session.loginUser.role == 'ADMIN'}" class="badge bg-danger ms-1">관리자</span>
                     </span>
                     <a th:if="${session.loginUser.role == 'ADMIN'}" class="btn btn-danger btn-sm rounded-pill px-3" href="/admin">⚙️ 관리자 페이지</a>
-                    <a class="btn btn-outline-light btn-sm rounded-pill px-3" href="/logout">로그아웃</a>
+                    <form action="/logout" method="post" class="d-inline"><input type="hidden" name="_csrf" th:value="${csrfToken}"><button type="submit" class="btn btn-outline-secondary btn-sm">로그아웃</button></form>
                 </li>
             </ul>
         </div>

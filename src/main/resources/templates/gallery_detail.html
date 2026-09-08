@@ -201,6 +201,8 @@
             margin-top: 40px;
         }
     </style>
+<meta name="csrf-token" th:content="${csrfToken}">
+<script src="/js/csrf.js"></script>
 </head>
 <body>
 
@@ -252,7 +254,7 @@
                 <a th:href="@{/gallery/{id}/edit(id=${gallery.id})}" class="btn btn-outline-primary rounded-pill px-4">
                     <i class="bi bi-pencil me-1"></i> 수정
                 </a>
-                <form th:action="@{/gallery/{id}/delete(id=${gallery.id})}" method="post" class="d-inline" onsubmit="return confirm('이 사진첩을 정말 삭제하시겠습니까? (복구 불가)');">
+                <form th:action="@{/gallery/{id}/delete(id=${gallery.id})}" method="post" class="d-inline" onsubmit="return confirm('이 사진첩을 정말 삭제하시겠습니까? (복구 불가)');"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                     <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
                         <i class="bi bi-trash me-1"></i> 삭제
                     </button>

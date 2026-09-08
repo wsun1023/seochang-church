@@ -36,7 +36,7 @@ public class FileDownloadController {
 
             Resource resource = new UrlResource(filePath.toUri());
 
-            if (resource.exists() || resource.isReadable()) {
+            if (resource.exists() && resource.isReadable() && java.nio.file.Files.isRegularFile(filePath)) {
                 String encodedOriginalName = URLEncoder.encode(originalName, StandardCharsets.UTF_8.toString()).replaceAll("\\+", "%20");
                 return ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_OCTET_STREAM)

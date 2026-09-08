@@ -119,6 +119,8 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
     </style>
+<meta name="csrf-token" th:content="${csrfToken}">
+<script src="/js/csrf.js"></script>
 </head>
 <body>
 
@@ -141,7 +143,7 @@
                 
                 <h4 class="fw-bold mb-4" th:text="${gallery.id == null ? '사진첩 올리기' : '사진첩 수정'}">글쓰기</h4>
                 
-                <form class="upload-form" id="galleryForm" data-redirect-url="/gallery" th:action="${gallery.id == null ? '/gallery/new' : '/gallery/' + gallery.id + '/edit'}" method="post" enctype="multipart/form-data">
+                <form class="upload-form" id="galleryForm" data-redirect-url="/gallery" th:action="${gallery.id == null ? '/gallery/new' : '/gallery/' + gallery.id + '/edit'}" method="post" enctype="multipart/form-data"><input type="hidden" name="_csrf" th:value="${csrfToken}">
                     
                     <div class="mb-4">
                         <label for="title" class="form-label fw-medium text-secondary small">제목 <span class="text-danger">*</span></label>

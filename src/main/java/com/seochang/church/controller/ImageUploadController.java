@@ -21,6 +21,7 @@ public class ImageUploadController {
     @PostMapping("/upload")
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("image") MultipartFile image) {
         try {
+            fileStorageService.validateFile(image, true);
             String storedFileName = fileStorageService.store(image, "editor");
             // The fileStorageService returns the relative path inside the uploadDir.
             // Spring Boot configures /uploads/** to serve files from uploadDir.

@@ -14,10 +14,14 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${file.upload-dir:uploads/}")
     private String uploadDir;
 
+    private final SessionRefreshInterceptor sessionRefreshInterceptor;
+    private final CsrfInterceptor csrfInterceptor;
     private final AdminInterceptor adminInterceptor;
     private final LoginInterceptor loginInterceptor;
 
-    public WebConfig(AdminInterceptor adminInterceptor, LoginInterceptor loginInterceptor) {
+    public WebConfig(AdminInterceptor adminInterceptor, LoginInterceptor loginInterceptor, SessionRefreshInterceptor sessionRefreshInterceptor, CsrfInterceptor csrfInterceptor) {
+        this.sessionRefreshInterceptor = sessionRefreshInterceptor;
+        this.csrfInterceptor = csrfInterceptor;
         this.adminInterceptor = adminInterceptor;
         this.loginInterceptor = loginInterceptor;
     }
@@ -33,11 +37,13 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
+        registry.addInterceptor(sessionRefreshInterceptor);
+        registry.addInterceptor(csrfInterceptor);
         registry.addInterceptor(adminInterceptor)
                 .addPathPatterns("/admin/**", "/notices/new", "/notices/*/edit", "/notices/*/delete", 
                                  "/gallery/new", "/gallery/*/edit", "/gallery/*/delete");
 
         registry.addInterceptor(loginInterceptor)
-                .addPathPatterns("/boards", "/boards/**");
+                .addPathPatterns("/boards", "/boards/**", "/api/boards/**", "/api/images/**");
     }
 }

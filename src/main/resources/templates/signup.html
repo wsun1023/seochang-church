@@ -90,6 +90,8 @@
             }
         }
     </style>
+<meta name="csrf-token" th:content="${csrfToken}">
+<script src="/js/csrf.js"></script>
 </head>
 <body>
 
@@ -107,7 +109,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <form action="/signup" method="post" class="text-start" onsubmit="return validateForm()">
+    <form action="/signup" method="post" class="text-start" onsubmit="return validateForm()"><input type="hidden" name="_csrf" th:value="${csrfToken}">
         <div class="mb-3">
             <label for="username" class="form-label small fw-semibold">아이디 <span class="text-danger">*</span></label>
             <input type="text" id="username" name="username" class="form-control" placeholder="아이디를 입력하세요" required>

@@ -19,7 +19,8 @@ public class BibleRestController {
     public List<Map<String, String>> getBibleChapter(
             @RequestParam(defaultValue = "1") int testament,
             @RequestParam(defaultValue = "1") int book,
-            @RequestParam(defaultValue = "1") int chapter) {
-        return bibleService.getBibleChapter(testament, book, chapter);
+            @RequestParam(defaultValue = "1") int chapter,
+            @RequestParam(defaultValue = "catholic") String version) {
+        return bibleService.getBibleChapter(testament, book, chapter, version);
     }
 }
