@@ -12,6 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" th:href="@{/toastui/dist/toastui-editor-viewer.css}">
+    <link th:href="@{/css/gallery.css}" rel="stylesheet">
     <style>
         :root {
             --primary-navy: #0F172A;
@@ -232,16 +234,18 @@
         </div>
         
         <!-- Content -->
-        <div class="gallery-content" th:text="${gallery.content}">
-            본문 내용입니다.
+        <div class="gallery-content">
+            <div id="galleryStoryViewer"></div>
+            <textarea id="galleryStoryContent" hidden th:text="${gallery.content}"></textarea>
         </div>
         
-        <div th:if="${gallery.attachments != null and not #lists.isEmpty(gallery.attachments)}" class="masonry-grid mb-5">
-            <th:block th:each="file : ${gallery.attachments}">
-                <div th:if="${file.image}" class="masonry-item" onclick="showImageModal(this.querySelector('img').src)">
-                    <img th:src="${file.filePath}" alt="행사 사진">
-                </div>
-            </th:block>
+        <p class="text-secondary small">사진 <strong th:text="${gallery.photos.size()}"></strong>장 · 사진을 누르면 크게 볼 수 있습니다.</p>
+        <div th:unless="${gallery.photos.empty}" class="masonry-grid mb-5">
+            <a th:each="file, position : ${gallery.photos}" th:href="${file.filePath}" class="masonry-item gallery-photo-link" data-gallery-photo
+               th:data-caption="${gallery.title + ' · ' + (position.index + 1) + '번째 사진'}"
+               th:aria-label="${(position.index + 1) + '번째 사진 크게 보기'}">
+                <img th:src="${file.filePath}" th:alt="${gallery.title + ' · ' + (position.index + 1) + '번째 사진'}" loading="lazy" decoding="async">
+            </a>
         </div>
         
         <!-- Actions -->
@@ -261,24 +265,23 @@
                 </form>
             </div>
         </div>
-        </div>
-        
     </div>
 </main>
 
 <!-- Image Modal -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-xl">
-    <div class="modal-content bg-transparent border-0">
-      <div class="modal-header border-0 pb-0 justify-content-end">
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1) grayscale(100%) brightness(200%);"></button>
-      </div>
-      <div class="modal-body text-center pt-0">
-        <img id="modalImage" src="" alt="확대된 이미지" class="img-fluid rounded shadow-lg" style="max-height: 85vh;">
-      </div>
+<dialog id="galleryLightbox" class="gallery-lightbox" aria-labelledby="lightboxCaption">
+    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+        <span id="lightboxCaption" class="small"></span>
+        <button type="button" id="lightboxClose" class="btn btn-outline-light btn-sm" aria-label="사진 보기 닫기">닫기 ×</button>
     </div>
-  </div>
-</div>
+    <div id="lightboxStage" class="gallery-lightbox-stage"><img id="lightboxImage" alt=""></div>
+    <div class="gallery-lightbox-controls">
+        <button type="button" id="lightboxPrevious" class="btn btn-outline-light" aria-label="이전 사진">←</button>
+        <span id="lightboxCounter" aria-live="polite"></span>
+        <button type="button" id="lightboxNext" class="btn btn-outline-light" aria-label="다음 사진">→</button>
+    </div>
+    <p class="text-center small mt-3 mb-0">좌우로 넘기거나 방향키를 눌러 사진을 둘러보세요.</p>
+</dialog>
 
 <!-- Footer -->
 <footer class="text-center">
@@ -289,13 +292,16 @@
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script th:inline="javascript">
-    // --- Image Modal Logic ---
-    function showImageModal(src) {
-        document.getElementById('modalImage').src = src;
-        var imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-        imageModal.show();
-    }
+<script th:src="@{/toastui/dist/toastui-editor-viewer.min.js}"></script>
+<script th:src="@{/js/gallery-viewer.js}" defer></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        toastui.Editor.factory({
+            el: document.getElementById('galleryStoryViewer'),
+            viewer: true,
+            initialValue: document.getElementById('galleryStoryContent').value || ''
+        });
+    });
 </script>
 </body>
 </html>

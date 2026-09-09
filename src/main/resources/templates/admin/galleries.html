@@ -30,9 +30,9 @@
                         <td class="text-center text-muted" th:text="${gallery.id}">1</td>
                         <td class="text-center">
                             <div style="width: 60px; height: 40px; background-color: #f1f5f9; border-radius: 4px; overflow: hidden; margin: 0 auto;">
-                                <img th:if="${gallery.attachments != null and not #lists.isEmpty(gallery.attachments) and gallery.attachments[0].image}" 
-                                     th:src="${gallery.attachments[0].filePath}" style="width: 100%; height: 100%; object-fit: cover;">
-                                <i th:unless="${gallery.attachments != null and not #lists.isEmpty(gallery.attachments) and gallery.attachments[0].image}" 
+                                <img th:if="${gallery.coverPhoto != null}"
+                                     th:src="${gallery.coverPhoto.filePath}" th:alt="${gallery.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
+                                <i th:unless="${gallery.coverPhoto != null}"
                                    class="bi bi-image text-muted d-flex align-items-center justify-content-center h-100"></i>
                             </div>
                         </td>
@@ -69,9 +69,9 @@
                 <div class="card-body p-3 d-flex gap-3">
                     <!-- Image -->
                     <div style="width: 80px; height: 80px; background-color: #f1f5f9; border-radius: 8px; flex-shrink: 0; overflow: hidden;">
-                        <img th:if="${gallery.attachments != null and not #lists.isEmpty(gallery.attachments) and gallery.attachments[0].image}" 
-                             th:src="${gallery.attachments[0].filePath}" style="width: 100%; height: 100%; object-fit: cover;">
-                        <i th:unless="${gallery.attachments != null and not #lists.isEmpty(gallery.attachments) and gallery.attachments[0].image}" 
+                        <img th:if="${gallery.coverPhoto != null}"
+                             th:src="${gallery.coverPhoto.filePath}" th:alt="${gallery.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
+                        <i th:unless="${gallery.coverPhoto != null}"
                            class="bi bi-image text-muted d-flex align-items-center justify-content-center h-100 fs-3"></i>
                     </div>
                     

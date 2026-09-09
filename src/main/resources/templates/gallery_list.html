@@ -164,14 +164,14 @@
             <a th:href="@{/gallery/{id}(id=${gallery.id})}" class="text-decoration-none">
                 <div class="card gallery-card position-relative">
                     
-                    <!-- First Image Thumbnail -->
-                    <th:block th:if="${gallery.attachments != null and gallery.attachments.size() > 0}">
-                        <img th:src="${gallery.attachments[0].filePath}" alt="갤러리 썸네일" class="gallery-thumbnail">
+                    <!-- Selected cover photo, with legacy first-photo fallback -->
+                    <th:block th:if="${gallery.coverPhoto != null}">
+                        <img th:src="${gallery.coverPhoto.filePath}" th:alt="${gallery.title}" class="gallery-thumbnail" loading="lazy" decoding="async">
                         <div class="image-count-badge">
-                            <i class="bi bi-images me-1"></i> +<span th:text="${gallery.attachments.size()}">1</span>
+                            <i class="bi bi-images me-1"></i> <span th:text="${gallery.photos.size()}">1</span>장
                         </div>
                     </th:block>
-                    <th:block th:unless="${gallery.attachments != null and gallery.attachments.size() > 0}">
+                    <th:block th:unless="${gallery.coverPhoto != null}">
                         <div class="gallery-thumbnail-placeholder">
                             <i class="bi bi-image"></i>
                         </div>

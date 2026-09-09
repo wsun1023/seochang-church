@@ -33,6 +33,7 @@ public class Gallery {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "gallery", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC, id ASC")
     private java.util.List<GalleryAttachment> attachments = new java.util.ArrayList<>();
 
     public Gallery() {
@@ -75,4 +76,19 @@ public class Gallery {
 
     public java.util.List<GalleryAttachment> getAttachments() { return attachments; }
     public void setAttachments(java.util.List<GalleryAttachment> attachments) { this.attachments = attachments; }
+
+    @Transient
+    public java.util.List<GalleryAttachment> getPhotos() {
+        return attachments.stream().filter(GalleryAttachment::isImage)
+                .sorted(java.util.Comparator.comparingInt(GalleryAttachment::getSortOrder)
+                        .thenComparing(GalleryAttachment::getId, java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())))
+                .toList();
+    }
+
+    @Transient
+    public GalleryAttachment getCoverPhoto() {
+        var photos = getPhotos();
+        return photos.stream().filter(GalleryAttachment::isCoverPhoto).findFirst()
+                .orElse(photos.isEmpty() ? null : photos.get(0));
+    }
 }

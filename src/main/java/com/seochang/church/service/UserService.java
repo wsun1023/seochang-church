@@ -15,11 +15,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NotificationService notifications;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, NotificationService notifications) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.notifications = notifications;
     }
 
     public User registerUser(String username, String rawPassword, String name, String baptismalName, String email, String district) {
@@ -54,8 +56,10 @@ public class UserService {
 
     public void approveUser(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+        boolean newlyApproved = !user.isApproved();
         user.setApproved(true);
         userRepository.save(user);
+        if (newlyApproved) notifications.memberApproved(user);
     }
 
     public void changeUserRole(Long id, String role) {

@@ -1,0 +1,8 @@
+<span xmlns:th="http://www.thymeleaf.org" th:fragment="link" th:if="${session.loginUser != null}" class="d-inline-flex">
+    <a th:href="@{/notifications}" class="btn btn-outline-light btn-sm rounded-pill px-3 text-nowrap"
+       data-notification-link th:data-count-url="@{/api/notifications/unread-count}" aria-label="알림">
+        <i class="bi bi-bell" aria-hidden="true"></i> 알림
+        <span data-notification-badge class="badge rounded-pill bg-danger ms-1" hidden aria-hidden="true"></span>
+    </a>
+    <script th:src="@{/js/notifications.js}" defer></script>
+</span>

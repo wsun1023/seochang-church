@@ -20,13 +20,17 @@ public class BoardCommentController {
 
     private final BoardRepository boardRepository;
     private final BoardCommentRepository boardCommentRepository;
+    private final com.seochang.church.service.NotificationService notifications;
 
-    public BoardCommentController(BoardRepository boardRepository, BoardCommentRepository boardCommentRepository) {
+    public BoardCommentController(BoardRepository boardRepository, BoardCommentRepository boardCommentRepository,
+                                  com.seochang.church.service.NotificationService notifications) {
         this.boardRepository = boardRepository;
         this.boardCommentRepository = boardCommentRepository;
+        this.notifications = notifications;
     }
 
     @PostMapping("/{boardId}/comments")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Map<String, Object>> addComment(
             @PathVariable Long boardId,
             @RequestBody BoardCommentRequest request,
@@ -49,6 +53,17 @@ public class BoardCommentController {
         }
 
         Board board = boardOpt.get();
+        BoardComment parent = null;
+        if (request.getParentId() != null) {
+            parent = boardCommentRepository.findById(request.getParentId())
+                    .filter(c -> c.getBoard().getId().equals(boardId) && "N".equals(c.getDelYn()) && c.getParentId() == null)
+                    .orElse(null);
+            if (parent == null) {
+                response.put("success", false);
+                response.put("message", "답글을 작성할 댓글을 찾을 수 없습니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
+        }
         String secretYn = request.isSecret() ? "Y" : "N";
         String writerName = loginUser.getBaptismalName() != null && !loginUser.getBaptismalName().isEmpty() 
                 ? loginUser.getName() + " (" + loginUser.getBaptismalName() + ")" 
@@ -59,6 +74,7 @@ public class BoardCommentController {
             comment.setParentId(request.getParentId());
         }
         boardCommentRepository.save(comment);
+        notifications.commentAdded(comment, parent);
 
         response.put("success", true);
         return ResponseEntity.ok(response);

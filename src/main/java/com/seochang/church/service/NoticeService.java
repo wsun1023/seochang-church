@@ -13,9 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
+    private final NotificationService notifications;
 
-    public NoticeService(NoticeRepository noticeRepository) {
+    public NoticeService(NoticeRepository noticeRepository, NotificationService notifications) {
         this.noticeRepository = noticeRepository;
+        this.notifications = notifications;
     }
 
     public Page<Notice> getNotices(String category, int page, String keyword) {
@@ -74,7 +76,10 @@ public class NoticeService {
 
     @Transactional
     public Notice saveNotice(Notice notice) {
-        return noticeRepository.save(notice);
+        boolean isNew = notice.getId() == null;
+        Notice saved = noticeRepository.save(notice);
+        if (isNew) notifications.noticePublished(saved);
+        return saved;
     }
 
     @Transactional

@@ -1,10 +1,8 @@
 package com.seochang.church.controller;
 
 import com.seochang.church.entity.Gallery;
-import com.seochang.church.entity.GalleryAttachment;
 import com.seochang.church.entity.User;
 import com.seochang.church.service.GalleryService;
-import com.seochang.church.service.FileStorageService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -20,11 +18,11 @@ import java.util.List;
 public class GalleryController {
 
     private final GalleryService galleryService;
-    private final FileStorageService fileStorageService;
+    private final com.seochang.church.service.GalleryPhotoService galleryPhotos;
 
-    public GalleryController(GalleryService galleryService, FileStorageService fileStorageService) {
+    public GalleryController(GalleryService galleryService, com.seochang.church.service.GalleryPhotoService galleryPhotos) {
         this.galleryService = galleryService;
-        this.fileStorageService = fileStorageService;
+        this.galleryPhotos = galleryPhotos;
     }
 
     @GetMapping
@@ -74,26 +72,19 @@ public class GalleryController {
     @PostMapping("/new")
     public String create(@ModelAttribute com.seochang.church.dto.PostForm form,
                          @RequestParam(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
+                         @RequestParam(value = "photoOrder", required = false) List<String> photoOrder,
+                         @RequestParam(value = "coverPhoto", required = false) String coverPhoto,
                          HttpSession session, Model model) {
         Gallery gallery = form.toGallery();
-        fileStorageService.validatePlan(java.util.List.of(), null, imageFiles, null, 50, 3);
         User loginUser = (User) session.getAttribute("loginUser");
-        
-        long validImages = imageFiles != null ? imageFiles.stream().filter(f -> !f.isEmpty()).count() : 0;
-        if (validImages == 0) {
-            model.addAttribute("message", "최소 1개의 사진을 업로드해야 합니다.");
-            model.addAttribute("redirectUri", "/gallery/new");
-            return "alert";
-        }
-
         
         gallery.setWriter(loginUser.getDisplayName());
         gallery.setWriterId(loginUser.getId());
         
-        processAttachments(gallery, imageFiles, true);
+        galleryPhotos.update(gallery, imageFiles, null, photoOrder, coverPhoto);
         
         galleryService.saveGallery(gallery);
-        return "redirect:/gallery";
+        return "redirect:/gallery/" + gallery.getId();
     }
 
     @GetMapping("/{id}/edit")
@@ -112,6 +103,9 @@ public class GalleryController {
     @PostMapping("/{id}/edit")
     public String edit(@PathVariable Long id, @ModelAttribute com.seochang.church.dto.PostForm updatedGallery,
                        @RequestParam(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
+                       @RequestParam(value = "deleteFileIds", required = false) List<Long> deleteFileIds,
+                       @RequestParam(value = "photoOrder", required = false) List<String> photoOrder,
+                       @RequestParam(value = "coverPhoto", required = false) String coverPhoto,
                        Model model) {
         Gallery gallery = galleryService.getGallery(id);
         if (gallery == null || "Y".equals(gallery.getDelYn())) {
@@ -119,12 +113,10 @@ public class GalleryController {
         }
 
         updatedGallery.validate();
-        fileStorageService.validatePlan(gallery.getAttachments(), null, imageFiles, null, 50, 3);
+        galleryPhotos.update(gallery, imageFiles, deleteFileIds, photoOrder, coverPhoto);
         gallery.setTitle(updatedGallery.getTitle());
         gallery.setContent(updatedGallery.getContent());
         gallery.setUpdatedAt(LocalDateTime.now());
-        
-        processAttachments(gallery, imageFiles, true);
         
         galleryService.saveGallery(gallery);
         return "redirect:/gallery/" + id;
@@ -140,21 +132,10 @@ public class GalleryController {
         return "redirect:/gallery";
     }
 
-    private void processAttachments(Gallery gallery, List<MultipartFile> files, boolean isImage) {
-        if (files != null) {
-            for (MultipartFile file : files) {
-                if (!file.isEmpty()) {
-                    String storedName = fileStorageService.store(file, "gallery");
-                    GalleryAttachment attachment = new GalleryAttachment();
-                    attachment.setOriginalFileName(file.getOriginalFilename());
-                    attachment.setStoredFileName(storedName);
-                    attachment.setFilePath("/uploads/" + storedName);
-                    attachment.setFileSize(file.getSize());
-                    attachment.setImage(isImage);
-                    attachment.setGallery(gallery);
-                    gallery.getAttachments().add(attachment);
-                }
-            }
-        }
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public org.springframework.http.ResponseEntity<java.util.Map<String, String>> photoError(
+            org.springframework.web.server.ResponseStatusException exception) {
+        return org.springframework.http.ResponseEntity.status(exception.getStatusCode())
+                .body(java.util.Map.of("message", exception.getReason() == null ? "사진첩을 저장할 수 없습니다." : exception.getReason()));
     }
 }

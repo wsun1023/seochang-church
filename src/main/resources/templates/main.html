@@ -612,10 +612,10 @@
             <div class="col-md-4" th:each="gallery : ${recentGalleries}">
                 <a th:href="@{/gallery/{id}(id=${gallery.id})}" class="text-decoration-none">
                     <div class="gallery-preview-card">
-                        <th:block th:if="${gallery.attachments != null and gallery.attachments.size() > 0}">
-                            <img th:src="${gallery.attachments[0].filePath}" alt="갤러리 썸네일" class="gallery-preview-img">
+                        <th:block th:if="${gallery.coverPhoto != null}">
+                            <img th:src="${gallery.coverPhoto.filePath}" th:alt="${gallery.title}" class="gallery-preview-img" loading="lazy" decoding="async">
                         </th:block>
-                        <th:block th:unless="${gallery.attachments != null and gallery.attachments.size() > 0}">
+                        <th:block th:unless="${gallery.coverPhoto != null}">
                             <div class="gallery-preview-placeholder">
                                 <i class="bi bi-image"></i>
                             </div>
@@ -624,7 +624,7 @@
                             <h5 class="fw-bold text-dark mb-2 text-truncate" th:text="${gallery.title}">행사 제목</h5>
                             <div class="d-flex justify-content-between align-items-center small text-muted">
                                 <span><i class="bi bi-calendar3"></i> <span th:text="${#temporals.format(gallery.createdAt, 'yyyy.MM.dd')}">2026.07.28</span></span>
-                                <span th:if="${gallery.attachments != null}"><i class="bi bi-images"></i> <span th:text="${gallery.attachments.size()}"></span></span>
+                                <span><i class="bi bi-images"></i> <span th:text="${gallery.photos.size()}"></span>장</span>
                             </div>
                         </div>
                     </div>

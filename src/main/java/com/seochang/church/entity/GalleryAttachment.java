@@ -28,6 +28,17 @@ public class GalleryAttachment implements Attachment {
     @Column(nullable = false)
     private boolean isImage;
 
+    @Column(name = "sort_order", nullable = false, columnDefinition = "integer default 0")
+    private int sortOrder;
+
+    @Column(name = "cover_photo", nullable = false, columnDefinition = "boolean default false")
+    private boolean coverPhoto;
+
+    public int getSortOrder() { return sortOrder; }
+    public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }
+    public boolean isCoverPhoto() { return coverPhoto; }
+    public void setCoverPhoto(boolean coverPhoto) { this.coverPhoto = coverPhoto; }
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

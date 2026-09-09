@@ -1,0 +1,34 @@
+.gallery-page { background: #f8fafc; color: #1e293b; font-family: system-ui, sans-serif; }
+.gallery-editor { max-width: 1040px; padding-top: 110px; padding-bottom: 40px; }
+.gallery-panel { background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 28px; }
+.gallery-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 16px; }
+.gallery-photo-card { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; min-width: 0; }
+.gallery-photo-card.is-cover { border: 2px solid #2563eb; }
+.gallery-photo-card img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+.gallery-photo-controls { padding: 10px; }
+.gallery-photo-controls button { min-height: 36px; }
+.gallery-photo-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .8rem; color: #64748b; margin-bottom: 8px; }
+.gallery-empty { text-align: center; color: #64748b; padding: 40px 12px; margin: 0; }
+.gallery-lightbox { border: 0; padding: 16px; background: #0b1220; color: #fff; width: min(1200px, 96vw); max-width: 96vw; border-radius: 16px; }
+.gallery-lightbox::backdrop { background: rgba(0, 0, 0, .88); }
+.gallery-lightbox-stage { height: min(72vh, 850px); display: flex; align-items: center; justify-content: center; touch-action: pan-y pinch-zoom; }
+.gallery-lightbox-stage img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.gallery-lightbox-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.gallery-lightbox-controls button { min-width: 48px; min-height: 44px; }
+.gallery-photo-link { display: block; color: inherit; }
+.gallery-photo-link:focus-visible { outline: 3px solid #2563eb; outline-offset: 4px; }
+#galleryStoryEditor .ProseMirror .placeholder {
+    display: inline;
+    min-height: 0;
+    vertical-align: baseline;
+    cursor: text;
+    background-color: transparent;
+    opacity: 1;
+}
+@media (max-width: 575px) {
+    .gallery-editor { padding-top: 94px; }
+    .gallery-panel { padding: 16px; }
+    .gallery-photo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .gallery-photo-controls { padding: 8px; }
+    .gallery-lightbox-stage { height: 65vh; }
+}
