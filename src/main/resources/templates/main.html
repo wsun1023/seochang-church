@@ -11,6 +11,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="서창동성당">
     <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    <script>
+        window.__pwaPrompt = window.__pwaPrompt || null;
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            window.__pwaPrompt = e;
+            window.dispatchEvent(new CustomEvent('pwa-prompt-ready'));
+        });
+    </script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -830,13 +838,18 @@
                 </p>
             </div>
             <div class="col-lg-6 text-lg-end">
-                <ul class="list-inline mb-0">
+                <ul class="list-inline mb-2">
                     <li class="list-inline-item"><a href="/" class="small">홈</a></li>
                     <li class="list-inline-item ms-3"><a href="/missa" class="small">미사안내</a></li>
                     <li class="list-inline-item ms-3"><a href="/notices" class="small">성당소식</a></li>
                     <li class="list-inline-item ms-3"><a href="/daily-missa" class="small">매일미사</a></li>
                     <li class="list-inline-item ms-3"><a href="/bible" class="small">성경읽기</a></li>
                 </ul>
+                <div class="mt-2">
+                    <a href="javascript:void(0);" role="button" class="small" data-pwa-install style="cursor: pointer;">
+                        <i class="bi bi-phone me-1"></i>홈 화면에 성당 앱 추가
+                    </a>
+                </div>
             </div>
         </div>
     </div>

@@ -1,5 +1,5 @@
 (() => {
-  // Dynamically ensure PWA tags exist in head for any page
+  // 1. Ensure PWA tags exist in head for any page
   if (!document.querySelector('link[rel="manifest"]')) {
     const link = document.createElement('link');
     link.rel = 'manifest';
@@ -25,17 +25,15 @@
     document.head.appendChild(meta);
   }
 
-
-  // Register Service Worker
+  // 2. Service Worker Registration (Immediate)
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch((err) => {
-        console.warn('PWA ServiceWorker registration failed:', err);
-      });
+    navigator.serviceWorker.register('/sw.js').catch((err) => {
+      console.warn('PWA ServiceWorker registration skipped/failed:', err);
     });
   }
 
-  let deferredPrompt = null;
+  // 3. Early & Runtime Prompt Management
+  window.__pwaPrompt = window.__pwaPrompt || null;
   const DISMISS_KEY = 'seochang_pwa_dismissed';
   const DISMISS_DAYS = 7;
 
@@ -50,22 +48,172 @@
     localStorage.setItem(DISMISS_KEY, String(Date.now()));
   }
 
-  // Detect iOS Safari
-  function isIosSafari() {
-    const ua = window.navigator.userAgent;
-    const isIos = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-    const isSafari = /WebKit/.test(ua) && !/CriOS|FxiOS|OPiOS|mercury/i.test(ua);
-    const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
-    return isIos && isSafari && !isStandalone;
-  }
-
-  // Check if already in standalone app mode
   function isStandalone() {
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   }
 
+  function isInAppBrowser() {
+    const ua = navigator.userAgent || '';
+    return /KAKAOTALK|NAVER|Line|Instagram|FB_IAB|FBAN|FBAV/i.test(ua);
+  }
+
+  function isIos() {
+    const ua = navigator.userAgent || '';
+    return /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  }
+
+  function isAndroid() {
+    return /Android/i.test(navigator.userAgent || '');
+  }
+
+  function isSecureContextEnv() {
+    return window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  }
+
+  // 4. Modal Guide (Replaces raw alert with a responsive, elegant modal)
+  function showInstallGuide() {
+    const existing = document.getElementById('pwaGuideModal');
+    if (existing) existing.remove();
+
+    let badgeHtml = '';
+    let stepsHtml = '';
+    let noteHtml = '';
+
+    if (isStandalone()) {
+      badgeHtml = '<span style="background: #10B981; color: #ffffff; padding: 4px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 700;">앱 실행 중</span>';
+      stepsHtml = `
+        <div style="padding: 12px 0; color: #CBD5E1; font-size: 0.95rem; line-height: 1.6;">
+          현재 서창동성당 앱으로 접속 중입니다.<br>
+          스마트폰 바탕화면의 성당 아이콘을 통해 언제든 편리하게 이용하실 수 있습니다.
+        </div>
+      `;
+    } else if (isInAppBrowser()) {
+      badgeHtml = '<span style="background: #FEE500; color: #181600; padding: 4px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 700;">카카오톡 / 인앱 브라우저</span>';
+      stepsHtml = `
+        <p style="color: #CBD5E1; font-size: 0.88rem; margin: 10px 0 16px;">
+          카카오톡 등 인앱 브라우저에서는 홈 화면 추가가 제한됩니다. 아래 순서대로 <strong>기본 브라우저</strong>로 열어주세요.
+        </p>
+        <div style="text-align: left; background: rgba(255,255,255,0.06); padding: 14px 16px; border-radius: 12px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.8;">
+          <div><strong style="color: #F59E0B;">1.</strong> 우측 상단(또는 하단)의 <strong>[ ⋮ ]</strong> 또는 <strong>[···]</strong> 메뉴 터치</div>
+          <div><strong style="color: #F59E0B;">2.</strong> <strong>[다른 브라우저로 열기]</strong> (Chrome 또는 Safari) 선택</div>
+          <div><strong style="color: #F59E0B;">3.</strong> 열린 브라우저에서 다시 <strong>[홈 화면에 성당 앱 추가]</strong> 터치</div>
+        </div>
+      `;
+    } else if (isIos()) {
+      badgeHtml = '<span style="background: rgba(255,255,255,0.15); color: #ffffff; padding: 4px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;">iOS 사파리(Safari)</span>';
+      stepsHtml = `
+        <p style="color: #CBD5E1; font-size: 0.88rem; margin: 10px 0 16px;">
+          아이폰 사파리 브라우저에서 아래 순서로 진행하시면 바탕화면에 앱이 생성됩니다.
+        </p>
+        <div style="text-align: left; background: rgba(255,255,255,0.06); padding: 14px 16px; border-radius: 12px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.8;">
+          <div><strong style="color: #F59E0B;">1.</strong> 화면 하단 중앙의 <strong>공유 버튼 ( ⎋ )</strong> 터치</div>
+          <div><strong style="color: #F59E0B;">2.</strong> 메뉴 목록을 위로 올려 <strong>[홈 화면에 추가 ➕]</strong> 선택</div>
+          <div><strong style="color: #F59E0B;">3.</strong> 우측 상단의 <strong>[추가]</strong> 터치</div>
+        </div>
+      `;
+    } else if (isAndroid()) {
+      badgeHtml = '<span style="background: #10B981; color: #ffffff; padding: 4px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;">안드로이드 (크롬 / 삼성인터넷)</span>';
+      stepsHtml = `
+        <p style="color: #CBD5E1; font-size: 0.88rem; margin: 10px 0 16px;">
+          브라우저 메뉴를 통해 성당 앱을 홈 화면에 간편하게 추가할 수 있습니다.
+        </p>
+        <div style="text-align: left; background: rgba(255,255,255,0.06); padding: 14px 16px; border-radius: 12px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.8;">
+          <div><strong style="color: #F59E0B;">1.</strong> 브라우저 우측 상단(또는 하단)의 메뉴 <strong>[ ⋮ ]</strong> 터치</div>
+          <div><strong style="color: #F59E0B;">2.</strong> <strong>[홈 화면에 추가]</strong> 또는 <strong>[앱 설치]</strong> 선택</div>
+          <div><strong style="color: #F59E0B;">3.</strong> <strong>[설치/추가]</strong> 확인을 터치하면 홈 화면에 앱 생성!</div>
+        </div>
+      `;
+      if (!isSecureContextEnv()) {
+        noteHtml = `
+          <div style="margin-top: 14px; padding: 10px 14px; background: rgba(245, 158, 11, 0.12); border-left: 3px solid #F59E0B; border-radius: 8px; font-size: 0.78rem; color: #FCD34D; text-align: left; line-height: 1.5;">
+            💡 <strong>개발/테스트 안내:</strong> 현재 접속 주소가 보안 연결(HTTPS)이 아닌 로컬(HTTP) 환경이어서 브라우저 보안 규정상 메뉴(⋮)를 통한 수동 추가가 지원됩니다. 실서버(HTTPS) 환경에서는 원클릭 설치 팝업이 바로 호출됩니다.
+          </div>
+        `;
+      }
+    } else {
+      badgeHtml = '<span style="background: rgba(255,255,255,0.15); color: #ffffff; padding: 4px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;">PC 브라우저</span>';
+      stepsHtml = `
+        <div style="text-align: left; background: rgba(255,255,255,0.06); padding: 14px 16px; border-radius: 12px; font-size: 0.88rem; color: #E2E8F0; line-height: 1.8;">
+          <div><strong style="color: #F59E0B;">1.</strong> 주소창 우측 끝의 <strong>[컴퓨터로 다운로드/설치 ⊕]</strong> 아이콘 클릭</div>
+          <div><strong style="color: #F59E0B;">2.</strong> 또는 브라우저 메뉴 <strong>[ ⋮ ] ➔ [서창동성당 앱 설치]</strong> 선택</div>
+        </div>
+      `;
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'pwaGuideModal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.innerHTML = `
+      <div style="
+        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px); z-index: 10000;
+        display: flex; align-items: center; justify-content: center; padding: 20px;
+        animation: pwaModalFade 0.25s ease-out;
+      ">
+        <style>
+          @keyframes pwaModalFade { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes pwaCardZoom { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        </style>
+        <div style="
+          background: #0F172A; color: #F8FAFC; border-radius: 20px; padding: 26px 22px; width: 100%; max-width: 420px;
+          text-align: center; box-shadow: 0 24px 48px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.14);
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          animation: pwaCardZoom 0.25s ease-out;
+        ">
+          <div style="margin-bottom: 12px; display: flex; justify-content: center;">
+            <img src="/images/icons/icon-192.png" alt="서창동성당" style="width: 58px; height: 58px; border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);">
+          </div>
+          <div style="margin-bottom: 10px;">${badgeHtml}</div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0 0 4px; color: #FFFFFF;">홈 화면에 서창동성당 앱 추가</h3>
+          ${stepsHtml}
+          ${noteHtml}
+          <button id="pwaGuideCloseBtn" type="button" style="
+            width: 100%; margin-top: 20px; background: #F59E0B; color: #0F172A; border: none; border-radius: 12px;
+            padding: 13px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: background 0.2s;
+          ">확인</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    const closeBtn = modal.querySelector('#pwaGuideCloseBtn');
+    const dismissModal = () => modal.remove();
+    closeBtn.addEventListener('click', dismissModal);
+    modal.firstElementChild.addEventListener('click', (e) => {
+      if (e.target === modal.firstElementChild) dismissModal();
+    });
+    const keyHandler = (e) => {
+      if (e.key === 'Escape') {
+        dismissModal();
+        window.removeEventListener('keydown', keyHandler);
+      }
+    };
+    window.addEventListener('keydown', keyHandler);
+  }
+
+  // 5. Trigger PWA Installation or Fallback Guide
+  function triggerInstall() {
+    if (window.__pwaPrompt) {
+      window.__pwaPrompt.prompt();
+      window.__pwaPrompt.userChoice.then((choice) => {
+        if (choice && choice.outcome === 'accepted') {
+          markDismissed();
+          const banner = document.getElementById('pwaInstallBanner');
+          if (banner) banner.remove();
+        }
+        window.__pwaPrompt = null;
+      }).catch(() => {
+        showInstallGuide();
+      });
+    } else {
+      showInstallGuide();
+    }
+  }
+
+  // 6. Bottom Banner UI
   function createInstallBanner() {
-    if (isStandalone() || isDismissed()) return;
+    if (isStandalone() || isDismissed() || document.getElementById('pwaInstallBanner')) return;
 
     const banner = document.createElement('div');
     banner.id = 'pwaInstallBanner';
@@ -143,87 +291,43 @@
       banner.remove();
     });
 
-    actionBtn.addEventListener('click', () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choice) => {
-          if (choice.outcome === 'accepted') {
-            markDismissed();
-            banner.remove();
-          }
-          deferredPrompt = null;
-        });
-      } else if (isIosSafari()) {
-        showIosGuide();
-      } else {
-        alert('브라우저 메뉴(⋮)에서 [홈 화면에 추가] 또는 [앱 설치]를 선택해 주세요.');
-      }
-    });
+    actionBtn.addEventListener('click', triggerInstall);
   }
 
-  function showIosGuide() {
-    const existing = document.getElementById('pwaIosModal');
-    if (existing) existing.remove();
-
-    const modal = document.createElement('div');
-    modal.id = 'pwaIosModal';
-    modal.innerHTML = `
-      <div style="
-        position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000;
-        display: flex; align-items: flex-end; justify-content: center; padding: 16px;
-      ">
-        <div style="
-          background: #ffffff; color: #1E293B; border-radius: 20px; padding: 22px; width: 100%; max-width: 440px;
-          text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3); font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-        ">
-          <img src="/images/icons/icon-192.png" alt="서창동성당" style="width: 56px; height: 56px; border-radius: 12px; margin-bottom: 12px;">
-          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;">홈 화면에 서창동성당 추가하기</h3>
-          <p style="font-size: 0.9rem; color: #64748B; margin-bottom: 18px; line-height: 1.5;">
-            아이폰 사파리 브라우저 하단의 <strong>공유 버튼</strong><br>
-            <span style="font-size: 1.3rem; display: inline-block; margin: 4px 0;">⎋ (또는 네모 위 화살표)</span><br>
-            을 누른 후 <strong>[홈 화면에 추가]</strong>를 선택해 주세요.
-          </p>
-          <button id="pwaIosCloseBtn" type="button" style="
-            width: 100%; background: #0F172A; color: #ffffff; border: none; border-radius: 12px;
-            padding: 12px; font-weight: 600; font-size: 0.95rem; cursor: pointer;
-          ">확인</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    modal.querySelector('#pwaIosCloseBtn').addEventListener('click', () => modal.remove());
-    modal.addEventListener('click', (e) => { if (e.target === modal.firstElementChild) modal.remove(); });
-  }
-
-  // Handle Chrome / Android prompt
+  // 7. Event Listeners
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
-    deferredPrompt = e;
+    window.__pwaPrompt = e;
     createInstallBanner();
   });
 
-  // For iOS Safari or browsers where prompt event doesn't fire immediately
-  window.addEventListener('DOMContentLoaded', () => {
-    if (isIosSafari()) {
-      setTimeout(createInstallBanner, 2000);
-    }
+  window.addEventListener('pwa-prompt-ready', () => {
+    createInstallBanner();
+  });
 
-    // Connect any manual triggers in the UI
+  // Attach button click listeners
+  function initInstallButtons() {
     document.querySelectorAll('[data-pwa-install]').forEach((el) => {
+      if (el.dataset.pwaBound === 'true') return;
+      el.dataset.pwaBound = 'true';
       el.addEventListener('click', (e) => {
         e.preventDefault();
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          deferredPrompt.userChoice.then((choice) => {
-            if (choice.outcome === 'accepted') markDismissed();
-            deferredPrompt = null;
-          });
-        } else if (isIosSafari()) {
-          showIosGuide();
-        } else {
-          alert('브라우저 메뉴(⋮)에서 [홈 화면에 추가] 또는 [앱 설치]를 선택하시면 됩니다.');
-        }
+        triggerInstall();
       });
     });
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      initInstallButtons();
+      if (window.__pwaPrompt || isIos()) {
+        setTimeout(createInstallBanner, 1500);
+      }
+    });
+  } else {
+    initInstallButtons();
+    if (window.__pwaPrompt || isIos()) {
+      setTimeout(createInstallBanner, 1500);
+    }
+  }
 })();
