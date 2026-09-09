@@ -26,6 +26,7 @@ class SeochangChurchApplicationTests {
     @Autowired UserRepository users;
     @Autowired BoardRepository boards;
     @Autowired com.seochang.church.service.BoardLikeService likes;
+    @Autowired com.seochang.church.service.UserService userService;
 
     private User user(String name) {
         User user = new User(name, "unused", name, null, null);
@@ -109,5 +110,34 @@ class SeochangChurchApplicationTests {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("test-token")));
         mvc.perform(get("/boards/new").session(session(admin))).andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("toastui-editor-all.min.js")));
+    }
+    @Test void adminCanResetUserPasswordAndUserCanLoginWithTempPassword() throws Exception {
+        User admin = user("admin-reset"); admin.setRole("ADMIN"); users.saveAndFlush(admin);
+        User member = user("member-reset");
+        var result = mvc.perform(post("/admin/users/" + member.getId() + "/reset-password")
+                .session(session(admin)).param("_csrf", "test-token"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/users"))
+                .andExpect(flash().attribute("resetPasswordSuccess", true))
+                .andExpect(flash().attributeExists("tempPassword"))
+                .andReturn();
+        String tempPassword = (String) result.getFlashMap().get("tempPassword");
+        assertThat(tempPassword).startsWith("sc").hasSize(8);
+        User loggedIn = userService.login(member.getUsername(), tempPassword);
+        assertThat(loggedIn.getId()).isEqualTo(member.getId());
+    }
+    @Test void nonAdminCannotResetPassword() throws Exception {
+        User member = user("member-regular");
+        User target = user("member-target");
+        mvc.perform(post("/admin/users/" + target.getId() + "/reset-password")
+                .session(session(member)).param("_csrf", "test-token"))
+                .andExpect(redirectedUrl("/?error=admin-only"));
+    }
+    @Test void cannotResetPasswordForDeletedUser() {
+        User deleted = user("deleted-member");
+        deleted.setDelYn("Y");
+        users.saveAndFlush(deleted);
+        assertThatThrownBy(() -> userService.resetPassword(deleted.getId()))
+                .isInstanceOf(IllegalStateException.class);
     }
 }

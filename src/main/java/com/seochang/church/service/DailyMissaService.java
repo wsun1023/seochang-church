@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.Clock;
+import java.time.ZoneId;
+import java.util.concurrent.ConcurrentHashMap;
 import java.time.format.DateTimeFormatter;
 import org.springframework.util.StringUtils;
 
@@ -16,26 +19,84 @@ import org.springframework.util.StringUtils;
 public class DailyMissaService {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DailyMissaService.class);
     private final CatholicHttpClient httpClient;
+    private final Clock clock;
+    private volatile DailyCache cache;
 
+    private static final class DailyCache {
+        final LocalDate day;
+        final ConcurrentHashMap<LocalDate, DailyMissaDto> entries = new ConcurrentHashMap<>();
+        DailyCache(LocalDate day) { this.day = day; }
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
     public DailyMissaService(CatholicHttpClient httpClient) {
+        this(httpClient, Clock.system(ZoneId.of("Asia/Seoul")));
+    }
+
+    DailyMissaService(CatholicHttpClient httpClient, Clock clock) {
         this.httpClient = httpClient;
+        this.clock = clock;
     }
 
     private static final String DAILY_MISSA_URL = "https://maria.catholic.or.kr/mi_pr/missa/missa.asp";
 
     public DailyMissaDto getDailyMissa(String dateStr) {
-        DailyMissaDto dto = new DailyMissaDto();
-        
+        LocalDate today = LocalDate.now(clock);
         LocalDate targetDate;
         if (StringUtils.hasText(dateStr)) {
             try {
-                targetDate = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                targetDate = LocalDate.parse(dateStr);
             } catch (Exception e) {
-                targetDate = LocalDate.now();
+                targetDate = today;
             }
         } else {
-            targetDate = LocalDate.now();
+            targetDate = today;
         }
+
+        DailyCache current = cacheFor(today);
+        DailyMissaDto hit = current.entries.get(targetDate);
+        if (hit != null) return copy(hit);
+        synchronized (current) {
+            hit = current.entries.get(targetDate);
+            if (hit != null) return copy(hit);
+            DailyMissaDto loaded = scrape(targetDate);
+            // Error/empty responses must be retried on the next visit.
+            if (!loaded.getReadings().isEmpty()
+                    && !loaded.getReadings().get(0).getType().equals("오류")
+                    && !loaded.getReadings().get(0).getType().equals("안내")) {
+                if (current.entries.size() >= 64) {
+                    current.entries.keySet().stream().filter(date -> !date.equals(today))
+                            .findFirst().ifPresent(current.entries::remove);
+                }
+                current.entries.put(targetDate, loaded);
+            }
+            return copy(loaded);
+        }
+    }
+
+    private DailyCache cacheFor(LocalDate today) {
+        DailyCache current = cache;
+        if (current != null && current.day.equals(today)) return current;
+        synchronized (this) {
+            if (cache == null || !cache.day.equals(today)) cache = new DailyCache(today);
+            return cache;
+        }
+    }
+
+    private static DailyMissaDto copy(DailyMissaDto source) {
+        DailyMissaDto result = new DailyMissaDto();
+        result.setDate(source.getDate());
+        result.setPrevDate(source.getPrevDate());
+        result.setNextDate(source.getNextDate());
+        result.setTitle(source.getTitle());
+        result.setDateText(source.getDateText());
+        result.setLiturgicalDay(source.getLiturgicalDay());
+        source.getReadings().forEach(reading -> result.addReading(reading.getType(), reading.getContent()));
+        return result;
+    }
+
+    private DailyMissaDto scrape(LocalDate targetDate) {
+        DailyMissaDto dto = new DailyMissaDto();
 
         dto.setDate(targetDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         dto.setPrevDate(targetDate.minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));

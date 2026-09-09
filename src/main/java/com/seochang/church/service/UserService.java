@@ -75,6 +75,28 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public String resetPassword(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+        if ("Y".equals(user.getDelYn())) {
+            throw new IllegalStateException("삭제되거나 탈퇴한 회원의 비밀번호는 초기화할 수 없습니다.");
+        }
+        String tempPassword = generateTemporaryPassword();
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        userRepository.save(user);
+        return tempPassword;
+    }
+
+    private static final String TEMP_PW_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$";
+
+    private String generateTemporaryPassword() {
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        StringBuilder sb = new StringBuilder("sc");
+        for (int i = 0; i < 6; i++) {
+            sb.append(TEMP_PW_CHARS.charAt(random.nextInt(TEMP_PW_CHARS.length())));
+        }
+        return sb.toString();
+    }
+
     @Transactional(readOnly = true)
     public org.springframework.data.domain.Page<User> getAllUsers(org.springframework.data.domain.Pageable pageable) {
         return userRepository.findAll(pageable);
