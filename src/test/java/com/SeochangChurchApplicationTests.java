@@ -140,4 +140,20 @@ class SeochangChurchApplicationTests {
         assertThatThrownBy(() -> userService.resetPassword(deleted.getId()))
                 .isInstanceOf(IllegalStateException.class);
     }
+    @Test void pwaManifestAndServiceWorkerAreAccessibleAndIndexRendersPwaTags() throws Exception {
+        var manifestResult = mvc.perform(get("/manifest.json"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("standalone")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("icon-192.png")))
+                .andReturn();
+        assertThat(manifestResult.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8))
+                .contains("서창동성당");
+        mvc.perform(get("/sw.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("seochang-pwa-v1")));
+        mvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("manifest.json")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("pwa-installer.js")));
+    }
 }
