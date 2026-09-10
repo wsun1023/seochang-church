@@ -226,6 +226,9 @@
                     <a href="/admin" th:classappend="${requestURI == '/admin' ? 'active' : ''}">
                         <i class="bi bi-grid-1x2-fill"></i> 대시보드
                     </a>
+                    <a href="/admin/profile" th:classappend="${requestURI == '/admin/profile' ? 'active' : ''}">
+                        <i class="bi bi-person-gear"></i> 내 회원정보 수정
+                    </a>
                     <a href="/admin/users" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/users') ? 'active' : ''}">
                         <i class="bi bi-people-fill"></i> 회원 관리
                     </a>

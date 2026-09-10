@@ -62,6 +62,36 @@ public class UserService {
         if (newlyApproved) notifications.memberApproved(user);
     }
 
+    public User updateProfile(Long id, String name, String baptismalName, String email, String district,
+                              String currentPassword, String newPassword, String confirmPassword) {
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        if (!"N".equals(user.getDelYn()) || !user.isApproved()) throw new IllegalArgumentException("사용할 수 없는 회원 계정입니다.");
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        name = profileField(name, "이름");
+        baptismalName = profileField(baptismalName, "세례명");
+        email = profileField(email, "이메일");
+        district = profileField(district, "구역");
+        if (name.isEmpty()) throw new IllegalArgumentException("이름을 입력해주세요.");
+        if (!email.isEmpty() && !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) throw new IllegalArgumentException("이메일 형식을 확인해주세요.");
+        if (!newPassword.isEmpty() || !confirmPassword.isEmpty()) {
+            if (!newPassword.equals(confirmPassword)) throw new IllegalArgumentException("새 비밀번호 확인이 일치하지 않습니다.");
+            if (newPassword.isBlank() || newPassword.length() < 8 || newPassword.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72)
+                throw new IllegalArgumentException("새 비밀번호는 8자 이상, UTF-8 기준 72바이트 이하여야 합니다.");
+            user.setPassword(passwordEncoder.encode(newPassword));
+        }
+        user.setName(name);
+        user.setBaptismalName(baptismalName);
+        user.setEmail(email);
+        user.setDistrict(district);
+        return userRepository.save(user);
+    }
+
+    private String profileField(String value, String label) {
+        String trimmed = value == null ? "" : value.trim();
+        if (trimmed.length() > 255) throw new IllegalArgumentException(label + "은 255자 이내로 입력해주세요.");
+        return trimmed;
+    }
+
     public void changeUserRole(Long id, String role) {
         if (!java.util.Set.of("USER", "ADMIN").contains(role)) throw new IllegalArgumentException("잘못된 권한입니다.");
         User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
