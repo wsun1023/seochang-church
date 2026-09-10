@@ -103,7 +103,7 @@
             font-size: 1.05rem;
             line-height: 1.7;
             color: #334155;
-            white-space: pre-wrap;
+            white-space: normal;
             padding-bottom: 30px;
             border-bottom: 1px solid #F1F5F9;
             margin-bottom: 30px;
@@ -171,6 +171,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" th:href="@{/toastui/dist/toastui-editor-viewer.css}">
 <meta name="csrf-token" th:content="${csrfToken}">
 <script src="/js/csrf.js"></script>
 </head>
@@ -218,8 +219,8 @@
         </div>
         
         <!-- Content -->
-        <div class="board-content" th:text="${notice.content}">
-            공지사항 내용입니다.
+        <div class="board-content">
+            <div id="noticeViewer" style="white-space: pre-wrap" th:text="${notice.content}"></div>
         </div>
         
         <!-- Images -->
@@ -292,6 +293,20 @@ function showImageModal(src) {
     var imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
     imageModal.show();
 }
+</script>
+<script th:src="@{/toastui/dist/toastui-editor-viewer.min.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!window.toastui || !window.toastui.Editor) return;
+        const viewer = document.getElementById('noticeViewer');
+        const content = viewer.textContent;
+        viewer.textContent = '';
+        viewer.style.whiteSpace = 'normal';
+        toastui.Editor.factory({ el: viewer, viewer: true, initialValue: content });
+        viewer.addEventListener('click', function (event) {
+            if (event.target.tagName === 'IMG') showImageModal(event.target.src);
+        });
+    });
 </script>
 </body>
 </html>

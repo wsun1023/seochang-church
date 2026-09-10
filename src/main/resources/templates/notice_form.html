@@ -182,7 +182,16 @@
                 margin-bottom: 8px;
             }
         }
+        #noticeEditor .ProseMirror .placeholder {
+            display: inline;
+            min-height: 0;
+            vertical-align: baseline;
+            cursor: text;
+            background-color: transparent;
+            opacity: 1;
+        }
     </style>
+    <link rel="stylesheet" th:href="@{/toastui/dist/toastui-editor.css}">
 <meta name="csrf-token" th:content="${csrfToken}">
 <script src="/js/csrf.js"></script>
 </head>
@@ -223,6 +232,7 @@
             
             <div class="mb-4">
                 <label for="content" class="form-label">내용 <span class="text-danger">*</span></label>
+                <div id="noticeEditor" aria-label="성당 소식 내용 편집기"></div>
                 <textarea class="form-control" id="content" name="content" placeholder="공지사항 내용을 입력하세요." required th:text="${notice.content}"></textarea>
             </div>
 
@@ -274,5 +284,59 @@
 
 <!-- Upload Progress Overlay -->
 <div th:replace="~{fragments/upload_progress :: upload_overlay}"></div>
+<script th:src="@{/toastui/dist/toastui-editor-all.min.js}"></script>
+<script th:src="@{/toastui/dist/i18n/ko-kr.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!window.toastui || !window.toastui.Editor) return;
+        const form = document.querySelector('form.upload-form');
+        const content = document.getElementById('content');
+        let pendingImages = 0;
+        const editor = new toastui.Editor({
+            el: document.getElementById('noticeEditor'),
+            height: '500px',
+            initialEditType: 'wysiwyg',
+            previewStyle: 'vertical',
+            initialValue: content.value || '',
+            language: 'ko-KR',
+            placeholder: '성당 소식 내용을 입력하세요.',
+            hooks: {
+                addImageBlobHook: async function (blob, callback) {
+                    pendingImages++;
+                    try {
+                        const data = new FormData();
+                        data.append('image', blob);
+                        const response = await fetch('/api/images/upload', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': form.querySelector('[name="_csrf"]').value },
+                            body: data
+                        });
+                        if (!response.ok) throw new Error('이미지 업로드 실패');
+                        const result = await response.json();
+                        callback(result.url, blob.name || '본문 이미지');
+                    } catch (error) {
+                        alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+                    } finally {
+                        pendingImages--;
+                    }
+                }
+            }
+        });
+        content.required = false;
+        content.hidden = true;
+        document.querySelector('label[for="content"]').htmlFor = 'noticeEditor';
+        editor.on('change', function () { content.value = editor.getMarkdown(); });
+        // Synchronize before the existing attachment uploader creates FormData.
+        form.addEventListener('submit', function (event) {
+            content.value = editor.getMarkdown();
+            if (pendingImages || !content.value.trim()) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                alert(pendingImages ? '본문 이미지 업로드가 끝난 후 저장해주세요.' : '내용을 입력해주세요.');
+                editor.focus();
+            }
+        }, true);
+    });
+</script>
 </body>
 </html>
