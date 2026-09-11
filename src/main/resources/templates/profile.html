@@ -17,6 +17,15 @@
 <div th:replace="~{fragments/nav :: nav}"></div>
 <main>
 <section th:fragment="profileForm">
+    <style>
+        @media (max-width: 575.98px) {
+            .profile-panel .form-control { font-size: 16px; min-height: 44px; }
+            .profile-panel .btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+            .profile-panel input { scroll-margin-top: 90px; }
+            .profile-panel > .d-flex { flex-wrap: wrap; }
+            .profile-panel > .d-flex > * { flex: 1 1 120px; }
+        }
+    </style>
     <h1 class="h3 fw-bold mb-2">회원정보 수정</h1>
     <p class="text-secondary mb-4">변경할 정보를 입력하고 현재 비밀번호로 확인해주세요.</p>
     <div th:if="${success}" class="alert alert-success" role="status" th:text="${success}"></div>
