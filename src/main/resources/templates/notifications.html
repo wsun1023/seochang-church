@@ -19,6 +19,26 @@
         .notification-empty { padding: 72px 24px; text-align: center; color: #64748b; }
         .notification-empty i { font-size: 2.5rem; color: #94a3b8; }
         @media (max-width: 575px) { .notification-main { margin-top: 96px; padding: 0 14px; } .notification-item { padding: 20px 16px; } .notification-item.unread { padding-left: 12px; } }
+        .notification-main .btn {
+            min-height: 44px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .notification-main .btn:disabled { opacity: 1; color: #94a3b8; border-color: #e2e8f0; background: #f1f5f9; }
+        .notification-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+        .notification-filters, .notification-actions { display: flex; gap: 8px; }
+        .notification-actions form { margin: 0; }
+        @media (max-width: 575px) {
+            .notification-filters, .notification-actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .notification-actions .btn { width: 100%; height: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -30,15 +50,21 @@
         <p class="text-secondary mb-0">읽지 않은 알림 <strong class="text-primary" th:text="${unreadCount}">0</strong>개가 있습니다.</p>
     </header>
     <div th:if="${notificationMessage != null}" class="alert alert-info" role="status" th:text="${notificationMessage}"></div>
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-        <nav class="btn-group" aria-label="알림 필터">
+    <div class="notification-toolbar mb-3">
+        <nav class="notification-filters" aria-label="알림 필터">
             <a th:href="@{/notifications}" class="btn" th:classappend="${!unreadOnly ? 'btn-dark' : 'btn-outline-secondary'}" th:attr="aria-current=${!unreadOnly ? 'page' : null}">전체</a>
             <a th:href="@{/notifications(unreadOnly=true)}" class="btn" th:classappend="${unreadOnly ? 'btn-dark' : 'btn-outline-secondary'}" th:attr="aria-current=${unreadOnly ? 'page' : null}">읽지 않음</a>
         </nav>
+        <div class="notification-actions">
         <form th:action="@{/notifications/read-all}" method="post">
             <input type="hidden" name="_csrf" th:value="${csrfToken}">
-            <button class="btn btn-outline-secondary btn-sm" th:disabled="${unreadCount == 0}"><i class="bi bi-check2-all" aria-hidden="true"></i> 모두 읽음</button>
+            <button class="btn btn-outline-secondary" th:disabled="${unreadCount == 0}"><i class="bi bi-check2-all" aria-hidden="true"></i> 모두 읽음</button>
         </form>
+        <form th:action="@{/notifications/delete-read}" method="post" onsubmit="return confirm('읽은 알림을 모두 삭제할까요? 삭제한 알림은 복구할 수 없습니다.');">
+            <input type="hidden" name="_csrf" th:value="${csrfToken}">
+            <button class="btn btn-outline-danger" th:disabled="${readCount == 0}"><i class="bi bi-trash" aria-hidden="true"></i> 읽은 알림 모두 삭제</button>
+        </form>
+        </div>
     </div>
     <section class="notification-card" aria-label="알림 목록">
         <div th:if="${notificationPage.empty}" class="notification-empty">
@@ -58,7 +84,13 @@
             </form>
             <form th:unless="${notification.read}" th:action="@{/notifications/{id}/read(id=${notification.id})}" method="post" class="mt-2">
                 <input type="hidden" name="_csrf" th:value="${csrfToken}">
-                <button class="btn btn-sm btn-link text-secondary p-0">읽음 처리</button>
+                <button class="btn btn-outline-secondary"><i class="bi bi-check2" aria-hidden="true"></i> 읽음 처리</button>
+            </form>
+            <form th:if="${notification.read}" th:action="@{/notifications/{id}/delete(id=${notification.id})}" method="post" class="mt-2">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}">
+                <input type="hidden" name="page" th:value="${notificationPage.number}">
+                <input type="hidden" name="unreadOnly" th:value="${unreadOnly}">
+                <button class="btn btn-outline-danger" aria-label="읽은 알림 삭제"><i class="bi bi-trash" aria-hidden="true"></i> 삭제</button>
             </form>
         </article>
     </section>

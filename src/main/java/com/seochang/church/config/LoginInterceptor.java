@@ -17,8 +17,15 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
         
         // Return alert page or redirect for unauthorized access
-        if (request.getRequestURI().startsWith("/api/")) response.sendError(401);
-        else response.sendRedirect("/login?error=login-required");
+        if (request.getRequestURI().startsWith("/api/")) {
+            response.sendError(401);
+        } else if ("GET".equalsIgnoreCase(request.getMethod())) {
+            String target = request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
+            String redirect = "/login?error=login-required&redirectUrl=" + java.net.URLEncoder.encode(target, java.nio.charset.StandardCharsets.UTF_8);
+            response.sendRedirect(redirect);
+        } else {
+            response.sendRedirect("/login?error=login-required");
+        }
         return false;
     }
 }

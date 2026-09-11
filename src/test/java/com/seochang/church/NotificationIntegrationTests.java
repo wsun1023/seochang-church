@@ -25,6 +25,41 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 class NotificationIntegrationTests {
+    @Test void deletingReadNotificationsPreservesUnreadAndOtherRecipients() throws Exception {
+        User owner = user("delete-owner"), other = user("delete-other");
+        Notification read = alert(owner), unread = alert(owner), foreign = alert(other);
+        notifications.markRead(owner.getId(), read.getId());
+        notifications.markRead(other.getId(), foreign.getId());
+        mvc.perform(post("/notifications/" + read.getId() + "/delete").session(session(owner)))
+                .andExpect(status().isForbidden());
+        for (Long id : java.util.List.of(unread.getId(), foreign.getId(), read.getId())) {
+            mvc.perform(post("/notifications/" + id + "/delete").session(session(owner))
+                    .param("_csrf", "notification-test-token")).andExpect(status().is3xxRedirection());
+        }
+        assertThat(repository.existsById(read.getId())).isFalse();
+        assertThat(repository.existsById(unread.getId())).isTrue();
+        assertThat(repository.existsById(foreign.getId())).isTrue();
+        assertThat(notifications.unreadCount(owner.getId())).isEqualTo(1);
+    }
+
+    @Test void bulkDeleteOnlyRemovesOwnedReadNotificationsAndRepairsPage() throws Exception {
+        User owner = user("bulk-owner"), other = user("bulk-other");
+        for (int i = 0; i < 21; i++) {
+            Notification n = alert(owner);
+            notifications.markRead(owner.getId(), n.getId());
+        }
+        Notification unread = alert(owner), foreign = alert(other);
+        notifications.markRead(other.getId(), foreign.getId());
+        mvc.perform(get("/notifications").session(session(owner)))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("읽은 알림 모두 삭제")));
+        mvc.perform(post("/notifications/delete-read").session(session(owner)).param("_csrf", "notification-test-token"))
+                .andExpect(redirectedUrl("/notifications"));
+        assertThat(repository.count()).isEqualTo(2);
+        assertThat(repository.existsById(unread.getId())).isTrue();
+        assertThat(repository.existsById(foreign.getId())).isTrue();
+        assertThat(notifications.list(owner.getId(), 1, false).getNumber()).isZero();
+        assertThat(notifications.deleteAllRead(owner.getId())).isZero();
+    }
     @Autowired MockMvc mvc;
     @Autowired UserRepository users;
     @Autowired BoardRepository boards;

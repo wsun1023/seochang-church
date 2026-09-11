@@ -71,7 +71,7 @@ class SeochangChurchApplicationTests {
         MockHttpSession session = session(user);
         user.setDelYn("Y");
         users.saveAndFlush(user);
-        mvc.perform(get("/boards").session(session)).andExpect(redirectedUrl("/login?error=login-required"));
+        mvc.perform(get("/boards").session(session)).andExpect(redirectedUrl("/login?error=login-required&redirectUrl=%2Fboards"));
     }
     @Test void demotedAdminCannotOpenAdminPage() throws Exception {
         User current = user("demoted");
@@ -155,5 +155,79 @@ class SeochangChurchApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("manifest.json")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("pwa-installer.js")));
+    }
+
+    @Test void unauthenticatedAccessToProtectedPageRedirectsToLoginWithTargetUrl() throws Exception {
+        mvc.perform(get("/boards/99?category=free"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login?error=login-required&redirectUrl=%2Fboards%2F99%3Fcategory%3Dfree"));
+    }
+
+    @Test void loginWithValidRedirectUrlReturnsToTargetUrl() throws Exception {
+        User registered = userService.registerUser("redirect-member", "secret123!", "홍길동", null, null, null);
+        registered.setApproved(true);
+        users.saveAndFlush(registered);
+
+        mvc.perform(post("/login")
+                .sessionAttr("csrfToken", "test-token")
+                .param("_csrf", "test-token")
+                .param("username", "redirect-member")
+                .param("password", "secret123!")
+                .param("redirectUrl", "/boards/99?category=free"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/boards/99?category=free"));
+    }
+
+    @Test void openRedirectAttemptsAreSanitizedToRoot() throws Exception {
+        User registered = userService.registerUser("security-member", "secret123!", "홍길동", null, null, null);
+        registered.setApproved(true);
+        users.saveAndFlush(registered);
+
+        // Protocol-relative URL
+        mvc.perform(post("/login")
+                .sessionAttr("csrfToken", "test-token")
+                .param("_csrf", "test-token")
+                .param("username", "security-member")
+                .param("password", "secret123!")
+                .param("redirectUrl", "//evil.com"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"));
+
+        // Absolute external URL
+        mvc.perform(post("/login")
+                .sessionAttr("csrfToken", "test-token")
+                .param("_csrf", "test-token")
+                .param("username", "security-member")
+                .param("password", "secret123!")
+                .param("redirectUrl", "https://evil.com"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"));
+
+        // Backslash open redirect trick
+        mvc.perform(post("/login")
+                .sessionAttr("csrfToken", "test-token")
+                .param("_csrf", "test-token")
+                .param("username", "security-member")
+                .param("password", "secret123!")
+                .param("redirectUrl", "/\\evil.com"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"));
+
+        // Auth pages circular redirect
+        mvc.perform(post("/login")
+                .sessionAttr("csrfToken", "test-token")
+                .param("_csrf", "test-token")
+                .param("username", "security-member")
+                .param("password", "secret123!")
+                .param("redirectUrl", "/login"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"));
+    }
+
+    @Test void loginPageWithRefererSetsRedirectUrlInModel() throws Exception {
+        mvc.perform(get("/login").header("Referer", "http://localhost/notices/15"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("redirectUrl", "/notices/15"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("value=\"/notices/15\"")));
     }
 }

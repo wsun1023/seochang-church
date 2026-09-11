@@ -31,6 +31,7 @@ public class NotificationController {
         model.addAttribute("notificationPage", notifications.list(recipient, page, unreadOnly));
         model.addAttribute("unreadOnly", unreadOnly);
         model.addAttribute("unreadCount", notifications.unreadCount(recipient));
+        model.addAttribute("readCount", notifications.readCount(recipient));
         model.addAttribute("currentMenu", "notifications");
         return "notifications";
     }
@@ -60,6 +61,24 @@ public class NotificationController {
     @PostMapping("/notifications/read-all")
     public String readAll(HttpSession session) {
         notifications.markAllRead(user(session).getId());
+        return "redirect:/notifications";
+    }
+
+    @PostMapping("/notifications/{id}/delete")
+    public String delete(@PathVariable Long id, @RequestParam(defaultValue = "0") int page,
+                         @RequestParam(defaultValue = "false") boolean unreadOnly,
+                         HttpSession session, RedirectAttributes redirect) {
+        int count = notifications.deleteRead(user(session).getId(), id);
+        redirect.addFlashAttribute("notificationMessage", count == 1 ? "알림을 삭제했습니다." : "삭제할 수 있는 읽은 알림이 없습니다.");
+        redirect.addAttribute("page", Math.max(0, page));
+        redirect.addAttribute("unreadOnly", unreadOnly);
+        return "redirect:/notifications";
+    }
+
+    @PostMapping("/notifications/delete-read")
+    public String deleteRead(HttpSession session, RedirectAttributes redirect) {
+        int count = notifications.deleteAllRead(user(session).getId());
+        redirect.addFlashAttribute("notificationMessage", "읽은 알림 " + count + "개를 삭제했습니다.");
         return "redirect:/notifications";
     }
 }

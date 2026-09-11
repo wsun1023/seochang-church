@@ -9,6 +9,15 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
+    long countByRecipientIdAndReadAtIsNotNull(Long recipientId);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("delete from Notification n where n.id = :id and n.recipientId = :recipient and n.readAt is not null")
+    int deleteRead(@Param("id") Long id, @Param("recipient") Long recipient);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("delete from Notification n where n.recipientId = :recipient and n.readAt is not null")
+    int deleteAllRead(@Param("recipient") Long recipient);
     Page<Notification> findByRecipientId(Long recipientId, Pageable pageable);
     Page<Notification> findByRecipientIdAndReadAtIsNull(Long recipientId, Pageable pageable);
     Optional<Notification> findByIdAndRecipientId(Long id, Long recipientId);

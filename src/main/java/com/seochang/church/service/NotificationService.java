@@ -62,9 +62,20 @@ public class NotificationService {
     @Transactional(readOnly = true)
     public Page<Notification> list(Long recipient, int page, boolean unreadOnly) {
         Pageable pageable = PageRequest.of(Math.max(0, page), 20, Sort.by("createdAt").descending().and(Sort.by("id").descending()));
-        return unreadOnly ? notifications.findByRecipientIdAndReadAtIsNull(recipient, pageable)
+        Page<Notification> result = unreadOnly ? notifications.findByRecipientIdAndReadAtIsNull(recipient, pageable)
                 : notifications.findByRecipientId(recipient, pageable);
+        if (pageable.getPageNumber() > 0 && result.isEmpty()) {
+            return list(recipient, Math.max(0, result.getTotalPages() - 1), unreadOnly);
+        }
+        return result;
     }
+
+    @Transactional(readOnly = true)
+    public long readCount(Long recipient) { return notifications.countByRecipientIdAndReadAtIsNotNull(recipient); }
+
+    public int deleteRead(Long recipient, Long id) { return notifications.deleteRead(id, recipient); }
+
+    public int deleteAllRead(Long recipient) { return notifications.deleteAllRead(recipient); }
 
     @Transactional(readOnly = true)
     public long unreadCount(Long recipient) { return notifications.countByRecipientIdAndReadAtIsNull(recipient); }
