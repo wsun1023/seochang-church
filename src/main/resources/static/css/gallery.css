@@ -30,5 +30,17 @@
     .gallery-panel { padding: 16px; }
     .gallery-photo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .gallery-photo-controls { padding: 8px; }
-    .gallery-lightbox-stage { height: 65vh; }
+    .gallery-photo-controls button { min-height: 44px; min-width: 44px; }
+    .gallery-photo-controls .d-flex { gap: 6px !important; }
+    .gallery-page #title, .gallery-page #imageFiles { font-size: 16px; min-height: 44px; }
+    .gallery-page #saveGallery, .gallery-page label[for="imageFiles"] { min-height: 44px; }
+    .gallery-lightbox { padding: 12px; max-height: calc(100dvh - 24px); overflow-y: auto; }
+    .gallery-lightbox[open] { display: flex; flex-direction: column; }
+    .gallery-lightbox-stage { height: 60vh; height: max(100px, calc(100dvh - 190px)); min-height: 0; flex-shrink: 1; }
+    #lightboxCaption { min-width: 0; overflow-wrap: anywhere; }
+    #lightboxClose { min-width: 64px; min-height: 44px; flex-shrink: 0; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+    .gallery-lightbox { max-height: calc(100dvh - 16px); overflow-y: auto; }
+    .gallery-lightbox-stage { height: max(100px, calc(100dvh - 160px)); }
 }
