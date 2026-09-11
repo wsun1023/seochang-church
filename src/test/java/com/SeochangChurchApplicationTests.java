@@ -27,6 +27,8 @@ class SeochangChurchApplicationTests {
     @Autowired BoardRepository boards;
     @Autowired com.seochang.church.service.BoardLikeService likes;
     @Autowired com.seochang.church.service.UserService userService;
+    @Autowired NoticeRepository noticeRepository;
+    @Autowired com.seochang.church.service.NoticeService noticeService;
 
     private User user(String name) {
         User user = new User(name, "unused", name, null, null);
@@ -229,5 +231,101 @@ class SeochangChurchApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("redirectUrl", "/notices/15"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("value=\"/notices/15\"")));
+    }
+
+    @Test void pinnedNoticesAppearFirstInNoticeListAndRecentNotices() throws Exception {
+        Notice olderNormal = new Notice();
+        olderNormal.setTitle("일반 소식 1");
+        olderNormal.setContent("일반 내용 1");
+        olderNormal.setPinned(false);
+        olderNormal.setCreatedAt(java.time.LocalDateTime.now().minusDays(3));
+        noticeRepository.saveAndFlush(olderNormal);
+
+        Notice newerNormal = new Notice();
+        newerNormal.setTitle("일반 소식 2 (최신)");
+        newerNormal.setContent("일반 내용 2");
+        newerNormal.setPinned(false);
+        newerNormal.setCreatedAt(java.time.LocalDateTime.now().minusMinutes(5));
+        noticeRepository.saveAndFlush(newerNormal);
+
+        Notice olderPinned = new Notice();
+        olderPinned.setTitle("중요 대축일 공지 (오래됨)");
+        olderPinned.setContent("대축일 안내입니다.");
+        olderPinned.setPinned(true);
+        olderPinned.setCreatedAt(java.time.LocalDateTime.now().minusDays(5));
+        noticeRepository.saveAndFlush(olderPinned);
+
+        // 1. NoticeService.getNotices
+        var notices = noticeService.getNotices("all", 0, null).getContent();
+        assertThat(notices.get(0).getTitle()).isEqualTo("중요 대축일 공지 (오래됨)");
+        assertThat(notices.get(0).isPinned()).isTrue();
+        assertThat(notices.get(1).getTitle()).isEqualTo("일반 소식 2 (최신)");
+
+        // 2. NoticeService.getRecentNotices
+        var recent = noticeService.getRecentNotices(3);
+        assertThat(recent.get(0).getTitle()).isEqualTo("중요 대축일 공지 (오래됨)");
+
+        // 3. Rendering in notice_list.html
+        mvc.perform(get("/notices"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("중요")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("table-warning")));
+    }
+
+    @Test void adminCanTogglePinAndNoticeFormSetsPinned() throws Exception {
+        User admin = user("admin-pin");
+        admin.setRole("ADMIN");
+        users.saveAndFlush(admin);
+
+        User regular = user("regular-pin");
+
+        Notice notice = new Notice();
+        notice.setTitle("토글 대상 공지");
+        notice.setContent("내용");
+        notice.setPinned(false);
+        notice = noticeRepository.saveAndFlush(notice);
+
+        // Non-admin cannot toggle pin
+        mvc.perform(post("/admin/notices/" + notice.getId() + "/toggle-pin")
+                .session(session(regular))
+                .param("_csrf", "test-token"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/?error=admin-only"));
+
+        // Admin toggles pin -> true
+        mvc.perform(post("/admin/notices/" + notice.getId() + "/toggle-pin")
+                .session(session(admin))
+                .param("_csrf", "test-token"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/notices?page=0"))
+                .andExpect(flash().attribute("message", "공지사항이 상단에 고정되었습니다."));
+
+        assertThat(noticeRepository.findById(notice.getId()).orElseThrow().isPinned()).isTrue();
+
+        // Admin toggles pin again -> false
+        mvc.perform(post("/admin/notices/" + notice.getId() + "/toggle-pin")
+                .session(session(admin))
+                .param("_csrf", "test-token"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/notices?page=0"))
+                .andExpect(flash().attribute("message", "상단 고정이 해제되었습니다."));
+
+        assertThat(noticeRepository.findById(notice.getId()).orElseThrow().isPinned()).isFalse();
+
+        // Admin creates new notice with pinned=true
+        mvc.perform(post("/notices/new")
+                .session(session(admin))
+                .param("_csrf", "test-token")
+                .param("title", "처음부터 고정된 공지")
+                .param("content", "내용입니다.")
+                .param("category", "notice")
+                .param("pinned", "true"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/notices"));
+
+        Notice created = noticeRepository.findAll().stream()
+                .filter(n -> "처음부터 고정된 공지".equals(n.getTitle()))
+                .findFirst().orElseThrow();
+        assertThat(created.isPinned()).isTrue();
     }
 }

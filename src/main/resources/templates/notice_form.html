@@ -226,6 +226,17 @@
                 </select>
             </div>
 
+            <div class="mb-4 p-3 rounded-3" style="background-color: #FEF9C3; border: 1px solid #FDE047;">
+                <div class="form-check form-switch mb-0 d-flex align-items-center gap-2">
+                    <input type="hidden" name="_pinned" value="on"/>
+                    <input class="form-check-input fs-5 mt-0" type="checkbox" role="switch" id="pinned" name="pinned" value="true" th:checked="${notice.pinned}">
+                    <label class="form-check-label fw-bold text-dark" for="pinned" style="cursor: pointer;">
+                        <i class="bi bi-pin-angle-fill text-danger me-1"></i> 상단 고정 (중요 공지사항)
+                    </label>
+                </div>
+                <small class="text-muted d-block mt-1 ms-1">체크하시면 공지 목록 및 메인 화면 상단에 강조 표시되어 항상 위에 노출됩니다.</small>
+            </div>
+
             <div class="mb-4">
                 <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="title" name="title" th:value="${notice.title}" placeholder="소식 제목을 입력하세요." required>

@@ -7,12 +7,16 @@ public class PostForm {
     private String title;
     private String content;
     private String category;
+    private boolean pinned;
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+    public boolean isPinned() { return pinned; }
+    public boolean getPinned() { return pinned; }
+    public void setPinned(boolean pinned) { this.pinned = pinned; }
     public void validate() {
         if (title == null || title.isBlank() || title.length() > 255 || content == null || content.isBlank()) {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "제목(255자 이하)과 내용을 입력해주세요.");
@@ -33,6 +37,7 @@ public class PostForm {
         notice.setTitle(title);
         notice.setContent(content);
         if (category != null) notice.setCategory(category);
+        notice.setPinned(pinned);
         return notice;
     }
     public Gallery toGallery() {

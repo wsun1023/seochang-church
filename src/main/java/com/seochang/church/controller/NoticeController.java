@@ -121,6 +121,7 @@ public class NoticeController {
             if (updatedNotice.getCategory() != null) {
                 notice.setCategory(updatedNotice.getCategory());
             }
+            notice.setPinned(updatedNotice.isPinned());
             notice.setUpdatedAt(java.time.LocalDateTime.now());
             
             // Delete requested files

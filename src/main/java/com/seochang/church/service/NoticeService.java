@@ -21,7 +21,7 @@ public class NoticeService {
     }
 
     public Page<Notice> getNotices(String category, int page, String keyword) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "pinned").and(Sort.by(Sort.Direction.DESC, "createdAt")));
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
 
         if ("all".equals(category) || category == null || category.isEmpty()) {
@@ -40,7 +40,7 @@ public class NoticeService {
     }
 
     public Page<Notice> getNoticesForAdmin(String keyword, int page) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "pinned").and(Sort.by(Sort.Direction.DESC, "id")));
         if (keyword != null && !keyword.trim().isEmpty()) {
             return noticeRepository.findByKeyword(keyword.trim(), pageable);
         }
@@ -48,11 +48,11 @@ public class NoticeService {
     }
 
     public java.util.List<Notice> getAllNotices() {
-        return noticeRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        return noticeRepository.findAll(Sort.by(Sort.Direction.DESC, "pinned").and(Sort.by(Sort.Direction.DESC, "createdAt")));
     }
 
     public java.util.List<Notice> getRecentNotices(int count) {
-        Pageable pageable = PageRequest.of(0, count, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(0, count, Sort.by(Sort.Direction.DESC, "pinned").and(Sort.by(Sort.Direction.DESC, "createdAt")));
         return noticeRepository.findAll(pageable).getContent();
     }
 
@@ -80,6 +80,17 @@ public class NoticeService {
         Notice saved = noticeRepository.save(notice);
         if (isNew) notifications.noticePublished(saved);
         return saved;
+    }
+
+    @Transactional
+    public boolean togglePin(Long id) {
+        Notice notice = noticeRepository.findById(id).orElse(null);
+        if (notice != null) {
+            notice.setPinned(!notice.isPinned());
+            noticeRepository.save(notice);
+            return notice.isPinned();
+        }
+        return false;
     }
 
     @Transactional

@@ -26,6 +26,9 @@ public class Notice {
     @Column(name = "view_count", nullable = false, columnDefinition = "integer default 0")
     private int viewCount = 0;
 
+    @Column(name = "is_pinned", nullable = false, columnDefinition = "boolean default false")
+    private boolean pinned = false;
+
     @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<NoticeAttachment> attachments = new java.util.ArrayList<>();
 
@@ -102,5 +105,17 @@ public class Notice {
 
     public void setAttachments(java.util.List<NoticeAttachment> attachments) {
         this.attachments = attachments;
+    }
+
+    public boolean isPinned() {
+        return pinned;
+    }
+
+    public boolean getPinned() {
+        return pinned;
+    }
+
+    public void setPinned(boolean pinned) {
+        this.pinned = pinned;
     }
 }

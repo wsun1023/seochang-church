@@ -167,6 +167,20 @@ public class AdminController {
         return "redirect:/admin/notices";
     }
 
+    @PostMapping("/notices/{id}/toggle-pin")
+    public String toggleNoticePin(@PathVariable("id") Long id,
+                                 @RequestParam(name = "page", defaultValue = "0") int page,
+                                 @RequestParam(name = "keyword", required = false) String keyword,
+                                 RedirectAttributes redirectAttributes) {
+        boolean pinned = noticeService.togglePin(id);
+        redirectAttributes.addFlashAttribute("message", pinned ? "공지사항이 상단에 고정되었습니다." : "상단 고정이 해제되었습니다.");
+        String redirectUrl = "/admin/notices?page=" + page;
+        if (keyword != null && !keyword.isBlank()) {
+            redirectUrl += "&keyword=" + java.net.URLEncoder.encode(keyword, java.nio.charset.StandardCharsets.UTF_8);
+        }
+        return "redirect:" + redirectUrl;
+    }
+
     @GetMapping("/galleries")
     public String galleries(@RequestParam(value = "page", defaultValue = "0") int page,
                          Model model) {
