@@ -187,6 +187,7 @@
     </style>
 <meta name="csrf-token" th:content="${csrfToken}">
 <script src="/js/csrf.js"></script>
+<link rel="stylesheet" th:href="@{/css/toastui-mobile.css}">
 </head>
 <body>
 
@@ -294,9 +295,9 @@
             const contentInput = document.getElementById('content');
             const editor = new toastui.Editor({
                 el: document.querySelector('#editor'),
-                height: '500px',
+                height: window.matchMedia('(max-width: 575.98px)').matches ? '360px' : '500px',
                 initialEditType: 'wysiwyg',
-                previewStyle: 'vertical',
+                previewStyle: window.matchMedia('(max-width: 575.98px)').matches ? 'tab' : 'vertical',
                 initialValue: contentInput.value,
                 language: 'ko-KR',
                 hooks: {

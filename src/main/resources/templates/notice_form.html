@@ -194,6 +194,7 @@
     <link rel="stylesheet" th:href="@{/toastui/dist/toastui-editor.css}">
 <meta name="csrf-token" th:content="${csrfToken}">
 <script src="/js/csrf.js"></script>
+<link rel="stylesheet" th:href="@{/css/toastui-mobile.css}">
 </head>
 <body>
 
@@ -294,9 +295,9 @@
         let pendingImages = 0;
         const editor = new toastui.Editor({
             el: document.getElementById('noticeEditor'),
-            height: '500px',
+            height: window.matchMedia('(max-width: 575.98px)').matches ? '360px' : '500px',
             initialEditType: 'wysiwyg',
-            previewStyle: 'vertical',
+            previewStyle: window.matchMedia('(max-width: 575.98px)').matches ? 'tab' : 'vertical',
             initialValue: content.value || '',
             language: 'ko-KR',
             placeholder: '성당 소식 내용을 입력하세요.',

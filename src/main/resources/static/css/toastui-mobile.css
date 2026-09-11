@@ -1,0 +1,30 @@
+/* Shared page overrides; keep the bundled Toast UI library unchanged. */
+.toastui-editor-defaultUI .ProseMirror .placeholder {
+    display: inline;
+    min-height: 0;
+    vertical-align: baseline;
+    cursor: text;
+    background-color: transparent;
+    opacity: 1;
+}
+@media (max-width: 575.98px) {
+    .toastui-editor-defaultUI { min-width: 0; }
+    .toastui-editor-defaultUI .toastui-editor-defaultUI-toolbar { padding-left: 4px; padding-right: 4px; }
+    .toastui-editor-defaultUI .ProseMirror,
+    .toastui-editor-defaultUI .toastui-editor-contents,
+    .toastui-editor-defaultUI input,
+    .toastui-editor-defaultUI textarea { font-size: 16px; }
+    .toastui-editor-defaultUI .toastui-editor-ww-container .toastui-editor-contents { padding: 12px; }
+    .toastui-editor-defaultUI .toastui-editor-md-preview { padding: 0 12px; }
+    .toastui-editor-defaultUI .toastui-editor-mode-switch { height: 44px; flex-shrink: 0; }
+    .toastui-editor-defaultUI .toastui-editor-mode-switch .tab-item { height: 42px; line-height: 42px; }
+    #viewer, #noticeViewer, #galleryStoryViewer { min-width: 0; white-space: normal; }
+    #viewer .toastui-editor-contents,
+    #noticeViewer .toastui-editor-contents,
+    #galleryStoryViewer .toastui-editor-contents { font-size: 16px; overflow-wrap: anywhere; }
+    #viewer table, #noticeViewer table, #galleryStoryViewer table {
+        display: block; max-width: 100%; overflow-x: auto;
+    }
+    #viewer pre, #noticeViewer pre, #galleryStoryViewer pre { max-width: 100%; overflow-x: auto; }
+    #viewer img, #noticeViewer img, #galleryStoryViewer img { max-width: 100%; height: auto; }
+}
