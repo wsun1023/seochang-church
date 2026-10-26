@@ -145,7 +145,11 @@ docker compose ps
 docker compose logs --tail=100 app
 ```
 
-서버에서 `http://localhost:8080`으로 접속할 수 있습니다. 기본적으로 호스트의 `127.0.0.1`에만 포트를 연결합니다. DB와 업로드는 명명 볼륨에 보관됩니다.
+서버에서는 `http://localhost:8080`, 다른 PC에서는 `http://서버IP:8080`으로 접속합니다. `.env.example`과 Compose는 기본적으로 `APP_BIND_ADDRESS=0.0.0.0`을 사용합니다. 서버 방화벽에서 TCP 8080을 허용하고, 환경에 따라 클라우드 보안 그룹이나 공유기 포트포워딩도 설정해야 합니다. DB와 업로드는 명명 볼륨에 보관됩니다.
+
+기존 `.env`에 `APP_BIND_ADDRESS=127.0.0.1`이 있다면 `0.0.0.0`으로 변경하고 `docker compose up -d app`으로 반영하세요. 예제 파일 수정은 기존 `.env`에 자동 반영되지 않으며 이미지 재빌드는 필요하지 않습니다.
+
+같은 호스트의 HTTPS 리버스 프록시를 통해 공개하는 경우에는 `APP_BIND_ADDRESS=127.0.0.1`, `COOKIE_SECURE=true`를 사용하고 프록시의 80·443 포트를 공개합니다.
 
 **기존 로컬 DB와 업로드는 자동으로 이전되지 않습니다.** HTTPS 공개, 데이터 이전, 백업·복원, JDK 업데이트와 중지 방법은 [Docker 운영 안내](DOCKER.md)를 따르세요. `docker compose down -v`는 DB와 업로드 볼륨까지 삭제합니다.
 

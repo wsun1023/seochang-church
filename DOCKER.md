@@ -18,7 +18,23 @@ docker compose ps
 docker compose logs --tail=100 app
 ```
 
-서버 자체에서 `http://localhost:8080`으로 접속합니다. 기본 바인딩은 `127.0.0.1`입니다. 다른 PC에서 임시 점검하려면 `.env`의 `APP_BIND_ADDRESS=0.0.0.0`과 서버 방화벽을 설정합니다.
+서버 자체에서는 `http://localhost:8080`, 다른 PC에서는 `http://서버IP:8080`으로 접속합니다. 기본 바인딩은 `0.0.0.0`으로, 모든 IPv4 인터페이스에서 접속을 받습니다. `0.0.0.0`은 브라우저 접속 주소가 아니므로 실제 서버 IP를 사용하세요.
+
+외부 접속에는 서버 방화벽의 TCP 8080 허용이 필요합니다. 클라우드 서버는 보안 그룹, 공유기 내부 서버는 포트포워딩도 확인하세요. `APP_PORT`를 변경했다면 해당 포트를 허용하고 접속 주소에도 반영합니다.
+
+기존 `.env`는 예제 파일을 변경해도 자동으로 갱신되지 않습니다. 기존 `.env`의 비밀번호 등은 유지하고 아래 값만 변경한 후 컨테이너를 재생성합니다.
+
+```dotenv
+APP_BIND_ADDRESS=0.0.0.0
+APP_PORT=8080
+```
+
+```sh
+docker compose up -d app
+docker compose ps
+```
+
+이미지 재빌드는 필요하지 않습니다. `docker compose ps`에서 `0.0.0.0:8080->8080/tcp` 포트 매핑을 확인하세요. `docker compose restart`만으로는 변경한 포트 매핑이 반영되지 않습니다.
 
 DB 준비 완료 후 앱이 시작됩니다. 첫 실행에만 `init.sql`로 스키마를 만들고, Hibernate가 테이블을 생성·갱신합니다. 기존 프로젝트의 `ddl-auto=update`를 유지하므로 운영 업데이트 전에 반드시 백업하세요. PostgreSQL 포트는 호스트에 공개하지 않습니다.
 
@@ -67,7 +83,7 @@ WHERE username = '가입한_관리자_아이디' AND del_yn = 'N';
 
 도메인과 TLS 인증서는 서버의 Nginx/Caddy 등 리버스 프록시에서 처리합니다. 호스트 프록시는 `127.0.0.1:8080`으로 전달하고 `Host`, `X-Forwarded-For`, `X-Forwarded-Proto` 헤더를 설정합니다. 컨테이너 프록시는 별도 네트워크 구성이 필요합니다.
 
-- 공개 HTTPS 운영 시 `.env`에 `COOKIE_SECURE=true`를 설정하고 `docker compose up -d`로 반영합니다.
+- 같은 호스트의 프록시를 통한 공개 HTTPS 운영 시 `.env`에 `APP_BIND_ADDRESS=127.0.0.1`, `COOKIE_SECURE=true`를 설정하고 `docker compose up -d app`으로 반영합니다. 이 구성의 외부 공개 포트는 프록시의 80·443이며, 앱의 8080은 내부 연결에 사용합니다.
 - Nginx의 `client_max_body_size`는 최소 `100m`, 업로드 시간 제한은 서비스 환경에 맞게 설정합니다.
 - 외부에서 앱 포트에 직접 접근하지 못하도록 바인딩과 방화벽을 유지합니다.
 
