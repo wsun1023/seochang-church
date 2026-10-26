@@ -153,6 +153,8 @@ docker compose logs --tail=100 app
 
 **기존 로컬 DB와 업로드는 자동으로 이전되지 않습니다.** HTTPS 공개, 데이터 이전, 백업·복원, JDK 업데이트와 중지 방법은 [Docker 운영 안내](DOCKER.md)를 따르세요. `docker compose down -v`는 DB와 업로드 볼륨까지 삭제합니다.
 
+운영 PostgreSQL은 서버의 `127.0.0.1:15432`에만 연결됩니다. 개발 PC의 IntelliJ Database나 DBeaver에서 접근하려면 [SSH 터널을 통한 운영 DB 접속](DOCKER.md#7-개발-pc에서-운영-db-접속)을 참고하세요. DB 포트를 외부에 개방할 필요는 없습니다.
+
 ## 관리자 계정 설정
 
 ### Docker 최초 설치

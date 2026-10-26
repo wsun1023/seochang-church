@@ -35,6 +35,9 @@ services:
   db:
     image: postgres:16-bookworm
     restart: unless-stopped
+    # Host loopback only; connect from a development PC through an SSH tunnel.
+    ports:
+      - "127.0.0.1:15432:5432"
     environment:
       POSTGRES_DB: seochang_church
       POSTGRES_USER: seochang_church

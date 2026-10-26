@@ -45,7 +45,7 @@ docker compose ps
 
 이미지 재빌드는 필요하지 않습니다. `docker compose ps`에서 `0.0.0.0:8080->8080/tcp` 포트 매핑을 확인하세요. `docker compose restart`만으로는 변경한 포트 매핑이 반영되지 않습니다.
 
-DB 준비 완료 후 앱이 시작됩니다. 첫 실행에만 `init.sql`로 스키마를 만들고, Hibernate가 테이블을 생성·갱신합니다. 기존 프로젝트의 `ddl-auto=update`를 유지하므로 운영 업데이트 전에 반드시 백업하세요. PostgreSQL 포트는 호스트에 공개하지 않습니다.
+DB 준비 완료 후 앱이 시작됩니다. 첫 실행에만 `init.sql`로 스키마를 만들고, Hibernate가 테이블을 생성·갱신합니다. 기존 프로젝트의 `ddl-auto=update`를 유지하므로 운영 업데이트 전에 반드시 백업하세요. PostgreSQL은 호스트의 `127.0.0.1:15432`에만 연결하며, 개발 PC에서는 SSH 터널로 접속합니다.
 
 이미지에는 `.env`, 로컬 비밀 설정, 기존 업로드와 DB가 포함되지 않습니다. 애플리케이션은 일반 사용자 UID/GID 10001로 실행됩니다. 빌드는 실행 WAR를 생성하며 테스트는 별도 실행합니다.
 
@@ -162,3 +162,53 @@ docker compose logs --tail=100 app db
 현재 작업 환경에는 Docker가 설치되어 있지 않아 이미지 빌드·컨테이너 기동·백업 복원은 검증하지 못했습니다. 운영 전 별도 환경에서 로그인, 게시글, 사진 업로드, 다운로드, 매일미사·성경 HTTPS 연결을 확인하세요.
 
 작성 시점 작업 폴더에는 기존 JavaScript와 Toast UI JavaScript 파일 일부가 삭제된 상태입니다. Docker는 현재 소스를 그대로 패키징하므로 배포할 소스에 필요한 정적 파일이 모두 있는지 확인해야 합니다. 이번 Docker 구성 작업에서는 해당 파일을 복구하거나 변경하지 않았습니다.
+
+## 7. 개발 PC에서 운영 DB 접속
+
+Compose의 DB 포트는 `127.0.0.1:15432:5432`로 지정되어 있습니다. 운영 서버 내부에서만 접속할 수 있으며, 앱은 기존처럼 Docker 내부의 `db:5432`를 사용합니다. 외부 방화벽이나 보안 그룹에 DB 포트를 개방하지 않고 SSH 터널로 접속합니다.
+
+### 운영 서버에 설정 반영
+
+프로젝트 폴더에서 실행합니다. DB 컨테이너가 재생성되면서 일시적으로 서비스 연결이 끊길 수 있으므로 점검 시간에 반영하세요. 기존 DB 볼륨은 유지합니다.
+
+```sh
+docker compose config --quiet
+docker compose up -d db
+docker compose ps
+```
+
+DB 포트 매핑에 `127.0.0.1:15432->5432/tcp`가 표시되는지 확인합니다. 이미지 재빌드는 필요하지 않습니다.
+
+### 개발 PC에서 SSH 터널 열기
+
+PowerShell에서 운영 서버의 실제 SSH 계정과 주소를 지정합니다.
+
+```powershell
+ssh -o ExitOnForwardFailure=yes -N -L 127.0.0.1:15432:127.0.0.1:15432 서버계정@운영서버IP
+```
+
+개인키로 인증한다면 다음과 같이 지정합니다.
+
+```powershell
+ssh -i "C:\경로\서버키.pem" -o ExitOnForwardFailure=yes -N -L 127.0.0.1:15432:127.0.0.1:15432 서버계정@운영서버IP
+```
+
+SSH 포트가 22가 아니면 `-p SSH포트`를 추가하세요. 접속 중에는 터미널을 열어두며, `Ctrl+C`로 터널을 종료합니다. 개발 PC의 15432가 사용 중이면 `-L 127.0.0.1:25432:127.0.0.1:15432`로 바꾸고 DB 도구의 접속 포트도 25432로 지정합니다.
+
+### IntelliJ Database / DBeaver 연결
+
+새 PostgreSQL 연결을 만들고 다음 값을 입력합니다. 터미널 터널을 사용하는 이 방식에서는 DB 도구의 SSH 터널 설정을 별도로 켜지 않습니다.
+
+| 항목 | 값 |
+| --- | --- |
+| Host | `127.0.0.1` |
+| Port | `15432` (개발 PC의 터널 포트) |
+| Database | `seochang_church` |
+| User | `seochang_church` |
+| Password | 실제 운영 DB 비밀번호, 최초 생성 시 `.env`의 `DB_PASSWORD` |
+| Schema | `seochang_church_db` |
+| JDBC URL | `jdbc:postgresql://127.0.0.1:15432/seochang_church?currentSchema=seochang_church_db` |
+
+운영 DB에 직접 연결되므로 조회 목적이라면 별도 읽기 전용 DB 계정을 사용하세요. 초기 관리자 로그인 비밀번호(`INITIAL_ADMIN_PASSWORD`)와 DB 비밀번호는 서로 다른 값입니다.
+
+연결이 안 되면 SSH 로그와 `docker compose ps`, `docker compose logs --tail=100 db`를 확인합니다. SSH 서버에서 TCP 포워딩이 허용되어 있어야 합니다. 이 경로에는 운영 서버의 SSH 포트 접근 권한만 필요합니다.
