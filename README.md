@@ -134,7 +134,7 @@ chmod +x gradlew
 Docker와 Compose v2가 필요합니다. Windows Docker Desktop은 Linux 컨테이너 모드로 실행합니다.
 
 1. `.env.example`을 `.env`로 복사합니다.
-2. `.env`의 `DB_PASSWORD`를 설정합니다.
+2. `.env`의 `DB_PASSWORD`, `INITIAL_ADMIN_USERNAME`, `INITIAL_ADMIN_PASSWORD`를 설정합니다. 초기 관리자 비밀번호는 12자 이상으로 지정합니다.
 3. 프로젝트 루트에서 다음 명령을 실행합니다.
 
 ```sh
@@ -155,6 +155,14 @@ docker compose logs --tail=100 app
 
 ## 관리자 계정 설정
 
+### Docker 최초 설치
+
+`.env`에서 `INITIAL_ADMIN_ENABLED=true`와 초기 관리자 아이디·비밀번호·이름을 지정하면 앱 시작 시 승인된 관리자 계정이 생성됩니다. 활성 관리자가 이미 있으면 생성하지 않으며 기존 계정의 비밀번호나 권한을 덮어쓰지 않습니다. 기존 회원과 아이디가 중복되면 다른 아이디를 지정해야 합니다.
+
+최초 로그인 후 `INITIAL_ADMIN_ENABLED=false`로 변경하고 초기 비밀번호를 `.env`에서 제거한 뒤 `docker compose up -d app`으로 반영하세요. 상세 설정과 검증 조건은 [Docker 운영 안내](DOCKER.md)를 참고하세요.
+
+### 로컬 설치 또는 수동 권한 설정
+
 1. 회원가입 화면에서 관리자용 계정을 생성합니다.
 2. DB 운영 권한으로 해당 계정만 승인하고 관리자 권한을 부여합니다.
 3. 다시 로그인하여 관리자 페이지에 접속합니다.
@@ -165,7 +173,7 @@ SET role = 'ADMIN', approved = true
 WHERE username = '가입한_관리자_아이디' AND del_yn = 'N';
 ```
 
-기본 관리자 계정과 공통 비밀번호는 자동으로 생성하지 않습니다. 일반 회원은 관리자 승인 후 로그인할 수 있습니다.
+로컬 실행에서는 관리자 계정을 자동 생성하지 않습니다. 공통 기본 비밀번호는 제공하지 않으며, 일반 회원은 관리자 승인 후 로그인할 수 있습니다.
 
 ## 빌드 및 테스트
 

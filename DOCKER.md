@@ -4,7 +4,16 @@
 
 ## 1. 최초 실행
 
-프로젝트 루트에서 `.env.example`을 `.env`로 복사하고 `DB_PASSWORD`에 충분히 긴 고유 비밀번호를 지정합니다. 비밀번호에 `$`가 있다면 `.env`에서 값을 작은따옴표로 감싸세요. `.env`는 서버 운영 계정만 읽을 수 있도록 권한을 제한합니다.
+프로젝트 루트에서 `.env.example`을 `.env`로 복사하고 `DB_PASSWORD`와 초기 관리자 정보를 지정합니다. DB와 관리자 비밀번호는 서로 다른 고유 값으로 설정하세요. 비밀번호에 `$`가 있다면 `.env`에서 값을 작은따옴표로 감싸세요. `.env`는 서버 운영 계정만 읽을 수 있도록 권한을 제한합니다.
+
+```dotenv
+INITIAL_ADMIN_ENABLED=true
+INITIAL_ADMIN_USERNAME=admin
+INITIAL_ADMIN_PASSWORD='직접_정한_12자_이상_비밀번호'
+INITIAL_ADMIN_NAME=관리자
+```
+
+위 비밀번호는 형식 예시이므로 그대로 사용하지 마세요. 아이디는 영문·숫자·`_`·`.`·`-` 4~50자, 비밀번호는 12자 이상·UTF-8 기준 72바이트 이하입니다.
 
 ```powershell
 Copy-Item .env.example .env
@@ -65,7 +74,18 @@ docker compose run --rm --no-deps --user root --entrypoint chown app -R 10001:10
 docker compose up -d app
 ```
 
-신규 설치의 관리자 계정은 회원가입 후 DB에서 해당 계정만 승인·권한 변경합니다. 자동 생성되는 기본 관리자 비밀번호는 없습니다.
+### 초기 관리자 자동 생성
+
+Docker 프로필에서 `INITIAL_ADMIN_ENABLED=true`일 때, 승인된 활성 관리자가 없으면 지정한 계정을 생성합니다. 비밀번호는 BCrypt 해시로 저장하며 로그에 출력하지 않습니다. 생성된 계정은 별도 승인 없이 로그인할 수 있습니다.
+
+- 활성 관리자가 이미 있으면 새 계정을 만들거나 기존 비밀번호를 변경하지 않습니다.
+- 지정한 아이디가 기존 회원과 중복되면 시작을 중단합니다. 기존 회원을 자동 승격하지 않으므로 다른 아이디를 지정하세요.
+- 관리자가 없고 초기 생성 정보가 잘못되면 오류 메시지와 함께 시작을 중단합니다.
+- 기존 `.env`에는 설정이 자동으로 추가되지 않습니다. 기능을 사용하려면 위 네 항목을 직접 추가하세요.
+- 최초 로그인 확인 후 `.env`에서 `INITIAL_ADMIN_ENABLED=false`로 바꾸고 `INITIAL_ADMIN_PASSWORD`를 비운 다음 `docker compose up -d app`으로 반영하세요. 이후 비밀번호 변경은 관리자 페이지의 내 회원정보 수정을 이용합니다.
+- 초기 생성 설정을 비활성화하면 재시작이나 데이터 복원 시 관리자를 자동 생성하지 않습니다.
+
+공통 기본 비밀번호는 제공하지 않습니다. 기존 회원을 직접 관리자로 지정해야 하는 경우에는 아래 수동 절차를 사용할 수 있습니다.
 
 ```sh
 docker compose exec db psql -U seochang_church -d seochang_church

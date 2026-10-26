@@ -8,6 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+    boolean existsByRoleAndApprovedTrueAndDelYn(String role, String delYn);
 
     @org.springframework.data.jpa.repository.Query("SELECT u.id FROM User u WHERE u.approved = true AND u.delYn = 'N'")
     java.util.List<Long> findNotificationRecipientIds();
