@@ -38,6 +38,9 @@ out/
 
 ### Application Secrets ###
 .env
+.env.*
+!.env.example
+backups/
 application-secret.properties
 application-dev.properties
 application-prod.properties
