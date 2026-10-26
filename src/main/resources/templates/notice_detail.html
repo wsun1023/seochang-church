@@ -306,7 +306,7 @@ function showImageModal(src) {
         const content = viewer.textContent;
         viewer.textContent = '';
         viewer.style.whiteSpace = 'normal';
-        toastui.Editor.factory({ el: viewer, viewer: true, initialValue: content });
+        new toastui.Editor({ el: viewer, initialValue: content });
         viewer.addEventListener('click', function (event) {
             if (event.target.tagName === 'IMG') showImageModal(event.target.src);
         });

@@ -297,9 +297,8 @@
 <script th:src="@{/js/gallery-viewer.js}" defer></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        toastui.Editor.factory({
+        new toastui.Editor({
             el: document.getElementById('galleryStoryViewer'),
-            viewer: true,
             initialValue: document.getElementById('galleryStoryContent').value || ''
         });
     });

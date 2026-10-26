@@ -10,6 +10,50 @@
 @media (max-width: 575.98px) {
     .toastui-editor-defaultUI { min-width: 0; }
     .toastui-editor-defaultUI .toastui-editor-defaultUI-toolbar { padding-left: 4px; padding-right: 4px; }
+    /* The library's mobile -150px margin and inline offsets clip popups. */
+    .toastui-editor-defaultUI .toastui-editor-popup,
+    .toastui-editor-defaultUI .toastui-editor-dropdown-toolbar {
+        left: 0 !important;
+        right: auto !important;
+        margin-left: 0;
+        margin-right: 0;
+        transform: none !important;
+        box-sizing: border-box;
+        max-width: 100%;
+    }
+    .toastui-editor-defaultUI .toastui-editor-popup {
+        width: min(400px, 100%);
+        max-height: 70vh;
+        max-height: 70dvh;
+        overflow: auto;
+        z-index: 31;
+    }
+    .toastui-editor-defaultUI .toastui-editor-dropdown-toolbar {
+        width: 100%;
+        height: auto;
+        min-height: 46px;
+        flex-wrap: wrap;
+    }
+    .toastui-editor-defaultUI .toastui-editor-popup-body { overflow-wrap: anywhere; }
+    .toastui-editor-defaultUI .toastui-editor-popup-body input[type='text'] {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        min-height: 40px;
+    }
+    .toastui-editor-defaultUI .toastui-editor-file-name {
+        box-sizing: border-box;
+        width: calc(100% - 100px);
+        height: 40px;
+        line-height: 38px;
+        padding: 0 8px;
+    }
+    .toastui-editor-defaultUI .toastui-editor-file-select-button {
+        width: 94px;
+        margin-left: 6px;
+        height: auto;
+        min-height: 40px;
+    }
     .toastui-editor-defaultUI .ProseMirror,
     .toastui-editor-defaultUI .toastui-editor-contents,
     .toastui-editor-defaultUI input,
