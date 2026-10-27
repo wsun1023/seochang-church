@@ -12,6 +12,16 @@ import java.util.List;
 
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Long> {
+    interface BoardCount {
+        Long getBoardId();
+        long getTotal();
+    }
+
+    @Query("SELECT c.board.id AS boardId, COUNT(c.id) AS total FROM BoardComment c WHERE c.board.id IN :ids AND c.delYn = 'N' GROUP BY c.board.id")
+    List<BoardCount> countListComments(@Param("ids") List<Long> ids);
+
+    @Query("SELECT a.board.id AS boardId, COUNT(a.id) AS total FROM BoardAttachment a WHERE a.board.id IN :ids GROUP BY a.board.id")
+    List<BoardCount> countListAttachments(@Param("ids") List<Long> ids);
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT b FROM Board b WHERE b.id = :id")
     java.util.Optional<Board> findLockedById(@Param("id") Long id);

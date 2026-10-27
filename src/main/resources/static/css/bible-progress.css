@@ -1,0 +1,74 @@
+.progress-summary-card {
+    background: #fff;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .04);
+}
+.reading-summary-heading { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-bottom: 10px; list-style: none; cursor: pointer; }
+.reading-summary-heading::-webkit-details-marker { display: none; }
+.reading-summary-heading:focus-visible { outline: 2px solid #d97706; outline-offset: 4px; border-radius: 8px; }
+.reading-summary-heading h2 { flex: 1; min-width: 0; }
+.reading-summary-toggle { display: inline-flex; align-items: center; gap: 5px; color: #64748b; font-size: .75rem; white-space: nowrap; }
+.reading-summary-toggle i { transition: transform .15s ease; }
+.progress-summary-card[open] .reading-summary-toggle i { transform: rotate(180deg); }
+.progress-summary-card[open] .reading-toggle-closed,
+.progress-summary-card:not([open]) .reading-toggle-open { display: none; }
+.progress-summary-card:not([open]) .reading-summary-heading { margin-bottom: 0; }
+.reading-summary-heading > i { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: #fff7e6; color: #b45309; flex-shrink: 0; }
+.reading-summary-heading h2 { margin: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.5; }
+.reading-storage { color: #64748b; font-size: .8rem; line-height: 1.7; margin: 0 0 18px; overflow-wrap: anywhere; }
+.reading-storage i { margin-right: 4px; }
+.reading-storage a { color: #92400e; font-weight: 600; text-underline-offset: 3px; }
+.progress-summary-card .mode-switch-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; margin-bottom: 20px; border-radius: 12px; background: #f1f5f9; }
+.progress-summary-card .mode-switch-tabs .btn { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 44px; padding: 10px 8px; border: 0; border-radius: 9px; font-size: .9rem; white-space: nowrap; color: #64748b; background: transparent; }
+.progress-summary-card .mode-switch-tabs .btn-warning { color: #fff !important; background: #0f172a; box-shadow: 0 2px 5px rgba(15,23,42,.12); }
+.progress-summary-card .mode-switch-tabs .btn-outline-light:hover { background: #e2e8f0; color: #0f172a; }
+.progress-summary-card .mode-switch-tabs .btn:focus-visible { outline: 2px solid #d97706; outline-offset: 2px; box-shadow: none; }
+.reading-summary-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; }
+.reading-stat { min-width: 0; padding: 18px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
+.reading-stat-label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-size: .85rem; font-weight: 600; }
+.reading-stat-label small { color: #64748b; font-size: .75rem; font-weight: 400; white-space: nowrap; }
+.reading-stat-percent { display: block; margin: 10px 0 12px; font-size: 1.75rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.reading-stat .progress { height: 6px; border-radius: 99px; background: #e2e8f0; margin-bottom: 12px; }
+.reading-stat .progress-bar { border-radius: 99px; }
+.reading-stat-counts { display: flex; flex-direction: column; gap: 4px; color: #64748b; font-size: .78rem; font-variant-numeric: tabular-nums; }
+.reading-stat-counts span { word-break: keep-all; }
+.reading-stat-counts strong { color: #334155; }
+.reading-stat-total { background: #0f172a; border-color: #0f172a; color: #fff; }
+.reading-stat-total .reading-stat-label small, .reading-stat-total .reading-stat-counts { color: #cbd5e1; }
+.reading-stat-total .reading-stat-percent { color: #fbbf24; }
+.reading-stat-total .reading-stat-counts strong { color: #fff; }
+.reading-stat-total .progress { background: #334155; }
+.reading-stat-total .progress-bar { background: #fbbf24; }
+.reading-stat-old .reading-stat-percent { color: #0369a1; }
+.reading-stat-old .progress-bar { background: #0284c7; }
+.reading-stat-new .reading-stat-percent { color: #047857; }
+.reading-stat-new .progress-bar { background: #059669; }
+.reading-filter-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid #e2e8f0; }
+.reading-testament-filter { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: 12px; background: #f1f5f9; }
+.reading-testament-filter .btn { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 44px; padding: 8px 12px; border: 0; border-radius: 9px; background: transparent; color: #64748b; font-size: .85rem; font-weight: 600; white-space: nowrap; }
+.reading-testament-filter .btn:hover { background: #e2e8f0; color: #0f172a; }
+.reading-testament-filter .btn.active { background: #0f172a; color: #fff; box-shadow: 0 2px 5px rgba(15,23,42,.12); }
+.reading-filter-count { padding: 1px 5px; border-radius: 5px; background: #e2e8f0; color: #475569; font-size: .7rem; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.reading-testament-filter .btn.active .reading-filter-count { background: rgba(255,255,255,.12); color: #fcd34d; }
+.reading-testament-filter .btn:focus-visible { outline: 2px solid #d97706; outline-offset: 2px; box-shadow: none; }
+.reading-status-filter { display: flex; align-items: center; gap: 12px; padding: 4px 12px; min-height: 56px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; }
+.reading-status-filter label { margin: 0; color: #64748b; font-size: .8rem; white-space: nowrap; }
+.reading-status-filter .form-select { width: auto; min-width: 0; min-height: 44px; padding-left: 4px; font-size: .85rem; font-weight: 500; color: #334155; border: 0; background-color: transparent; cursor: pointer; }
+.reading-status-filter .form-select:focus { box-shadow: none; outline: 2px solid #d97706; outline-offset: 1px; border-radius: 6px; }
+@media (max-width: 767.98px) {
+    .progress-summary-card { padding: 18px 14px; }
+    .reading-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .reading-stat { padding: 14px 12px; }
+    .reading-stat-percent { font-size: clamp(1.25rem, 5.5vw, 1.6rem); }
+    .reading-stat-total { grid-column: 1 / -1; }
+    .reading-stat-total .reading-stat-percent { font-size: 2rem; }
+    .reading-stat-total .reading-stat-counts { flex-direction: row; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; }
+    .reading-summary-heading h2 { font-size: 1rem; }
+    .progress-summary-card .mode-switch-tabs .btn { font-size: .85rem; }
+    .reading-filter-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+    .reading-testament-filter .btn { flex-direction: column; gap: 1px; min-height: 44px; padding: 4px; }
+    .reading-status-filter { justify-content: space-between; }
+    .reading-status-filter .form-select { font-size: 16px; }
+}

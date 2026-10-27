@@ -38,6 +38,7 @@ public class BoardController {
         org.springframework.data.domain.Page<Board> boardPage = boardService.getActiveBoardsByCategory(category, page, keyword);
         
         model.addAttribute("boards", boardPage.getContent());
+        model.addAttribute("boardStats", boardService.listStats(boardPage.getContent()));
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", boardPage.getTotalPages());
         model.addAttribute("totalElements", boardPage.getTotalElements());

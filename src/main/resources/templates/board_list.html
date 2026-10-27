@@ -211,6 +211,14 @@
                 font-size: 0.85rem;
             }
         }
+        .board-title-link { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: #1e293b; text-decoration: none; }
+        .board-title-link:hover { color: #b45309; }
+        .board-title-link:focus-visible { outline: 2px solid #d97706; outline-offset: 4px; border-radius: 4px; }
+        .board-title-text { min-width: 0; overflow-wrap: anywhere; }
+        .board-new { background: #fff7ed; color: #b45309; border: 1px solid #fed7aa; border-radius: 6px; padding: 2px 6px; font-size: .65rem; font-weight: 700; line-height: 1.4; }
+        .board-list-meta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 6px; color: #64748b; font-size: .8rem; font-weight: 400; }
+        .board-list-meta > span { display: inline-flex; align-items: center; gap: 4px; }
+        .board-list-meta .bi-heart { color: #be5261; }
     </style>
 <meta name="csrf-token" th:content="${csrfToken}">
 <script src="/js/csrf.js"></script>
@@ -292,9 +300,19 @@
                     </tr>
                     
                     <!-- Notice List -->
-                    <tr th:each="board, stat : ${boards}" th:onclick="|location.href='@{/boards/{id}(id=${board.id})}'|">
+                    <tr th:each="board, stat : ${boards}" th:with="stats=${boardStats[board.id]}" th:onclick="|location.href='@{/boards/{id}(id=${board.id})}'|">
                         <td class="text-center text-muted" th:text="${totalElements - (currentPage * 10) - stat.index}">1</td>
-                        <td class="fw-medium text-dark text-start px-3" th:text="${board.title}">게시글 제목</td>
+                        <td class="fw-medium text-dark text-start px-3">
+                            <a class="board-title-link" th:href="@{/boards/{id}(id=${board.id})}" onclick="event.stopPropagation()">
+                                <span class="board-title-text" th:text="${board.title}">게시글 제목</span>
+                                <span th:if="${stats.newPost}" class="board-new" title="작성 후 24시간 이내" aria-label="새 게시글">NEW</span>
+                            </a>
+                            <div class="board-list-meta">
+                                <span th:aria-label="|댓글 ${stats.commentCount}개|" title="삭제되지 않은 댓글·답글 수"><i class="bi bi-chat-dots" aria-hidden="true"></i><span data-comment-count th:text="${stats.commentCount}">0</span></span>
+                                <span th:aria-label="|좋아요 ${board.likeCount}개|"><i class="bi bi-heart" aria-hidden="true"></i><span data-like-count th:text="${board.likeCount}">0</span></span>
+                                <span th:if="${stats.attachmentCount > 0}" th:aria-label="|첨부파일 ${stats.attachmentCount}개|" title="첨부파일 있음"><i class="bi bi-paperclip" aria-hidden="true"></i><span data-attachment-count th:text="${stats.attachmentCount}">0</span></span>
+                            </div>
+                        </td>
                         <td class="text-center text-secondary small" th:text="${board.writer}">홍길동 (바오로)</td>
                         <td class="text-center text-muted small" th:text="${#temporals.format(board.createdAt, 'yyyy-MM-dd')}">2026-07-24</td>
                         <td class="text-center text-muted small" th:text="${board.viewCount}">0</td>

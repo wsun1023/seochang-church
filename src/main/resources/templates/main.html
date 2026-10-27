@@ -581,15 +581,15 @@
 
         <!-- Dynamic Rendering for Notices -->
         <div class="row g-4 horizontal-scroll-mobile" th:if="${notices != null and not #lists.isEmpty(notices)}">
-            <div class="col-md-4" th:each="notice : ${notices}">
+            <div class="col-md-4" th:each="notice : ${notices}" th:with="previewImage=${@noticePreview.imageUrl(notice)}">
                 <a th:href="@{/notices/{id}(id=${notice.id})}" class="text-decoration-none">
                     <div class="gallery-preview-card" th:classappend="${notice.pinned} ? 'border border-warning shadow-sm' : ''">
-                        <th:block th:if="${notice.attachments != null and notice.attachments.size() > 0}">
-                            <img th:src="${notice.attachments[0].filePath}" alt="공지사항 썸네일" class="gallery-preview-img">
+                        <th:block th:if="${previewImage != null}">
+                            <img th:src="${previewImage}" th:alt="${notice.title}" class="gallery-preview-img" loading="lazy" decoding="async">
                         </th:block>
-                        <th:block th:unless="${notice.attachments != null and notice.attachments.size() > 0}">
+                        <th:block th:unless="${previewImage != null}">
                             <div class="gallery-preview-placeholder p-4 text-start align-items-start" style="font-size: 0.95rem; color: #475569; background-color: #f8fafc; line-height: 1.6;">
-                                <p class="m-0 w-100" th:text="${notice.content}" style="display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden;">공지사항 요약 내용입니다.</p>
+                                <p class="m-0 w-100" th:text="${@noticePreview.summary(notice.content)}" style="display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden;">공지사항 요약 내용입니다.</p>
                             </div>
                         </th:block>
                         <div class="p-3">

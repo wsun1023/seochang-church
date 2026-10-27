@@ -32,7 +32,9 @@ public class UserService {
         String encodedPassword = passwordEncoder.encode(rawPassword);
         User newUser = new User(username, encodedPassword, name, baptismalName, email);
         newUser.setDistrict(district);
-        return userRepository.save(newUser);
+        User saved = userRepository.save(newUser);
+        notifications.memberRegistered(saved);
+        return saved;
     }
 
     @Transactional(readOnly = true)

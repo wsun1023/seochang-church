@@ -39,6 +39,15 @@ public class NotificationService {
                 "회원가입이 승인되었습니다. 이제 게시판을 이용하실 수 있습니다.", null));
     }
 
+    public void memberRegistered(User member) {
+        // Existing APPROVAL notifications with a target identify approval requests.
+        // A null target remains the approval result sent to the member.
+        for (Long recipient : users.findActiveAdminIds()) {
+            notifications.save(new Notification(recipient, Notification.Type.APPROVAL,
+                    "새 회원이 가입했습니다: " + member.getName() + ". 회원 승인을 확인해주세요.", member.getId()));
+        }
+    }
+
     public void commentAdded(BoardComment comment, BoardComment parent) {
         Map<Long, Notification.Type> recipients = new LinkedHashMap<>();
         recipients.put(comment.getBoard().getWriterId(), Notification.Type.COMMENT);
@@ -96,10 +105,20 @@ public class NotificationService {
         Notification notification = owned(recipient, id);
         notifications.markRead(id, recipient, LocalDateTime.now());
         return switch (notification.getType()) {
-            case APPROVAL -> "/boards";
+            case APPROVAL -> notification.getTargetId() == null ? "/boards" : approvalRequestPath(recipient, notification.getTargetId());
             case NOTICE -> notices.existsById(notification.getTargetId()) ? "/notices/" + notification.getTargetId() : null;
             case COMMENT, REPLY -> boards.findById(notification.getTargetId()).filter(b -> "N".equals(b.getDelYn()))
                     .map(b -> "/boards/" + b.getId()).orElse(null);
         };
+    }
+
+    private String approvalRequestPath(Long recipient, Long memberId) {
+        // Recheck current DB permissions even if a former admin still has an old notification.
+        boolean admin = users.findById(recipient).filter(this::active)
+                .filter(user -> "ADMIN".equals(user.getRole())).isPresent();
+        if (!admin) return null;
+        return users.findById(memberId).filter(user -> "N".equals(user.getDelYn()))
+                .map(user -> "/admin/users?keyword=" + java.net.URLEncoder.encode(user.getUsername(), java.nio.charset.StandardCharsets.UTF_8))
+                .orElse(null);
     }
 }

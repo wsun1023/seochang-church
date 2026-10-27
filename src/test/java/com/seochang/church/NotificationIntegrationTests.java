@@ -25,6 +25,49 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 class NotificationIntegrationTests {
+    @Test void signupNotifiesOnlyActiveAdminsAndLinksToMemberManagement() throws Exception {
+        User admin = user("signup-admin"); admin.setRole("ADMIN");
+        User second = user("signup-admin-two"); second.setRole("ADMIN");
+        User pending = user("signup-pending-admin"); pending.setRole("ADMIN"); pending.setApproved(false);
+        User removed = user("signup-removed-admin"); removed.setRole("ADMIN"); removed.setDelYn("Y");
+        User ordinary = user("signup-ordinary"); users.flush();
+        User member = userService.registerUser("new-member", "secret-password", "새 교우", "마리아", "private@example.com", "1구역");
+        assertThat(member.isApproved()).isFalse();
+        assertThat(repository.count()).isEqualTo(2);
+        for (User recipient : java.util.List.of(admin, second)) {
+            Notification notice = notifications.list(recipient.getId(), 0, false).getContent().get(0);
+            assertThat(notice.getType()).isEqualTo(Notification.Type.APPROVAL);
+            assertThat(notice.getTargetId()).isEqualTo(member.getId());
+            assertThat(notice.getMessage()).contains("새 교우").doesNotContain("secret-password", "private@example.com");
+            mvc.perform(post("/notifications/" + notice.getId() + "/open").session(session(recipient))
+                    .param("_csrf", "notification-test-token")).andExpect(redirectedUrl("/admin/users?keyword=new-member"));
+        }
+        for (User excluded : java.util.List.of(pending, removed, ordinary, member))
+            assertThat(notifications.unreadCount(excluded.getId())).isZero();
+        assertThatThrownBy(() -> userService.registerUser("new-member", "other-password", "중복", null, null, null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThat(repository.count()).isEqualTo(2);
+    }
+
+    @Test void signupNotificationDoesNotGrantAdminAccessAfterDemotion() {
+        User admin = user("former-admin"); admin.setRole("ADMIN"); users.flush();
+        userService.registerUser("waiting-member", "secret-password", "대기 교우", null, null, null);
+        Notification notification = notifications.list(admin.getId(), 0, false).getContent().get(0);
+        admin.setRole("USER"); users.flush();
+        assertThat(notifications.open(admin.getId(), notification.getId())).isNull();
+    }
+
+    @Test void signupWorksWithoutAdminsAndRollbackDoesNotLeaveNotifications() {
+        User registered = userService.registerUser("without-admin", "secret-password", "교우", null, null, null);
+        assertThat(registered.getId()).isNotNull();
+        assertThat(repository.count()).isZero();
+        User admin = user("rollback-admin"); admin.setRole("ADMIN"); users.flush();
+        userService.registerUser("transaction-member", "secret-password", "교우", null, null, null);
+        assertThat(repository.count()).isEqualTo(1);
+        TestTransaction.flagForRollback(); TestTransaction.end();
+        assertThat(repository.count()).isZero();
+        assertThat(users.existsByUsername("transaction-member")).isFalse();
+    }
     @Test void deletingReadNotificationsPreservesUnreadAndOtherRecipients() throws Exception {
         User owner = user("delete-owner"), other = user("delete-other");
         Notification read = alert(owner), unread = alert(owner), foreign = alert(other);

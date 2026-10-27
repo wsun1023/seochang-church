@@ -6,6 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.time.LocalDateTime;
+import com.seochang.church.dto.BoardListStats;
 
 @Service
 @Transactional
@@ -15,6 +19,25 @@ public class BoardService {
 
     public BoardService(BoardRepository boardRepository) {
         this.boardRepository = boardRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, BoardListStats> listStats(List<Board> boards) {
+        if (boards.isEmpty()) return Map.of();
+        List<Long> ids = boards.stream().map(Board::getId).toList();
+        Map<Long, Long> comments = new HashMap<>();
+        Map<Long, Long> attachments = new HashMap<>();
+        boardRepository.countListComments(ids).forEach(count -> comments.put(count.getBoardId(), count.getTotal()));
+        boardRepository.countListAttachments(ids).forEach(count -> attachments.put(count.getBoardId(), count.getTotal()));
+        LocalDateTime now = LocalDateTime.now();
+        Map<Long, BoardListStats> result = new HashMap<>();
+        for (Board board : boards) {
+            LocalDateTime created = board.getCreatedAt();
+            boolean recent = created != null && created.isAfter(now.minusHours(24)) && !created.isAfter(now);
+            result.put(board.getId(), new BoardListStats(comments.getOrDefault(board.getId(), 0L),
+                    attachments.getOrDefault(board.getId(), 0L), recent));
+        }
+        return result;
     }
 
     @Transactional(readOnly = true)
