@@ -22,6 +22,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 class SeochangChurchApplicationTests {
+    @Test void allAdminPagesRenderSharedNavigationAndKeepProtectedActions() throws Exception {
+        User admin = user("ui-admin"); admin.setRole("ADMIN"); users.flush();
+        User pending = user("가입승인을기다리고있는회원입니다"); pending.setApproved(false); users.flush();
+        boards.saveAndFlush(new Board("본당 공동체의 소식을 함께 나눕니다", "본문", admin.getName(), admin.getId()));
+        noticeRepository.saveAndFlush(new Notice("연중 주일 미사와 본당 행사 안내", "본문"));
+        galleries.saveAndFlush(new Gallery("가을 본당 공동체 사진첩", "사진첩 이야기", admin.getName(), admin.getId()));
+        Banner banner = new Banner(); banner.setTitle("본당 행사 안내 배너"); banner.setType("BANNER");
+        banner.setImageUrl("/images/logo.png"); banners.saveAndFlush(banner);
+        CalendarEvent event = new CalendarEvent(); event.setTitle("교중 미사"); event.setColor("#3788d8");
+        event.setStartDate(java.time.LocalDateTime.of(2026, 10, 27, 10, 0));
+        event.setEndDate(event.getStartDate().plusHours(1)); calendarEvents.saveAndFlush(event);
+        for (String route : java.util.List.of("/admin", "/admin/users", "/admin/boards", "/admin/notices",
+                "/admin/galleries", "/admin/banners", "/admin/calendar", "/admin/profile")) {
+            String html = mvc.perform(get(route).session(session(admin))).andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+            var document = org.jsoup.Jsoup.parse(html);
+            assertThat(document.select("body.admin-ui #adminSidebar")).hasSize(1);
+            assertThat(document.select(".admin-workspace")).hasSize(1);
+            assertThat(document.select("link[href='/css/admin.css']")).hasSize(1);
+            assertThat(document.select(".sidebar-menu a.active[aria-current='page']"))
+                    .hasSize(1).allMatch(link -> link.attr("href").equals(route));
+            assertThat(document.select(".admin-topbar form[action='/logout'][method='post'] input[name='_csrf']"))
+                    .hasSize(1).allMatch(input -> input.val().equals("test-token"));
+            assertThat(document.select("[data-bs-target='#adminSidebar'][aria-controls='adminSidebar']")).hasSize(1);
+        }
+    }
     @Test void adminCalendarReusesControlsAndKeepsItsEditingForm() throws Exception {
         User admin = user("calendar-admin"); admin.setRole("ADMIN"); users.flush();
         String html = mvc.perform(get("/admin/calendar").session(session(admin))).andExpect(status().isOk())
@@ -59,6 +85,9 @@ class SeochangChurchApplicationTests {
     @Autowired com.seochang.church.service.BoardLikeService likes;
     @Autowired com.seochang.church.service.UserService userService;
     @Autowired NoticeRepository noticeRepository;
+    @Autowired GalleryRepository galleries;
+    @Autowired BannerRepository banners;
+    @Autowired CalendarEventRepository calendarEvents;
     @Autowired com.seochang.church.service.NoticeService noticeService;
 
     private User user(String name) {

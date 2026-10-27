@@ -737,49 +737,33 @@
     </div>
 </section>
 
-<!-- Church Calendar & Location Section -->
-<section id="calendar-section" class="section-padding" style="background: #F8FAFC;">
+<!-- Church Calendar Section -->
+<section id="calendar-section" class="section-padding" style="background: #F8FAFC;" aria-labelledby="homeCalendarTitle">
     <div class="container">
-        <div class="row g-4">
-            <!-- ROW 1: Headers -->
-            <div class="col-lg-8">
-                <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-0">
-                    <div>
-                        <span class="section-sublabel">Church Calendar</span>
-                        <h2 class="section-title mb-0">성당 일정</h2>
-                    </div>
-                    <a href="/calendar" class="btn btn-outline-dark rounded-pill px-4 btn-sm">전체보기 <i class="bi bi-arrow-right"></i></a>
-                </div>
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+            <div>
+                <span class="section-sublabel">Church Calendar</span>
+                <h2 id="homeCalendarTitle" class="section-title mb-0">성당 일정</h2>
             </div>
-            
-            <div class="col-lg-4 d-none d-lg-block">
-                <!-- Empty placeholder for desktop grid alignment -->
-            </div>
-            
-            <!-- ROW 2: Content -->
-            <div class="col-lg-8">
-                <section th:replace="~{calendar :: calendarPanel}"></section>
-            </div>
-            
-            <div class="col-lg-4">
-                <!-- Location Section -->
-                <div class="d-flex justify-content-between align-items-end mb-4">
-                    <div>
-                        <span class="section-sublabel">Location</span>
-                        <h2 class="section-title mb-0">오시는 길</h2>
-                    </div>
-                </div>
-                
-                <div class="bg-white p-2 rounded-4 border shadow-sm d-flex flex-column mb-0" style="height: 350px; position: relative;">
-                    <!-- Google Maps Iframe -->
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m5!3m3!1m2!1s0x357b7b12fffc25f9%3A0xdf7392f21d4862bb!2z7J247LKc6rSR7Jet7IucIOuCqOuPmeq1rCDsnqXslYTsgrDroZwxOTnrsojquLggMTY!5e0!3m2!1sko!2skr!4v1784866937161!5m2!1sko!2skr" width="100%" height="100%" style="border:0; border-radius: 1rem;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-                    
-                    <div class="position-absolute bottom-0 start-50 translate-middle-x mb-3" style="z-index: 100;">
-                        <a href="https://naver.me/F4WGV8mP" target="_blank" class="btn btn-primary rounded-pill px-3 shadow btn-sm text-nowrap">
-                            <i class="bi bi-box-arrow-up-right me-1"></i> 네이버 지도
-                        </a>
-                    </div>
-                </div>
+            <a href="/calendar" class="btn btn-outline-dark rounded-pill px-4 btn-sm">전체보기 <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <section th:replace="~{calendar :: calendarPanel}"></section>
+    </div>
+</section>
+
+<!-- Location Section -->
+<section id="location-section" class="section-padding" style="background: #FFFFFF; border-top: 1px solid #F1F5F9;" aria-labelledby="homeLocationTitle">
+    <div class="container">
+        <div class="mb-4">
+            <span class="section-sublabel">Location</span>
+            <h2 id="homeLocationTitle" class="section-title mb-0">오시는 길</h2>
+        </div>
+        <div class="bg-white p-2 rounded-4 border shadow-sm position-relative" style="height: 350px;">
+            <iframe title="서창동성당 위치 지도" src="https://www.google.com/maps/embed?pb=!1m5!3m3!1m2!1s0x357b7b12fffc25f9%3A0xdf7392f21d4862bb!2z7J247LKc6rSR7Jet7IucIOuCqOuPmeq1rCDsnqXslYTsgrDroZwxOTnrsojquLggMTY!5e0!3m2!1sko!2skr!4v1784866937161!5m2!1sko!2skr" width="100%" height="100%" style="border:0; border-radius: 1rem;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            <div class="position-absolute bottom-0 start-50 translate-middle-x mb-3" style="z-index: 100;">
+                <a href="https://naver.me/F4WGV8mP" target="_blank" rel="noopener noreferrer" class="btn btn-primary rounded-pill px-3 shadow btn-sm text-nowrap">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> 네이버 지도
+                </a>
             </div>
         </div>
     </div>

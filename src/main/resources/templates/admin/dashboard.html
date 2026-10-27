@@ -6,64 +6,47 @@
 <body>
 <div th:fragment="content">
     <div class="page-header">
-        <h2 class="page-title"><i class="bi bi-grid-1x2-fill text-warning me-2"></i> 관리자 대시보드</h2>
-        <div class="text-muted small">오늘 날짜: <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy년 MM월 dd일')}"></span></div>
+        <div><p class="admin-eyebrow">PARISH ADMINISTRATION</p><h1 class="page-title">관리자 대시보드</h1><p class="admin-subtitle">오늘의 운영 현황과 확인할 소식을 한눈에 살펴보세요.</p></div>
+        <div class="admin-date"><i class="bi bi-calendar3 me-1" aria-hidden="true"></i><span th:text="${#temporals.format(#temporals.createNow(), 'yyyy년 MM월 dd일')}"></span></div>
     </div>
     
-    <!-- Stats Widgets -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-6 col-lg-3">
-            <div class="admin-card text-center position-relative overflow-hidden" style="border-left: 4px solid var(--primary-navy);">
-                <div class="position-absolute top-0 end-0 opacity-10 p-3">
-                    <i class="bi bi-people-fill" style="font-size: 4rem;"></i>
-                </div>
-                <h6 class="text-muted fw-bold mb-3">총 회원 수</h6>
-                <h3 class="display-6 fw-bold text-dark mb-0"><span th:text="${totalUsers}">0</span><span class="fs-6 text-muted ms-1">명</span></h3>
-                <div class="mt-3">
-                    <span th:if="${pendingUsers > 0}" class="badge bg-danger rounded-pill px-3">승인 대기 <span th:text="${pendingUsers}"></span>명</span>
-                    <span th:unless="${pendingUsers > 0}" class="badge bg-success rounded-pill px-3">모두 승인됨</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-6 col-lg-3">
-            <div class="admin-card text-center position-relative overflow-hidden" style="border-left: 4px solid #3B82F6;">
-                <div class="position-absolute top-0 end-0 opacity-10 p-3">
-                    <i class="bi bi-chat-square-text-fill" style="font-size: 4rem;"></i>
-                </div>
-                <h6 class="text-muted fw-bold mb-3">자유게시판 글</h6>
-                <h3 class="display-6 fw-bold text-dark mb-0"><span th:text="${totalBoards}">0</span><span class="fs-6 text-muted ms-1">개</span></h3>
-                <a href="/admin/boards" class="btn btn-sm btn-outline-primary mt-3 rounded-pill px-3">게시판 관리</a>
-            </div>
-        </div>
-        
-        <div class="col-md-6 col-lg-3">
-            <div class="admin-card text-center position-relative overflow-hidden" style="border-left: 4px solid #10B981;">
-                <div class="position-absolute top-0 end-0 opacity-10 p-3">
-                    <i class="bi bi-megaphone-fill" style="font-size: 4rem;"></i>
-                </div>
-                <h6 class="text-muted fw-bold mb-3">성당소식 글</h6>
-                <h3 class="display-6 fw-bold text-dark mb-0"><span th:text="${totalNotices}">0</span><span class="fs-6 text-muted ms-1">개</span></h3>
-                <a href="/admin/notices" class="btn btn-sm btn-outline-success mt-3 rounded-pill px-3">소식 관리</a>
-            </div>
-        </div>
-        
-        <div class="col-md-6 col-lg-3">
-            <div class="admin-card text-center position-relative overflow-hidden" style="border-left: 4px solid #8B5CF6;">
-                <div class="position-absolute top-0 end-0 opacity-10 p-3">
-                    <i class="bi bi-images" style="font-size: 4rem;"></i>
-                </div>
-                <h6 class="text-muted fw-bold mb-3">갤러리 사진첩</h6>
-                <h3 class="display-6 fw-bold text-dark mb-0"><span th:text="${totalGalleries}">0</span><span class="fs-6 text-muted ms-1">개</span></h3>
-                <a href="/admin/galleries" class="btn btn-sm btn-outline-danger mt-3 rounded-pill px-3" style="color: #8B5CF6; border-color: #8B5CF6;">갤러리 관리</a>
-            </div>
-        </div>
+    <div th:if="${pendingUsers > 0}" class="admin-attention">
+        <i class="bi bi-person-check" aria-hidden="true"></i>
+        <p>승인을 기다리는 회원이 <strong th:text="${pendingUsers}">0</strong>명 있습니다.</p>
+        <a href="/admin/users" class="btn btn-sm btn-outline-dark">회원 확인 <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
     </div>
+    <div class="admin-metrics" aria-label="운영 현황 요약">
+        <a href="/admin/users" class="admin-metric">
+            <div class="admin-metric-heading"><span>전체 회원</span><span class="admin-metric-icon"><i class="bi bi-people" aria-hidden="true"></i></span></div>
+            <div class="admin-metric-value"><span th:text="${totalUsers}">0</span><small>명</small></div>
+            <div class="admin-metric-footer"><span th:if="${pendingUsers > 0}">승인 대기 <strong th:text="${pendingUsers}">0</strong>명</span><span th:unless="${pendingUsers > 0}">회원 정보 확인</span><i class="bi bi-arrow-up-right" aria-hidden="true"></i></div>
+        </a>
+        <a href="/admin/boards" class="admin-metric">
+            <div class="admin-metric-heading"><span>게시판 글</span><span class="admin-metric-icon blue"><i class="bi bi-chat-square-text" aria-hidden="true"></i></span></div>
+            <div class="admin-metric-value"><span th:text="${totalBoards}">0</span><small>개</small></div>
+            <div class="admin-metric-footer">게시판 관리<i class="bi bi-arrow-up-right" aria-hidden="true"></i></div>
+        </a>
+        <a href="/admin/notices" class="admin-metric">
+            <div class="admin-metric-heading"><span>성당 소식</span><span class="admin-metric-icon green"><i class="bi bi-megaphone" aria-hidden="true"></i></span></div>
+            <div class="admin-metric-value"><span th:text="${totalNotices}">0</span><small>개</small></div>
+            <div class="admin-metric-footer">소식 관리<i class="bi bi-arrow-up-right" aria-hidden="true"></i></div>
+        </a>
+        <a href="/admin/galleries" class="admin-metric">
+            <div class="admin-metric-heading"><span>갤러리 사진첩</span><span class="admin-metric-icon purple"><i class="bi bi-images" aria-hidden="true"></i></span></div>
+            <div class="admin-metric-value"><span th:text="${totalGalleries}">0</span><small>개</small></div>
+            <div class="admin-metric-footer">사진첩 관리<i class="bi bi-arrow-up-right" aria-hidden="true"></i></div>
+        </a>
+    </div>
+    <nav class="admin-quick-actions" aria-label="자주 쓰는 작업">
+        <a href="/notices/new"><i class="bi bi-pencil-square" aria-hidden="true"></i>소식 작성<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        <a href="/gallery/new"><i class="bi bi-image" aria-hidden="true"></i>사진첩 등록<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        <a href="/admin/calendar"><i class="bi bi-calendar-event" aria-hidden="true"></i>일정 관리<i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </nav>
     
     <!-- Recent Activity Tables -->
     <div class="row g-4">
         <div class="col-lg-12">
-            <div class="admin-card p-md-4 p-3 bg-transparent bg-md-white border-0 border-md shadow-none shadow-md-sm">
+            <div class="admin-card admin-list-panel">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="fw-bold m-0">최근 가입 회원 목록</h5>
                     <a href="/admin/users" class="btn btn-sm btn-light">전체보기</a>
@@ -84,7 +67,7 @@
                             <tr th:each="user : ${recentUsers}">
                                 <td>
                                     <span class="fw-bold text-dark" th:text="${user.name}">홍길동</span>
-                                    <span class="text-muted ms-1" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
+                                    <span class="text-muted ms-1" th:if="${!#strings.isEmpty(user.baptismalName)}" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
                                 </td>
                                 <td th:text="${user.username}">user123</td>
                                 <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}">2026-07-28</td>
@@ -113,7 +96,7 @@
                                     <h6 class="mb-0 fw-bold d-inline-block">
                                         <span th:text="${user.name}">홍길동</span>
                                     </h6>
-                                    <span class="text-muted small ms-1" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
+                                    <span class="text-muted small ms-1" th:if="${!#strings.isEmpty(user.baptismalName)}" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
                                     <div class="text-muted small mt-1"><i class="bi bi-person-badge me-1"></i><span th:text="${user.username}">아이디</span></div>
                                 </div>
                                 <div>

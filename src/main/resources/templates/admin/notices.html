@@ -6,22 +6,28 @@
 <body>
 <div th:fragment="content">
     <div class="page-header">
-        <h2 class="page-title"><i class="bi bi-megaphone-fill text-success me-2"></i> 성당소식 관리</h2>
+        <div>
+            <h2 class="page-title"><i class="bi bi-megaphone-fill me-2"></i> 성당소식 관리</h2>
+            <p class="admin-subtitle">주보와 공지, 본당 소식을 확인하고 공개 상태를 관리합니다.</p>
+        </div>
         
         <!-- 검색 폼 -->
-        <form class="d-flex" action="/admin/notices" method="get" style="width: 300px;">
-            <div class="input-group">
-                <input class="form-control" type="search" name="keyword" placeholder="제목 또는 작성자 검색" aria-label="Search" th:value="${keyword}">
-                <button class="btn btn-outline-secondary bg-white" type="submit"><i class="bi bi-search"></i></button>
-            </div>
-        </form>
+        <div class="admin-page-actions">
+            <form class="d-flex" action="/admin/notices" method="get" style="width: 300px;">
+                <div class="input-group">
+                    <input class="form-control" type="search" name="keyword" placeholder="제목 또는 작성자 검색" aria-label="검색어" th:value="${keyword}">
+                    <button class="btn btn-outline-secondary bg-white" type="submit" aria-label="검색"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+            <a href="/notices/new" class="btn btn-primary text-nowrap"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>소식 작성</a>
+        </div>
     </div>
     
     <div th:if="${message}" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
         <i class="bi bi-check-circle-fill me-2"></i><span th:text="${message}">성공 메시지</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div class="admin-card p-md-4 p-2 bg-transparent bg-md-white border-0 border-md shadow-none shadow-md-sm">
+    <div class="admin-card admin-list-panel">
         <!-- Desktop Table View -->
         <div class="table-responsive d-none d-md-block bg-white rounded-3 border overflow-hidden">
             <table class="table table-hover align-middle mb-0">

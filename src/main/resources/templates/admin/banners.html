@@ -6,11 +6,14 @@
 <body>
 <div th:fragment="content">
     <div class="page-header">
-        <h2 class="page-title"><i class="bi bi-aspect-ratio-fill text-info me-2"></i> 팝업 및 배너 관리</h2>
+        <div>
+            <h2 class="page-title"><i class="bi bi-aspect-ratio-fill me-2"></i> 팝업 및 배너 관리</h2>
+            <p class="admin-subtitle">홈 화면의 팝업과 배너, 노출 기간을 관리합니다.</p>
+        </div>
         <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#addBannerModal"><i class="bi bi-plus-lg"></i> 새 배너 등록</button>
     </div>
     
-    <div class="admin-card p-md-4 p-2 bg-transparent bg-md-white border-0 border-md shadow-none shadow-md-sm">
+    <div class="admin-card admin-list-panel">
         <div class="table-responsive d-none d-md-block bg-white rounded-3 border overflow-hidden">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">

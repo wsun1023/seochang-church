@@ -11,255 +11,78 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-navy: #0F172A;
-            --sidebar-hover: #1E293B;
-            --accent-gold: #D97706;
-            --accent-gold-light: #F59E0B;
-            --bg-light: #F8FAFC;
-            --text-main: #334155;
-            --text-muted: #64748B;
-            --border-color: #E2E8F0;
-        }
-
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: var(--bg-light);
-            color: var(--text-main);
-            overflow-x: hidden;
-        }
-
-        /* Sidebar Styling */
-        .sidebar {
-            background: linear-gradient(180deg, var(--primary-navy), #0B1120);
-            color: white;
-            padding: 0;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.05);
-        }
-        
-        @media (min-width: 992px) {
-            .sidebar {
-                min-height: 100vh;
-                position: sticky;
-                top: 0;
-            }
-        }
-
-        .sidebar-header {
-            padding: 25px 20px;
-            background: rgba(0,0,0,0.2);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            text-align: center;
-        }
-        
-        .sidebar-header h4 {
-            margin: 0;
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: #F8FAFC;
-            letter-spacing: -0.5px;
-        }
-
-        .sidebar-menu {
-            padding: 20px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .sidebar-menu a {
-            color: #94A3B8;
-            text-decoration: none;
-            padding: 12px 25px;
-            display: flex;
-            align-items: center;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-        }
-
-        .sidebar-menu a i {
-            font-size: 1.2rem;
-            margin-right: 12px;
-            color: #64748B;
-            transition: color 0.3s ease;
-        }
-
-        .sidebar-menu a:hover {
-            color: white;
-            background-color: var(--sidebar-hover);
-        }
-
-        .sidebar-menu a:hover i {
-            color: var(--accent-gold-light);
-        }
-
-        /* Thymeleaf Active Link Logic will use exact URI */
-        .sidebar-menu a.active {
-            color: white;
-            background-color: var(--sidebar-hover);
-            border-left: 4px solid var(--accent-gold);
-            font-weight: 600;
-        }
-        
-        .sidebar-menu a.active i {
-            color: var(--accent-gold);
-        }
-
-        .sidebar-footer {
-            margin-top: auto;
-            padding: 20px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .sidebar-footer a {
-            display: block;
-            text-align: center;
-            background: rgba(255,255,255,0.05);
-            color: #CBD5E1;
-            padding: 10px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: background 0.3s ease;
-        }
-
-        .sidebar-footer a:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
-
-        /* Main Content */
-        .admin-content {
-            padding: 30px 40px;
-            min-height: 100vh;
-        }
-        
-        .page-header {
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .page-title {
-            font-weight: 700;
-            color: var(--primary-navy);
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        /* Common Card Style */
-        .admin-card {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-
-        /* Mobile Adjustments */
-        @media (max-width: 991.98px) {
-            .sidebar {
-                background: var(--primary-navy); /* Solid background for offcanvas */
-                width: 280px;
-                max-width: 80vw;
-            }
-            .sidebar-menu {
-                padding: 10px;
-            }
-            .sidebar-menu a {
-                padding: 12px 20px;
-                border-radius: 8px;
-                margin-bottom: 5px;
-                border-left: none;
-            }
-            .sidebar-menu a.active {
-                background: var(--sidebar-hover);
-                border-left: 4px solid var(--accent-gold);
-            }
-            .sidebar-footer {
-                margin-top: auto;
-                padding-bottom: 20px;
-            }
-            .admin-content {
-                padding: 20px 15px;
-                min-height: calc(100vh - 65px); /* Minus mobile header height */
-            }
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
 <meta name="csrf-token" th:content="${csrfToken}">
 <script src="/js/csrf.js"></script>
 </head>
-<body>
+<body class="admin-ui" th:with="adminPath=${requestURI != null ? requestURI : (profileAction != null ? profileAction : '/admin')}">
     <!-- Mobile Header (Visible only on < lg screens) -->
-    <div class="d-lg-none bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm">
-        <h5 class="m-0 fw-bold"><i class="bi bi-shield-lock-fill text-warning me-2"></i>관리자 센터</h5>
-        <button class="btn btn-outline-light border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar">
+    <header class="admin-mobile-header d-lg-none">
+        <a href="/admin" class="admin-mobile-brand"><i class="bi bi-shield-check" aria-hidden="true"></i>서창동성당 <span>관리자</span></a>
+        <button class="btn btn-outline-light border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar" aria-label="관리 메뉴 열기">
             <i class="bi bi-list fs-4"></i>
         </button>
-    </div>
+    </header>
 
-    <div class="container-fluid p-0">
-        <div class="row g-0">
+    <div class="admin-shell">
             <!-- Sidebar (Offcanvas on mobile, static col-lg-2 on desktop) -->
-            <div class="col-lg-2 sidebar d-flex flex-column offcanvas-lg offcanvas-start" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
+            <aside class="sidebar d-flex flex-column offcanvas-lg offcanvas-start" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
                 <div class="offcanvas-header d-lg-none border-bottom border-secondary border-opacity-25 pb-3 mb-2 px-4 pt-4">
                     <h5 class="offcanvas-title fw-bold text-white" id="adminSidebarLabel"><i class="bi bi-shield-lock-fill text-warning me-2"></i>관리자 메뉴</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar" aria-label="관리 메뉴 닫기"></button>
                 </div>
                 
                 <div class="sidebar-header d-none d-lg-block">
-                    <h4><i class="bi bi-shield-lock-fill text-warning me-2"></i>관리자 센터</h4>
+                    <a href="/admin" class="admin-brand"><span class="admin-brand-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span><span>서창동성당<small>관리자 센터</small></span></a>
                 </div>
                 
-                <div class="sidebar-menu">
+                <nav class="sidebar-menu" aria-label="관리자 메뉴">
                     <!-- Helper variables to set active class -->
-                    <a href="/admin" th:classappend="${requestURI == '/admin' ? 'active' : ''}">
+                    <p class="sidebar-group-label">운영 현황</p>
+                    <a href="/admin" th:classappend="${adminPath == '/admin' ? 'active' : ''}" th:attr="aria-current=${adminPath == '/admin' ? 'page' : null}">
                         <i class="bi bi-grid-1x2-fill"></i> 대시보드
                     </a>
-                    <a href="/admin/profile" th:classappend="${requestURI == '/admin/profile' ? 'active' : ''}">
-                        <i class="bi bi-person-gear"></i> 내 회원정보 수정
-                    </a>
-                    <a href="/admin/users" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/users') ? 'active' : ''}">
+                    <a href="/admin/users" th:classappend="${#strings.startsWith(adminPath, '/admin/users') ? 'active' : ''}" th:attr="aria-current=${#strings.startsWith(adminPath, '/admin/users') ? 'page' : null}">
                         <i class="bi bi-people-fill"></i> 회원 관리
                     </a>
-                    <a href="/admin/boards" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/boards') ? 'active' : ''}">
+                    <p class="sidebar-group-label">콘텐츠 관리</p>
+                    <a href="/admin/boards" th:classappend="${#strings.startsWith(adminPath, '/admin/boards') ? 'active' : ''}" th:attr="aria-current=${#strings.startsWith(adminPath, '/admin/boards') ? 'page' : null}">
                         <i class="bi bi-chat-square-text-fill"></i> 자유게시판 관리
                     </a>
-                    <a href="/admin/notices" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/notices') ? 'active' : ''}">
+                    <a href="/admin/notices" th:classappend="${#strings.startsWith(adminPath, '/admin/notices') ? 'active' : ''}" th:attr="aria-current=${#strings.startsWith(adminPath, '/admin/notices') ? 'page' : null}">
                         <i class="bi bi-megaphone-fill"></i> 성당소식 관리
                     </a>
-                    <a href="/admin/galleries" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/galleries') ? 'active' : ''}">
+                    <a href="/admin/galleries" th:classappend="${#strings.startsWith(adminPath, '/admin/galleries') ? 'active' : ''}" th:attr="aria-current=${#strings.startsWith(adminPath, '/admin/galleries') ? 'page' : null}">
                         <i class="bi bi-images"></i> 갤러리 관리
                     </a>
-                    <a href="/admin/banners" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/banners') ? 'active' : ''}">
+                    <a href="/admin/banners" th:classappend="${#strings.startsWith(adminPath, '/admin/banners') ? 'active' : ''}" th:attr="aria-current=${#strings.startsWith(adminPath, '/admin/banners') ? 'page' : null}">
                         <i class="bi bi-aspect-ratio-fill"></i> 팝업/배너 관리
                     </a>
-                    <a href="/admin/calendar" th:classappend="${requestURI != null and #strings.startsWith(requestURI, '/admin/calendar') ? 'active' : ''}">
+                    <a href="/admin/calendar" th:classappend="${#strings.startsWith(adminPath, '/admin/calendar') ? 'active' : ''}" th:attr="aria-current=${#strings.startsWith(adminPath, '/admin/calendar') ? 'page' : null}">
                         <i class="bi bi-calendar-event-fill"></i> 일정 관리
                     </a>
-                </div>
+                    <p class="sidebar-group-label">내 계정</p>
+                    <a href="/admin/profile" th:classappend="${adminPath == '/admin/profile' ? 'active' : ''}" th:attr="aria-current=${adminPath == '/admin/profile' ? 'page' : null}"><i class="bi bi-person-gear"></i> 내 회원정보 수정</a>
+                </nav>
                 
                 <div class="sidebar-footer">
-                    <div class="mb-3"><span th:replace="~{fragments/notification_link :: link}"></span></div>
                     <a href="/"><i class="bi bi-house-door-fill me-1"></i> 성당 홈으로 가기</a>
+                    <p class="sidebar-footnote">SEOCHANG PARISH</p>
                 </div>
-            </div>
+            </aside>
             
             <!-- Main Content -->
-            <div class="col-lg-10 admin-content bg-light">
-                <div th:replace="${content}"></div>
-            </div>
-        </div>
+            <main class="admin-content" id="adminMain">
+                <header class="admin-topbar">
+                    <a href="/admin" class="admin-topbar-label"><span class="admin-live-dot" aria-hidden="true"></span>관리자 센터</a>
+                    <div class="admin-topbar-actions">
+                        <span th:replace="~{fragments/notification_link :: link}"></span>
+                        <a href="/admin/profile" class="admin-account-link" th:if="${session.loginUser != null}"><i class="bi bi-person-circle" aria-hidden="true"></i><span th:text="${session.loginUser.displayName}">관리자</span><span class="visually-hidden">회원정보 수정</span></a>
+                        <form th:action="@{/logout}" method="post"><input type="hidden" name="_csrf" th:value="${csrfToken}"><button type="submit" class="admin-logout" aria-label="로그아웃" title="로그아웃"><i class="bi bi-box-arrow-right" aria-hidden="true"></i></button></form>
+                    </div>
+                </header>
+                <div class="admin-workspace"><div th:replace="${content}"></div></div>
+            </main>
     </div>
     
     <!-- Bootstrap JS -->

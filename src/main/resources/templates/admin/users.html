@@ -6,13 +6,16 @@
 <body>
 <div th:fragment="content">
     <div class="page-header">
-        <h2 class="page-title"><i class="bi bi-people-fill text-warning me-2"></i> 회원 관리</h2>
+        <div>
+            <h2 class="page-title"><i class="bi bi-people-fill me-2"></i> 회원 관리</h2>
+            <p class="admin-subtitle">가입 승인과 회원 권한, 계정 상태를 관리합니다.</p>
+        </div>
         
         <!-- 검색 폼 -->
         <form class="d-flex" action="/admin/users" method="get" style="width: 300px;">
             <div class="input-group">
-                <input class="form-control" type="search" name="keyword" placeholder="이름 또는 아이디 검색" aria-label="Search" th:value="${keyword}">
-                <button class="btn btn-outline-secondary bg-white" type="submit"><i class="bi bi-search"></i></button>
+                <input class="form-control" type="search" name="keyword" placeholder="이름 또는 아이디 검색" aria-label="검색어" th:value="${keyword}">
+                <button class="btn btn-outline-secondary bg-white" type="submit" aria-label="검색"><i class="bi bi-search"></i></button>
             </div>
         </form>
     </div>
@@ -40,7 +43,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <div class="admin-card p-md-4 p-2 bg-transparent bg-md-white border-0 border-md shadow-none shadow-md-sm">
+    <div class="admin-card admin-list-panel">
         <div class="table-responsive d-none d-md-block bg-white rounded-3 border overflow-hidden">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -57,7 +60,7 @@
                     <tr th:each="user : ${users}" th:classappend="${user.delYn == 'Y'} ? 'opacity-50' : ''">
                         <td>
                             <span class="fw-bold text-dark" th:text="${user.name}">홍길동</span>
-                            <span class="text-muted ms-1 small" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
+                            <span class="text-muted ms-1 small" th:if="${!#strings.isEmpty(user.baptismalName)}" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
                             <div th:if="${user.district != null and !user.district.isEmpty()}" class="mt-1">
                                 <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25" th:text="${user.district}">1구역</span>
                             </div>
@@ -110,7 +113,7 @@
                             <h6 class="mb-0 fw-bold d-inline-block">
                                 <span th:text="${user.name}">홍길동</span>
                             </h6>
-                            <span class="text-muted small ms-1" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
+                            <span class="text-muted small ms-1" th:if="${!#strings.isEmpty(user.baptismalName)}" th:text="'(' + ${user.baptismalName} + ')'">(세례명)</span>
                             <div th:if="${user.district != null and !user.district.isEmpty()}" class="mt-1 d-inline-block ms-1">
                                 <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25" th:text="${user.district}">1구역</span>
                             </div>

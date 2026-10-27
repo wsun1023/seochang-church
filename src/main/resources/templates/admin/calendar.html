@@ -7,7 +7,10 @@
 <div th:fragment="content" data-calendar-admin>
     <link rel="stylesheet" th:href="@{/css/calendar.css}">
     <div class="page-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
-        <h2 class="page-title mb-0"><i class="bi bi-calendar-event-fill me-2 text-primary"></i>성당 일정 관리</h2>
+        <div>
+            <h2 class="page-title mb-0"><i class="bi bi-calendar-event-fill me-2"></i>성당 일정 관리</h2>
+            <p class="admin-subtitle">달력과 목록에서 본당 일정을 한눈에 관리합니다.</p>
+        </div>
         <button type="button" class="btn btn-dark rounded-pill px-4" onclick="openNewEventModal()">
             <i class="bi bi-plus-lg me-1"></i>새 일정 추가
         </button>
@@ -17,7 +20,7 @@
     <p class="calendar-admin-hint"><i class="bi bi-info-circle" aria-hidden="true"></i> 날짜를 선택하면 새 일정을 추가할 수 있어요. 일정을 누르면 수정·삭제할 수 있습니다.</p>
 
     <!-- Concise Event List View -->
-    <div class="admin-card mt-4 p-md-4 p-2 bg-transparent bg-md-white border-0 border-md shadow-none shadow-md-sm">
+    <div class="admin-card admin-list-panel mt-4">
         <h5 class="fw-bold mb-3">전체 일정 목록</h5>
         <div class="table-responsive d-none d-md-block bg-white rounded-3 border overflow-hidden">
             <table class="table table-hover align-middle mb-0 text-center">

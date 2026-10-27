@@ -6,10 +6,14 @@
 <body>
 <div th:fragment="content">
     <div class="page-header">
-        <h2 class="page-title"><i class="bi bi-images text-danger me-2" style="color: #8B5CF6 !important;"></i> 갤러리 사진첩 관리</h2>
+        <div>
+            <h2 class="page-title"><i class="bi bi-images me-2"></i> 갤러리 사진첩 관리</h2>
+            <p class="admin-subtitle">본당의 순간을 담은 사진첩을 확인하고 관리합니다.</p>
+        </div>
+        <a href="/gallery/new" class="btn btn-primary"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>사진첩 등록</a>
     </div>
     
-    <div class="admin-card p-md-4 p-2 bg-transparent bg-md-white border-0 border-md shadow-none shadow-md-sm">
+    <div class="admin-card admin-list-panel">
         <!-- Desktop Table View -->
         <div class="table-responsive d-none d-md-block bg-white rounded-3 border overflow-hidden">
             <table class="table table-hover align-middle mb-0">
