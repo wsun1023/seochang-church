@@ -800,7 +800,17 @@
         renderProgressTable();
     }
 
-    function openChapterFromProgress(testament, book, chapter) {
+    function openChapterFromProgress(testament, book, chapter = null) {
+        if (chapter === null) {
+            const { maxCh } = getBookReadCount(testament, book);
+            chapter = 1;
+            for (let next = 1; next <= maxCh; next++) {
+                if (!readChaptersSet.has(makeChapterKey(testament, book, next))) {
+                    chapter = next;
+                    break;
+                }
+            }
+        }
         const testamentSelect = document.getElementById('testamentSelect');
         const bookSelect = document.getElementById('bookSelect');
         testamentSelect.value = String(testament);
@@ -875,7 +885,7 @@
                                 </span>
                                 <div class="d-flex flex-wrap gap-2">
                                     <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3"
-                                            onclick="openChapterFromProgress(${group.testament}, ${bookNum}, 1)">
+                                            onclick="openChapterFromProgress(${group.testament}, ${bookNum})">
                                         <i class="bi bi-book me-1"></i>본문 읽기
                                     </button>
                                     <button type="button" class="btn btn-sm ${isCompleted ? 'btn-outline-secondary' : 'btn-outline-success'} rounded-pill px-3"
