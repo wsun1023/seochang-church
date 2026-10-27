@@ -22,6 +22,37 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 class SeochangChurchApplicationTests {
+    @Test void adminCalendarReusesControlsAndKeepsItsEditingForm() throws Exception {
+        User admin = user("calendar-admin"); admin.setRole("ADMIN"); users.flush();
+        String html = mvc.perform(get("/admin/calendar").session(session(admin))).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        var document = org.jsoup.Jsoup.parse(html);
+        assertThat(document.select("#calendar")).hasSize(1);
+        assertThat(document.select("[data-calendar-view]")).hasSize(3);
+        assertThat(document.select("[data-calendar-category]")).hasSize(4);
+        assertThat(document.select("#adminEventModal #eventForm")).hasSize(1);
+        assertThat(document.select("#eventModal")).isEmpty();
+        assertThat(document.select("#btnDeleteEvent")).hasSize(1);
+        assertThat(document.select("script[src='/js/calendar.js']")).hasSize(1);
+        assertThat(document.select("[data-calendar-admin]")).hasSize(1);
+        mvc.perform(get("/admin/calendar")).andExpect(status().is3xxRedirection());
+    }
+    @Test void calendarPagesShareControlsAndLoadOneCalendarInitializer() throws Exception {
+        for (String route : java.util.List.of("/", "/calendar")) {
+            String html = mvc.perform(get(route)).andExpect(status().isOk()).andReturn().getResponse()
+                    .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+            var document = org.jsoup.Jsoup.parse(html);
+            assertThat(document.select("#calendar")).hasSize(1);
+            assertThat(document.select("#eventModal")).hasSize(1);
+            assertThat(document.select("#eventCategory")).hasSize(1);
+            assertThat(document.select("[data-calendar-category]")).hasSize(4);
+            assertThat(document.select("[data-calendar-view]")).hasSize(3);
+            assertThat(document.select("#icalUrl")).hasSize(route.equals("/") ? 0 : 1);
+            assertThat(document.select("script[src='/js/calendar.js']")).hasSize(1);
+            assertThat(html).doesNotContain("copyIcalUrlDirect", "new FullCalendar.Calendar");
+            if (route.equals("/")) assertThat(document.select("iframe[src*='google.com/maps']")).hasSize(1);
+        }
+    }
     @Autowired MockMvc mvc;
     @Autowired UserRepository users;
     @Autowired BoardRepository boards;

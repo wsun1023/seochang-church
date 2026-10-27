@@ -57,8 +57,9 @@
     </style>
 <meta name="csrf-token" th:content="${csrfToken}">
 <script src="/js/csrf.js"></script>
+<link rel="stylesheet" th:href="@{/css/calendar.css}">
 </head>
-<body>
+<body class="church-calendar-page">
 
 <div th:replace="~{fragments/nav :: nav}"></div>
 
@@ -69,53 +70,59 @@
     </div>
 </div>
 
-<div class="container mb-5">
-    <div class="row">
-        <div class="col-lg-3 mb-4 order-2 order-lg-1 d-flex flex-column">
-            <div class="ical-box order-2 order-lg-1">
-                <h6 class="fw-bold"><i class="bi bi-calendar-check me-2 text-primary"></i>외부 캘린더 구독</h6>
-                <p class="small text-muted mb-2">아래 주소를 복사하여 스마트폰이나 구글 캘린더에서 성당 일정을 구독할 수 있습니다.</p>
-                <div class="input-group input-group-sm">
-                    <input type="text" class="form-control" id="icalUrl" readonly>
-                    <button class="btn btn-outline-secondary" type="button" onclick="copyIcalUrl()">복사</button>
+<main class="container calendar-main mb-5">
+    <section th:fragment="calendarPanel" class="calendar-panel" aria-label="성당 일정 달력">
+        <div class="calendar-toolbar">
+            <div class="calendar-month-navigation">
+                <h2 id="calendarTitle" aria-live="polite">성당 일정</h2>
+                <div class="calendar-date-buttons">
+                    <button type="button" id="calendarPrevious" aria-label="이전 기간"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                    <button type="button" id="calendarToday">오늘</button>
+                    <button type="button" id="calendarNext" aria-label="다음 기간"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
                 </div>
             </div>
-            
-            <div class="ical-box order-1 order-lg-2">
-                <h6 class="fw-bold mb-3"><i class="bi bi-palette me-2 text-warning"></i>일정 범례</h6>
-                <div class="d-flex align-items-center mb-2">
-                    <span style="display:inline-block; width:12px; height:12px; background-color:#3788d8; border-radius:50%; margin-right:8px;"></span>
-                    <span class="small">미사 / 전례</span>
-                </div>
-                <div class="d-flex align-items-center mb-2">
-                    <span style="display:inline-block; width:12px; height:12px; background-color:#28a745; border-radius:50%; margin-right:8px;"></span>
-                    <span class="small">행사 / 모임</span>
-                </div>
-                <div class="d-flex align-items-center mb-2">
-                    <span style="display:inline-block; width:12px; height:12px; background-color:#dc3545; border-radius:50%; margin-right:8px;"></span>
-                    <span class="small">기타 / 공지</span>
-                </div>
+            <div class="calendar-view-switch" role="group" aria-label="달력 보기 방식">
+                <button type="button" data-calendar-view="dayGridMonth" aria-pressed="true">월간</button>
+                <button type="button" data-calendar-view="timeGridWeek" aria-pressed="false">주간</button>
+                <button type="button" data-calendar-view="listMonth" aria-pressed="false"><i class="bi bi-list-ul" aria-hidden="true"></i>목록</button>
             </div>
         </div>
-        
-        <div class="col-lg-9 order-1 order-lg-2">
-            <div id="calendar"></div>
+        <div class="calendar-filter-bar">
+            <div class="calendar-filters" role="group" aria-label="일정 분류 필터">
+                <button type="button" data-calendar-category="all" aria-pressed="true">전체</button>
+                <button type="button" data-calendar-category="mass" aria-pressed="false"><span class="calendar-dot calendar-dot-mass" aria-hidden="true"></span>미사·전례</button>
+                <button type="button" data-calendar-category="meeting" aria-pressed="false"><span class="calendar-dot calendar-dot-meeting" aria-hidden="true"></span>행사·모임</button>
+                <button type="button" data-calendar-category="other" aria-pressed="false"><span class="calendar-dot calendar-dot-other" aria-hidden="true"></span>기타·공지</button>
+            </div>
+            <span id="calendarCount" class="calendar-count" aria-live="polite"></span>
         </div>
-    </div>
-</div>
+        <p id="calendarLoading" class="calendar-status" role="status" hidden>일정을 불러오고 있어요.</p>
+        <div id="calendarError" class="alert alert-warning" role="alert" hidden>일정을 불러오지 못했습니다. <button type="button" id="calendarRetry" class="btn btn-sm btn-outline-dark">다시 시도</button></div>
+        <div id="calendar"></div>
+        <p class="calendar-help"><i class="bi bi-hand-index-thumb" aria-hidden="true"></i> 일정을 누르면 자세한 내용을 볼 수 있어요.</p>
+    </section>
+    <aside th:fragment="calendarSubscription" class="calendar-subscribe" aria-labelledby="calendarSubscribeTitle">
+        <div class="calendar-subscribe-icon"><i class="bi bi-calendar2-plus" aria-hidden="true"></i></div>
+        <div class="calendar-subscribe-copy"><h2 id="calendarSubscribeTitle">내 캘린더에서도 만나요</h2><p>구독 주소를 스마트폰·구글 캘린더에 추가하면 성당 일정을 함께 확인할 수 있어요.</p></div>
+        <div class="calendar-subscribe-action">
+            <label for="icalUrl" class="visually-hidden">성당 일정 구독 주소</label><input type="text" id="icalUrl" readonly>
+            <button type="button" id="copyIcalUrl"><i class="bi bi-copy" aria-hidden="true"></i>주소 복사</button>
+        </div>
+        <p id="calendarCopyStatus" class="calendar-copy-status" role="status"></p>
+    </aside>
+</main>
 
 <!-- Event Detail Modal -->
-<div class="modal fade" id="eventModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+<div th:fragment="eventDetail" class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content calendar-event-modal">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="eventTitle"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div><span id="eventCategory" class="calendar-category-label"></span><h5 class="modal-title fw-bold mt-2" id="eventTitle"></h5></div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="일정 상세 닫기"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-1 text-muted small"><i class="bi bi-clock me-1"></i> <span id="eventTime"></span></p>
-                <hr>
-                <div id="eventDescription" style="white-space: pre-wrap;"></div>
+                <p class="calendar-event-time"><i class="bi bi-clock" aria-hidden="true"></i><span id="eventTime"></span></p>
+                <div id="eventDescription" class="calendar-event-description"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
@@ -126,71 +133,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales/ko.global.min.js"></script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const calendarEl = document.getElementById('calendar');
-        const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
-
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            contentHeight: 'auto',
-            locale: 'ko',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listMonth'
-            },
-            buttonText: {
-                today: '오늘',
-                month: '월',
-                week: '주',
-                list: '목록'
-            },
-            events: '/api/calendar/events',
-            eventDisplay: 'block',
-            displayEventTime: false,
-            eventContent: function(arg) {
-                return { html: '<div class="px-1 text-truncate w-100"><div class="fc-event-title fw-bold">' + arg.event.title + '</div></div>' };
-            },
-            eventClick: function(info) {
-                document.getElementById('eventTitle').textContent = info.event.title;
-                
-                let timeStr = '';
-                if(info.event.allDay) {
-                    timeStr = '종일';
-                } else {
-                    timeStr = info.event.start.toLocaleString();
-                    if(info.event.end) {
-                        timeStr += ' ~ ' + info.event.end.toLocaleString();
-                    }
-                }
-                document.getElementById('eventTime').textContent = timeStr;
-                
-                const desc = info.event.extendedProps.description;
-                document.getElementById('eventDescription').textContent = desc ? desc : '내용이 없습니다.';
-                
-                eventModal.show();
-            }
-        });
-
-        calendar.render();
-        
-        // Set iCal URL dynamically
-        const icalUrlInput = document.getElementById('icalUrl');
-        const currentUrl = window.location.origin;
-        icalUrlInput.value = currentUrl + '/api/calendar/ical';
-    });
-    
-    function copyIcalUrl() {
-        const copyText = document.getElementById("icalUrl");
-        copyText.select();
-        copyText.setSelectionRange(0, 99999);
-        navigator.clipboard.writeText(copyText.value).then(() => {
-            alert("iCal 주소가 복사되었습니다. 캘린더 앱에서 'URL로 추가'를 선택하세요.");
-        });
-    }
-</script>
+<script th:src="@{/js/calendar.js}" defer></script>
 
 </body>
 </html>

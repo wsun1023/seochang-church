@@ -4,31 +4,17 @@
 <script src="/js/csrf.js"></script>
 </head>
 <body>
-<div th:fragment="content">
-    <style>
-        /* Mobile Calendar Optimization */
-        @media (max-width: 767.98px) {
-            .fc-toolbar-title {
-                font-size: 1.15rem !important;
-            }
-            .fc-dayGridMonth-button, .fc-timeGridWeek-button, .fc-listMonth-button {
-                display: none !important;
-            }
-            .fc .fc-toolbar.fc-header-toolbar {
-                margin-bottom: 1em !important;
-            }
-        }
-    </style>
-    <div class="page-header d-flex justify-content-between align-items-center">
+<div th:fragment="content" data-calendar-admin>
+    <link rel="stylesheet" th:href="@{/css/calendar.css}">
+    <div class="page-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
         <h2 class="page-title mb-0"><i class="bi bi-calendar-event-fill me-2 text-primary"></i>성당 일정 관리</h2>
-        <button class="btn btn-primary rounded-pill px-4" onclick="openNewEventModal()">
+        <button type="button" class="btn btn-dark rounded-pill px-4" onclick="openNewEventModal()">
             <i class="bi bi-plus-lg me-1"></i>새 일정 추가
         </button>
     </div>
 
-    <div class="admin-card">
-        <div id="admin-calendar"></div>
-    </div>
+    <section th:replace="~{calendar :: calendarPanel}"></section>
+    <p class="calendar-admin-hint"><i class="bi bi-info-circle" aria-hidden="true"></i> 날짜를 선택하면 새 일정을 추가할 수 있어요. 일정을 누르면 수정·삭제할 수 있습니다.</p>
 
     <!-- Concise Event List View -->
     <div class="admin-card mt-4 p-md-4 p-2 bg-transparent bg-md-white border-0 border-md shadow-none shadow-md-sm">
@@ -108,13 +94,13 @@
     </div>
 
     <!-- Event Add/Edit Modal -->
-    <div class="modal fade" id="adminEventModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
+    <div class="modal fade" id="adminEventModal" tabindex="-1" aria-labelledby="adminEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content calendar-event-modal">
                 <form id="eventForm">
                     <div class="modal-header">
                         <h5 class="modal-title fw-bold" id="adminEventModalLabel">일정 추가/수정</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="일정 편집 닫기"></button>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" id="eventId">
@@ -167,36 +153,18 @@
     </div>
 
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales/ko.global.min.js"></script>
+    <script th:src="@{/js/calendar.js}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.getElementById('admin-calendar');
+            const calendarEl = document.getElementById('calendar');
             const eventModal = new bootstrap.Modal(document.getElementById('adminEventModal'));
             const eventForm = document.getElementById('eventForm');
             const btnDelete = document.getElementById('btnDeleteEvent');
 
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                contentHeight: 'auto',
-                locale: 'ko',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,listMonth'
-                },
-                buttonText: {
-                    today: '오늘',
-                    month: '월',
-                    week: '주',
-                    list: '목록'
-                },
+            const calendar = window.ChurchCalendar.create(calendarEl, {
                 selectable: true,
                 editable: true,
-                events: '/api/calendar/events',
-                eventDisplay: 'block',
-                displayEventTime: false,
-                eventContent: function(arg) {
-                    return { html: '<div class="px-1 text-truncate w-100"><div class="fc-event-title fw-bold">' + arg.event.title + '</div></div>' };
-                },
                 
                 // 날짜 드래그 선택 (새 일정 추가)
                 select: function(info) {
@@ -261,14 +229,13 @@
 
                 // 드래그앤드롭 이벤트 수정
                 eventDrop: function(info) {
-                    updateEvent(info.event);
+                    updateEvent(info);
                 },
                 eventResize: function(info) {
-                    updateEvent(info.event);
+                    updateEvent(info);
                 }
             });
 
-            calendar.render();
 
             // 저장 버튼 클릭
             eventForm.addEventListener('submit', function(e) {
@@ -313,7 +280,8 @@
                 });
             });
 
-            function updateEvent(e) {
+            function updateEvent(info) {
+                const e = info.event;
                 const tzoffset = (new Date()).getTimezoneOffset() * 60000;
                 const localStart = (new Date(e.start - tzoffset)).toISOString().slice(0, 16);
                 let localEnd = localStart;
@@ -341,6 +309,9 @@
                         alert('수정 실패!');
                         info.revert();
                     }
+                }).catch(() => {
+                    alert('일정 수정 중 연결이 끊겼습니다. 다시 시도해주세요.');
+                    info.revert();
                 });
             }
             window.openNewEventModal = function() {
