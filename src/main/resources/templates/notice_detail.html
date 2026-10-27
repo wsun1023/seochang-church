@@ -99,7 +99,7 @@
         }
 
         .board-content {
-            min-height: 250px;
+            min-height: 180px;
             font-size: 1.05rem;
             line-height: 1.7;
             color: #334155;
@@ -130,6 +130,7 @@
             color: #0F172A;
             border-color: #94A3B8;
         }
+
 
         footer {
             background: var(--primary-navy);
@@ -162,7 +163,7 @@
             .board-content {
                 font-size: 0.95rem;
                 line-height: 1.65;
-                min-height: 180px;
+                min-height: 120px;
                 padding-bottom: 20px;
                 margin-bottom: 20px;
             }
@@ -171,6 +172,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" th:href="@{/css/pdf-viewer.css}">
     <link rel="stylesheet" th:href="@{/toastui/dist/toastui-editor-viewer.css}">
 <meta name="csrf-token" th:content="${csrfToken}">
 <script src="/js/csrf.js"></script>
@@ -233,15 +235,121 @@
                 <img th:if="${file.image}" th:src="${file.filePath}" alt="첨부 이미지" class="img-fluid rounded border mb-2 clickable-image" style="max-width: 100%; max-height: 600px; object-fit: contain; cursor: pointer;" onclick="showImageModal(this.src)">
             </th:block>
         </div>
+
+        <!-- Inline PDF Web Bulletin Viewer -->
+        <div th:if="${notice.attachments != null and not #lists.isEmpty(notice.attachments.?[pdf])}"
+             id="webBulletinViewerSection"
+             class="pdf-viewer-panel"
+             aria-label="웹 주보 PDF 뷰어">
+
+            <!-- Multiple PDF file tabs if more than 1 PDF is attached -->
+            <div th:if="${#lists.size(notice.attachments.?[pdf]) > 1}"
+                 class="pdf-file-tabs" role="group" aria-label="PDF 첨부파일 선택">
+                <button th:each="pdfFile, stat : ${notice.attachments.?[pdf]}"
+                        type="button"
+                        class="pdf-file-tab-btn"
+                        th:classappend="${stat.index == 0} ? 'active' : ''"
+                        th:attr="aria-pressed=${stat.index == 0}"
+                        th:title="${pdfFile.originalFileName}"
+                        th:data-pdf-url="@{/pdf/view(file=${pdfFile.storedFileName}, originalName=${pdfFile.originalFileName})}"
+                        th:data-download-url="@{/download(file=${pdfFile.storedFileName}, originalName=${pdfFile.originalFileName})}"
+                        th:data-file-name="${pdfFile.originalFileName}"
+                        onclick="selectPdfAttachment(this)">
+                    <i class="bi bi-file-earmark-pdf-fill me-1"></i>
+                    <span th:text="${pdfFile.originalFileName}">주보.pdf</span>
+                </button>
+            </div>
+
+            <!-- Hidden metadata for initial PDF -->
+            <th:block th:each="pdfFile, stat : ${notice.attachments.?[pdf]}" th:if="${stat.index == 0}">
+                <input type="hidden" id="initialPdfViewUrl" th:value="@{/pdf/view(file=${pdfFile.storedFileName}, originalName=${pdfFile.originalFileName})}">
+                <input type="hidden" id="initialPdfDownloadUrl" th:value="@{/download(file=${pdfFile.storedFileName}, originalName=${pdfFile.originalFileName})}">
+                <input type="hidden" id="initialPdfFileName" th:value="${pdfFile.originalFileName}">
+            </th:block>
+
+            <!-- File identity and document actions -->
+            <div class="pdf-viewer-header">
+                <div class="pdf-document">
+                    <span class="pdf-document-icon" aria-hidden="true"><i class="bi bi-file-earmark-pdf"></i></span>
+                    <div class="pdf-document-name">
+                        <span class="pdf-document-label">웹 pdf 뷰어</span>
+                        <span id="pdfActiveFileName">주보.pdf</span>
+                    </div>
+                </div>
+                <div class="pdf-document-actions">
+                    <a id="pdfOpenNewTabBtn" href="#" target="_blank" rel="noopener" class="pdf-tool-button" title="새 창에서 열기" aria-label="PDF 새 창에서 열기">
+                        <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                    </a>
+                    <a id="pdfDirectDownloadBtn" href="#" class="pdf-tool-button pdf-download-button" title="PDF 파일 다운로드" aria-label="PDF 파일 다운로드">
+                        <i class="bi bi-download" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Reading controls -->
+            <div class="pdf-viewer-toolbar">
+                <div id="pdfPageNavControls" class="pdf-page-navigation" role="group" aria-label="페이지 이동">
+                    <button type="button" id="pdfPrevBtn" class="pdf-tool-button" onclick="changePdfPage(-1)" title="이전 페이지" aria-label="이전 페이지">
+                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    </button>
+                    <span id="pdfPageIndicator" aria-live="polite" aria-atomic="true">1 / 1쪽</span>
+                    <button type="button" id="pdfNextBtn" class="pdf-tool-button" onclick="changePdfPage(1)" title="다음 페이지" aria-label="다음 페이지">
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="pdf-reading-tools">
+                    <div class="pdf-control-group pdf-view-modes" role="group" aria-label="보기 방식">
+                        <button type="button" id="pdfSingleModeBtn" class="pdf-tool-button active" onclick="setPdfViewMode('single')" title="한 쪽씩 보기" aria-label="한 쪽씩 보기" aria-pressed="true">
+                            <i class="bi bi-file-earmark-richtext" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" id="pdfScrollModeBtn" class="pdf-tool-button" onclick="setPdfViewMode('scroll')" title="연속 보기" aria-label="연속 보기" aria-pressed="false">
+                            <i class="bi bi-view-stacked" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="pdf-control-group" role="group" aria-label="확대 축소">
+                        <button type="button" class="pdf-tool-button" onclick="adjustPdfZoom(-0.2)" title="축소" aria-label="축소">
+                            <i class="bi bi-dash-lg" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" id="pdfZoomResetBtn" class="pdf-tool-button pdf-zoom-value" onclick="resetPdfZoom()" title="화면 폭 맞춤 (100%)" aria-label="화면 폭 맞춤 (100%)">100%</button>
+                        <button type="button" class="pdf-tool-button" onclick="adjustPdfZoom(0.2)" title="확대" aria-label="확대">
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pdfViewerStage" class="pdf-viewer-stage">
+                <div id="pdfLoadingState" class="pdf-loading-state text-center py-5 my-auto" role="status">
+                    <div class="spinner-border spinner-border-sm mb-2" aria-hidden="true"></div>
+                    <div class="small">주보를 불러오는 중입니다...</div>
+                </div>
+                <div id="pdfCanvasContainer" class="pdf-canvas-wrap d-none"></div>
+            </div>
+            <div class="pdf-viewer-help">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+                <span class="pdf-help-desktop">이전·다음 버튼으로 페이지를 넘겨보세요.</span>
+                <span class="pdf-help-mobile">좌우로 밀거나 화살표로 페이지 넘김</span>
+            </div>
+        </div>
         
         <!-- General Files -->
         <div th:if="${notice.attachments != null and not #lists.isEmpty(notice.attachments)}" class="mb-4">
+            <h6 th:if="${not #lists.isEmpty(notice.attachments.?[!image])}" class="fw-bold text-secondary small mb-2">
+                <i class="bi bi-folder2-open me-1"></i>첨부파일 다운로드
+            </h6>
             <th:block th:each="file : ${notice.attachments}">
-                <div th:if="${!file.image}" class="mb-2">
-                    <a th:href="@{/download(file=${file.storedFileName}, originalName=${file.originalFileName})}" class="btn btn-light border text-start d-inline-block text-truncate" style="max-width: 100%;">
-                        <i class="bi bi-paperclip text-muted me-2"></i>
+                <div th:if="${!file.image}" class="mb-2 d-flex flex-wrap align-items-center gap-2">
+                    <a th:href="@{/download(file=${file.storedFileName}, originalName=${file.originalFileName})}" class="btn btn-light border text-start d-inline-flex align-items-center text-truncate" style="max-width: 100%;">
+                        <i class="bi me-2" th:classappend="${file.pdf} ? 'bi-file-earmark-pdf-fill text-danger' : 'bi-paperclip text-muted'"></i>
                         <span th:text="${file.originalFileName}">파일명.pdf</span>
                         <span class="text-muted ms-2 small" th:text="'(' + ${file.fileSize / 1024} + ' KB)'"></span>
+                    </a>
+                    <a th:if="${file.pdf}"
+                       th:href="@{/pdf/view(file=${file.storedFileName}, originalName=${file.originalFileName})}"
+                       target="_blank"
+                       rel="noopener"
+                       class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>새 창에서 바로보기
                     </a>
                 </div>
             </th:block>
@@ -311,6 +419,245 @@ function showImageModal(src) {
             if (event.target.tagName === 'IMG') showImageModal(event.target.src);
         });
     });
+</script>
+
+<!-- PDF.js CDN for cross-platform (PC & Mobile) inline PDF page rendering -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    let currentPdfDoc = null;
+    let currentPdfPage = 1;
+    let currentPdfTotalPages = 1;
+    let currentPdfZoom = 1.0;
+    let currentPdfViewMode = 'single'; // 'single' or 'scroll'
+    let currentPdfUrl = '';
+    let pdfRenderTask = null;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const viewerSection = document.getElementById('webBulletinViewerSection');
+        if (!viewerSection) return;
+
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        const initialViewUrl = document.getElementById('initialPdfViewUrl')?.value;
+        const initialDownloadUrl = document.getElementById('initialPdfDownloadUrl')?.value;
+        const initialFileName = document.getElementById('initialPdfFileName')?.value || '주보.pdf';
+
+        if (initialViewUrl) {
+            loadWebBulletinPdf(initialViewUrl, initialDownloadUrl, initialFileName);
+        }
+
+        // Mobile touch swipe navigation for single-page mode
+        const stage = document.getElementById('pdfViewerStage');
+        let previousStageWidth = stage.clientWidth;
+        let resizeFrame;
+        new ResizeObserver(function () {
+            if (stage.clientWidth === previousStageWidth) return;
+            previousStageWidth = stage.clientWidth;
+            cancelAnimationFrame(resizeFrame);
+            resizeFrame = requestAnimationFrame(function () {
+                if (currentPdfDoc && !stage.querySelector('.pdf-fallback-iframe')) renderCurrentPdfView();
+            });
+        }).observe(stage);
+        let touchStartX = 0;
+        let touchStartY = 0;
+        stage.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        stage.addEventListener('touchend', function (e) {
+            if (currentPdfViewMode !== 'single' || currentPdfZoom > 1.15 ||
+                    stage.scrollWidth > stage.clientWidth + 1 || e.changedTouches.length !== 1) return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                if (dx < 0) {
+                    changePdfPage(1);
+                } else {
+                    changePdfPage(-1);
+                }
+            }
+        }, { passive: true });
+    });
+
+    function selectPdfAttachment(btnEl) {
+        document.querySelectorAll('.pdf-file-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn === btnEl);
+            btn.setAttribute('aria-pressed', String(btn === btnEl));
+        });
+
+        const viewUrl = btnEl.getAttribute('data-pdf-url');
+        const downloadUrl = btnEl.getAttribute('data-download-url');
+        const fileName = btnEl.getAttribute('data-file-name');
+        loadWebBulletinPdf(viewUrl, downloadUrl, fileName);
+    }
+
+    function loadWebBulletinPdf(viewUrl, downloadUrl, fileName) {
+        currentPdfUrl = viewUrl;
+        currentPdfPage = 1;
+        currentPdfZoom = 1.0;
+        updateZoomLabel();
+
+        const fileNameEl = document.getElementById('pdfActiveFileName');
+        const openTabBtn = document.getElementById('pdfOpenNewTabBtn');
+        const downloadBtn = document.getElementById('pdfDirectDownloadBtn');
+        if (fileNameEl) {
+            fileNameEl.textContent = fileName || '주보.pdf';
+            fileNameEl.title = fileNameEl.textContent;
+        }
+        if (openTabBtn) openTabBtn.href = viewUrl;
+        if (downloadBtn) downloadBtn.href = downloadUrl || viewUrl;
+
+        const loadingEl = document.getElementById('pdfLoadingState');
+        const containerEl = document.getElementById('pdfCanvasContainer');
+        loadingEl.classList.remove('d-none');
+        containerEl.classList.add('d-none');
+        containerEl.innerHTML = '';
+
+        if (!window.pdfjsLib) {
+            renderIframeFallback(viewUrl);
+            return;
+        }
+
+        window.pdfjsLib.getDocument(viewUrl).promise
+            .then(function (pdfDoc) {
+                currentPdfDoc = pdfDoc;
+                currentPdfTotalPages = pdfDoc.numPages;
+                loadingEl.classList.add('d-none');
+                containerEl.classList.remove('d-none');
+                renderCurrentPdfView();
+            })
+            .catch(function (err) {
+                console.warn('PDF.js rendering failed, falling back to browser iframe viewer:', err);
+                renderIframeFallback(viewUrl);
+            });
+    }
+
+    function renderIframeFallback(viewUrl) {
+        const loadingEl = document.getElementById('pdfLoadingState');
+        const containerEl = document.getElementById('pdfCanvasContainer');
+        const navControls = document.getElementById('pdfPageNavControls');
+        if (loadingEl) loadingEl.classList.add('d-none');
+        if (navControls) navControls.classList.add('d-none');
+        if (containerEl) {
+            containerEl.classList.remove('d-none');
+            containerEl.innerHTML = `<iframe src="${viewUrl}" class="pdf-fallback-iframe" title="웹 주보 PDF 뷰어"></iframe>`;
+        }
+    }
+
+    function renderCurrentPdfView() {
+        if (!currentPdfDoc) return;
+        const containerEl = document.getElementById('pdfCanvasContainer');
+        const navControls = document.getElementById('pdfPageNavControls');
+        containerEl.innerHTML = '';
+
+        if (currentPdfViewMode === 'single') {
+            if (navControls) navControls.classList.remove('d-none');
+            updatePageControls();
+            const canvas = document.createElement('canvas');
+            canvas.className = 'pdf-page-canvas';
+            containerEl.appendChild(canvas);
+            renderPageToCanvas(currentPdfPage, canvas);
+        } else {
+            if (navControls) navControls.classList.add('d-none');
+            for (let pageNum = 1; pageNum <= currentPdfTotalPages; pageNum++) {
+                const canvas = document.createElement('canvas');
+                canvas.className = 'pdf-page-canvas';
+                containerEl.appendChild(canvas);
+                renderPageToCanvas(pageNum, canvas);
+            }
+        }
+    }
+
+    function renderPageToCanvas(pageNumber, canvas) {
+        currentPdfDoc.getPage(pageNumber).then(function (page) {
+            // 100% fits the viewer width; raster density remains independent.
+            const stage = document.getElementById('pdfViewerStage');
+            const style = window.getComputedStyle(stage);
+            const availableWidth = Math.max(1, stage.clientWidth -
+                parseFloat(style.paddingLeft) - parseFloat(style.paddingRight));
+            const unscaledViewport = page.getViewport({ scale: 1 });
+            const finalScale = (availableWidth / unscaledViewport.width) * currentPdfZoom;
+            const outputScale = Math.max(2, window.devicePixelRatio || 1);
+
+            const viewport = page.getViewport({ scale: finalScale });
+            const context = canvas.getContext('2d');
+
+            // Keep display size and raster resolution independent for sharp text.
+            canvas.width = Math.ceil(viewport.width * outputScale);
+            canvas.height = Math.ceil(viewport.height * outputScale);
+            canvas.style.width = viewport.width + 'px';
+            canvas.style.height = viewport.height + 'px';
+
+            const transform = [outputScale, 0, 0, outputScale, 0, 0];
+            page.render({
+                canvasContext: context,
+                transform: transform,
+                viewport: viewport
+            });
+        });
+    }
+
+    function updatePageControls() {
+        const indicator = document.getElementById('pdfPageIndicator');
+        const prevBtn = document.getElementById('pdfPrevBtn');
+        const nextBtn = document.getElementById('pdfNextBtn');
+        if (indicator) {
+            indicator.textContent = `${currentPdfPage} / ${currentPdfTotalPages}쪽`;
+        }
+        if (prevBtn) {
+            prevBtn.disabled = currentPdfPage <= 1;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = currentPdfPage >= currentPdfTotalPages;
+        }
+    }
+
+    function changePdfPage(delta) {
+        if (!currentPdfDoc) return;
+        const target = currentPdfPage + delta;
+        if (target < 1 || target > currentPdfTotalPages) return;
+        currentPdfPage = target;
+        renderCurrentPdfView();
+        const stage = document.getElementById('pdfViewerStage');
+        if (stage) stage.scrollTop = 0;
+    }
+
+    function setPdfViewMode(mode) {
+        currentPdfViewMode = mode;
+        const singleBtn = document.getElementById('pdfSingleModeBtn');
+        const scrollBtn = document.getElementById('pdfScrollModeBtn');
+        if (singleBtn && scrollBtn) {
+            singleBtn.classList.toggle('active', mode === 'single');
+            scrollBtn.classList.toggle('active', mode === 'scroll');
+            singleBtn.setAttribute('aria-pressed', String(mode === 'single'));
+            scrollBtn.setAttribute('aria-pressed', String(mode === 'scroll'));
+        }
+        renderCurrentPdfView();
+    }
+
+    function adjustPdfZoom(delta) {
+        currentPdfZoom = Math.min(2.4, Math.max(0.6, Math.round((currentPdfZoom + delta) * 10) / 10));
+        updateZoomLabel();
+        renderCurrentPdfView();
+    }
+
+    function resetPdfZoom() {
+        currentPdfZoom = 1.0;
+        updateZoomLabel();
+        renderCurrentPdfView();
+    }
+
+    function updateZoomLabel() {
+        const btn = document.getElementById('pdfZoomResetBtn');
+        if (btn) {
+            btn.textContent = Math.round(currentPdfZoom * 100) + '%';
+        }
+    }
 </script>
 </body>
 </html>

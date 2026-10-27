@@ -1,6 +1,7 @@
 package com.seochang.church.entity;
 
 import jakarta.persistence.*;
+import java.util.Locale;
 
 @Entity
 @Table(name = "notice_attachments")
@@ -49,4 +50,13 @@ public class NoticeAttachment implements Attachment {
 
     public boolean isImage() { return isImage; }
     public void setImage(boolean image) { isImage = image; }
+
+    public boolean isPdf() {
+        if (isImage) {
+            return false;
+        }
+        String orig = originalFileName != null ? originalFileName.toLowerCase(Locale.ROOT) : "";
+        String stored = storedFileName != null ? storedFileName.toLowerCase(Locale.ROOT) : "";
+        return orig.endsWith(".pdf") || stored.endsWith(".pdf");
+    }
 }
