@@ -37,6 +37,19 @@
     let sequence = 0;
     let removed = [];
     let saving = false;
+    const preview = document.getElementById('galleryPhotoPreview');
+    function openPreview(item) {
+        if (!preview) return;
+        const image = document.getElementById('galleryPhotoPreviewImage');
+        image.src = item.url; image.alt = item.name;
+        document.getElementById('galleryPhotoPreviewTitle').textContent = item.name;
+        preview.showModal();
+    }
+    if (preview) {
+        document.getElementById('galleryPhotoPreviewClose').addEventListener('click', () => preview.close());
+        preview.addEventListener('click', event => { if (event.target === preview) preview.close(); });
+        preview.addEventListener('close', () => document.getElementById('galleryPhotoPreviewImage').removeAttribute('src'));
+    }
     function error(message) { feedback.textContent = message; feedback.hidden = false; }
     function button(text, action, label) {
         const result = document.createElement('button');
@@ -54,23 +67,34 @@
         items.forEach((item, index) => {
             const card = document.createElement('article');
             card.className = 'gallery-photo-card' + (item.key === coverKey ? ' is-cover' : '');
+            const imageButton = button('', () => openPreview(item), `${index + 1}번 사진 크게 보기: ${item.name}`);
+            imageButton.className = 'gallery-photo-preview';
             const img = document.createElement('img'); img.src = item.url; img.alt = item.name; img.loading = 'lazy';
+            const order = document.createElement('span'); order.className = 'gallery-photo-order'; order.textContent = String(index + 1); order.setAttribute('aria-hidden', 'true');
+            const expand = document.createElement('i'); expand.className = 'bi bi-arrows-angle-expand gallery-photo-expand'; expand.setAttribute('aria-hidden', 'true');
+            imageButton.append(img, order, expand);
+            if (item.key === coverKey) {
+                const badge = document.createElement('span'); badge.className = 'gallery-photo-cover-badge'; badge.textContent = '대표'; badge.setAttribute('aria-hidden', 'true');
+                imageButton.append(badge);
+            }
             const controls = document.createElement('div'); controls.className = 'gallery-photo-controls';
-            const name = document.createElement('p'); name.className = 'gallery-photo-name'; name.textContent = `${index + 1}. ${item.name}`; name.title = item.name;
+            const name = document.createElement('p'); name.className = 'gallery-photo-name'; name.textContent = item.name; name.title = item.name;
             const cover = button(item.key === coverKey ? '✓ 대표 사진' : '대표로 선택', () => { coverKey = item.key; render(item.key, 'cover'); });
-            cover.className = 'btn btn-sm w-100 mb-2 ' + (item.key === coverKey ? 'btn-primary' : 'btn-outline-primary');
+            cover.className = 'btn btn-sm w-100 mb-2 gallery-cover-button' + (item.key === coverKey ? ' is-selected' : '');
             cover.setAttribute('aria-pressed', String(item.key === coverKey));
             const row = document.createElement('div'); row.className = 'd-flex gap-1 flex-wrap';
             const before = button('←', () => { items = movePhoto(items, item.key, -1); render(item.key, 'before'); }, `${index + 1}번 사진 앞으로`);
             const after = button('→', () => { items = movePhoto(items, item.key, 1); render(item.key, 'after'); }, `${index + 1}번 사진 뒤로`);
             before.disabled = index === 0; after.disabled = index === items.length - 1;
-            const remove = button('삭제', () => {
+            const remove = button('', () => {
                 items = items.filter(photo => photo.key !== item.key);
                 if (item.file) URL.revokeObjectURL(item.url); else removed.push(item);
                 render();
             }, `${item.name} 삭제 예약`);
-            remove.className = 'btn btn-sm btn-outline-danger ms-auto';
-            row.append(before, after, remove); controls.append(name, cover, row); card.append(img, controls); grid.append(card);
+            remove.className = 'btn btn-sm btn-outline-danger ms-auto gallery-photo-remove';
+            const trash = document.createElement('i'); trash.className = 'bi bi-trash3'; trash.setAttribute('aria-hidden', 'true'); remove.append(trash);
+            remove.title = '사진 삭제';
+            row.append(before, after, remove); controls.append(name, cover, row); card.append(imageButton, controls); grid.append(card);
             if (item.key === focusKey) {
                 const target = { cover, before, after }[focusAction];
                 if (target && !target.disabled) target.focus(); else cover.focus();
